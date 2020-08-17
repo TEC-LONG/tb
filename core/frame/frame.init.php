@@ -15,3 +15,13 @@ Config::builtConstants(Route::$plat, Route::$way);
 /// 根据配置文件构建配置数据
 Config::builtConfigs(Route::$plat, Route::$way);
 
+Route::team(['prefix'=>'self'], function (){
+
+    Route::team(['prefix'=>'manage'], function (){
+    
+        Route::get('/user/list', 'UserController@userList')->name('userList');
+        Route::get('/user/add', 'UserController@userEdit');
+        Route::get('/user/upd', 'UserController@userEdit');
+        Route::post('/user/post', 'UserController@userPost');
+    });
+});

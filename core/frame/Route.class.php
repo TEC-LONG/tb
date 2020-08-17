@@ -11,16 +11,18 @@ class Route{
     public static $name;
     public static $navtab;
 
+    private static $prefixes=[];
     private static $count=[];
 
-    private static $_get=[];
-    private static $_post=[];
-    private static $_request=[];
+    public static $_get=[];
+    public static $_post=[];
+    public static $_request=[];
 
     private static $selfObj=NULL;
+    private static $teamCount=0;
 
     public static function get($route, $map){
-    
+
         return self::routeAd($route, $map, 'get');
     }
 
@@ -32,6 +34,19 @@ class Route{
     public static function request($route, $map){
     
         return self::routeAd($route, $map, 'request');
+    }
+
+    public static function team($info, $callback){
+    
+        if( self::$teamCount==0 ){
+            self::$prefixes = [];
+        }
+
+        self::$prefixes[self::$teamCount] = $info['prefix'];
+        self::$teamCount += 1;
+        $callback();
+
+        
     }
 
     /**
@@ -46,7 +61,7 @@ class Route{
         if( !isset(self::$$var_name) ) return false;
 
         $key = array_search($route, self::$$var_name['routes']);
-        if( !$key ) return false;
+        if( $key===false ) return false;
 
         $gain .= 's'; # navtabs
         #                 _get      navtabs  
@@ -55,6 +70,17 @@ class Route{
         return self::$$var_name[$gain][$key];
     }
 
+    /**
+     * 中间件
+     */
+    public function midware($midware){
+    
+    }
+
+    /**
+     * 页面标识
+     * $navtab如果为空，且name值不为空，则，navtab取name的值
+     */
     public function navtab($navtab=''){
         
         ///                get               2
@@ -70,7 +96,8 @@ class Route{
     }
 
     /**
-     * $name为空则 name取navtab的值，若navtab也为空，则为空
+     * 页面名称
+     * $name如果为空，且navtab值不为空，则，name取navtab的值
      */
     public function name($name=''){
     
@@ -95,12 +122,17 @@ class Route{
     }
 
     private static function routeAd($route, $map, $type){
+
+        $prefix = '';
+        if( !empty(self::$prefixes) ){
+            $prefix = '/' . implode('/', self::$prefixes);
+        }
         
         if( $type=='get' ){#add get
 
             $k = isset(self::$_get['maps']) ? count(self::$_get['maps']) : 0;
             self::$_get['maps'][$k]     = $map;
-            self::$_get['routes'][$k]   = '/' . self::$plat . '/' . $route;
+            self::$_get['routes'][$k]   = $prefix . $route;
             self::$_get['navtabs'][$k]  = '';
             self::$_get['names'][$k]     = '';
 
@@ -108,7 +140,7 @@ class Route{
 
             $k = isset(self::$_post['maps']) ? count(self::$_post['maps']) : 0;
             self::$_post['maps'][$k]    = $map;
-            self::$_post['routes'][$k]  = '/' . self::$plat . '/' . $route;
+            self::$_post['routes'][$k]  = $prefix . $route;
             self::$_post['navtabs'][$k] = '';
             self::$_post['names'][$k]    = '';
 
@@ -116,7 +148,7 @@ class Route{
 
             $k = isset(self::$_request['maps']) ? count(self::$_request['maps']) : 0;
             self::$_request['maps'][$k]     = $map;
-            self::$_request['routes'][$k]   = '/' . self::$plat . '/' . $route;
+            self::$_request['routes'][$k]   = $prefix . $route;
             self::$_request['navtabs'][$k]  = '';
             self::$_request['names'][$k]     = '';
         }
@@ -132,7 +164,7 @@ class Route{
         
         /// 当前URI
         self::$uri = $URI = $_SERVER['REQUEST_URI'];
-        if(empty($URI)||$URI==='/') $URI=Config::C('web');
+        if(empty($URI)||$URI==='/') $URI=Config::C('WEB');
 
         /// 拆分
         if(strpos($URI, '?')){#如果带参数，则取"?"前的部分
@@ -145,27 +177,21 @@ class Route{
         self::$plat = isset($URI_arr[0]) ? strtolower($URI_arr[0]) : '';#路由的第一位为 平台 参数
         self::$way  = isset($URI_arr[1]) ? strtolower($URI_arr[1]) : '';#路由的第二位为 线路 参数
     }
-/*
+
     public static function prepare(){
 
         ///处理URI
-        $URI = $_SERVER['REQUEST_URI'];
-        if(empty($URI)||$URI==='/') $URI='/'.C('dweb.p').'/'.C('dweb.m').'/'.C('dweb.a');
+        $URI = self::$uri;
 
-        if(strpos($URI, '?')){#如果带参数，则取"?"前的部分
+        /// 平台 限定
+        $limit_plat = Config::C('LIMIT_PLAT');
 
-            preg_match('/^(.*)\?/', $URI, $preg_arr);
-            $URI = $preg_arr[1];
-        }
-        $URI_arr = explode('/', substr($URI, 1));
-        self::$plat = $URI_arr[0];#路由的第一位为 平台 参数
-
-        if( !in_array(self::$plat, ['tools', 'admin', 'blog', 'home', 'store']) ){
-            return false;
+        if( !in_array(self::$plat, $limit_plat) ){
+            exit('跳转404，记录日志！指定了非法的平台');
         }
 
         ///确定routes文件
-        $routes_path = APP_PATH . strtolower($URI_arr[0]) . DIRECTORY_SEPARATOR . 'routes.php';
+        $routes_path = APP . '/' . self::$plat . '/' . self::$way . '/routes.php';
         $has_routes = file_exists($routes_path);
 
         if(!$has_routes) exit('跳转404，记录日志！没有routes文件');
@@ -175,7 +201,7 @@ class Route{
         $request_method = strtolower($_SERVER['REQUEST_METHOD']);
         if(!in_array($request_method, ['get', 'post'])) exit('跳转404，记录日志！请求方式非法');
         
-        ///匹配routes规则，确定指向哪个控制器下的哪个方法
+        ///匹配routes规则
         $var_name = '_' . $request_method;# _get  或  _post
         $routes_gather = self::$$var_name['routes'];
         
@@ -192,10 +218,12 @@ class Route{
         self::$name     = !isset(self::$$var_name['names'][$routes_key])    ? '' : self::$$var_name['names'][$routes_key];
         self::$navtab   = !isset(self::$$var_name['navtabs'][$routes_key])  ? '' : self::$$var_name['navtabs'][$routes_key];
 
-        #得到控制器名和方法
+        # 得到控制器名和方法
         $map_str = explode('@', $map);
         self::$controller = ucfirst($map_str[0]);
         self::$method = $map_str[1];
-    }*/
+
+        # 调取中间件
+    }
 }
 
