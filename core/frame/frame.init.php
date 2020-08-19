@@ -1,6 +1,8 @@
 <?php
 
 include CORE_FRAME . '/Config.class.php';
+include CORE_FRAME . '/Log.class.php';
+include CORE_FRAME . '/Err.class.php';
 include CORE_FRAME . '/Route.class.php';
 
 /// 构建全局配置数据
@@ -15,13 +17,9 @@ Config::builtConstants(Route::$plat, Route::$way);
 /// 根据配置文件构建配置数据
 Config::builtConfigs(Route::$plat, Route::$way);
 
-Route::team(['prefix'=>'self'], function (){
+/// 执行路由预处理程序
+Route::prepare();
 
-    Route::team(['prefix'=>'manage'], function (){
-    
-        Route::get('/user/list', 'UserController@userList')->name('userList');
-        Route::get('/user/add', 'UserController@userEdit');
-        Route::get('/user/upd', 'UserController@userEdit');
-        Route::post('/user/post', 'UserController@userPost');
-    });
-});
+/// 引入App应用类
+include CORE_FRAME . '/App.class.php';
+spl_autoload_register('App::autoload');
