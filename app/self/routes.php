@@ -1,11 +1,13 @@
 <?php
 
-///  admin/
+Route::team(['prefix'=>'self'], function (){
 
-    #用户管理
-    Route::get('user/index', 'User@index')->navtab('admin_user_index')->name();
-    Route::get('user/add', 'User@showEdit')->navtab('admin_user_add')->name('admin_user_index');
-    Route::get('user/upd', 'User@showEdit')->navtab('admin_user_upd')->name('admin_user_index');
-    Route::get('user/delete', 'User@del')->navtab('admin_user_index')->name('admin_user_index');
-    Route::post('user/post', 'User@post')->name('admin_user_index');
+    Route::team(['prefix'=>'manage'], function (){
+    
+        Route::get('/user/list', 'UserController@userList')->name('userList')->midware('auth:check');
+        Route::get('/user/add', 'UserController@userEdit')->midware('auth:check');
+        Route::get('/user/upd', 'UserController@userEdit')->midware('auth:check');
+        Route::post('/user/post', 'UserController@userPost')->midware('auth:check');
+    });
+});
 

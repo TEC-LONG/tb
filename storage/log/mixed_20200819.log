@@ -1,0 +1,302 @@
+>>>>>>>>>>[2020-08-19 10:21:36 mixed.start.log]
+非法的操作: Log::aa
+>>>>>>>>>>[2020-08-19 10:21:36 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:21:36 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:21:36 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:52:12 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:52:12 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:52:38 mixed.start.log]
+指定了非法的平台: aa
+>>>>>>>>>>[2020-08-19 10:52:38 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:52:38 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:52:38 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:53:42 mixed.start.log]
+指定了非法的平台: aa
+>>>>>>>>>>[2020-08-19 10:53:42 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:53:43 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:53:43 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:54:41 mixed.start.log]
+匹配不到routes对应的规则: /self/share/a.js
+>>>>>>>>>>[2020-08-19 10:54:41 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:54:41 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:54:41 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 10:54:50 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 10:54:50 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(85): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(88): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(85): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(88): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:30:34 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:30:52 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:30:52 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:31:50 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:31:50 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:08 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:32:08 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(84): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(87): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(84): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(87): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:32:25 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(86): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(89): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(86): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(89): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:32:40 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(86): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(89): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throwErr', Array)
+#2 /www/tb/core/frame/App.class.php(86): Err::__callStatic('throwErr', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(89): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:33:19 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throw', Array)
+#2 /www/tb/core/frame/App.class.php(84): Err::__callStatic('throw', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(87): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throw', Array)
+#2 /www/tb/core/frame/App.class.php(84): Err::__callStatic('throw', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(36): Err->gotry(Object(Closure), 'exit')
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(87): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:36:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throw', Array)
+#2 /www/tb/core/frame/App.class.php(85): Err::__callStatic('throw', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(38): Err->gotry(Object(Closure))
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(88): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：出现错误
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(32): Err->gothrowErr('\xE5\x87\xBA\xE7\x8E\xB0\xE9\x94\x99\xE8\xAF\xAF')
+#1 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('throw', Array)
+#2 /www/tb/core/frame/App.class.php(85): Err::__callStatic('throw', Array)
+#3 /www/tb/core/frame/Err.class.php(53): App::{closure}()
+#4 /www/tb/core/frame/Err.class.php(38): Err->gotry(Object(Closure))
+#5 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('try', Array)
+#6 /www/tb/core/frame/App.class.php(88): Err::__callStatic('try', Array)
+#7 /www/tb/public/index.php(11): App::run()
+#8 {main}
+
+>>>>>>>>>>[2020-08-19 17:44:07 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::aaaa
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('aaaa', Array)
+#1 /www/tb/core/frame/App.class.php(85): Err::__callStatic('aaaa', Array)
+#2 /www/tb/public/index.php(11): App::run()
+#3 {main}
+
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.start.log]
+指定了非法的平台: favicon.ico
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.start.log]
+错误码：0
+目标文件：/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::aaaa
+追踪信息：
+#0 /www/tb/core/frame/Err.class.php(13): Err::magicCommon('aaaa', Array)
+#1 /www/tb/core/frame/App.class.php(85): Err::__callStatic('aaaa', Array)
+#2 /www/tb/public/index.php(11): App::run()
+#3 {main}
+
+>>>>>>>>>>[2020-08-19 17:47:03 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
