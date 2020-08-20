@@ -73,16 +73,7 @@ class App{
         $class_name = '\\'.$plat.'\\'.$way.'\\controller\\'.$contr;
         $obj        = new $class_name;
 
-        // $obj->$method();
-
-        Err::try(function (){
-
-            $v1 = 100;
-            if( $v1>0 ){
-                Err::throw('出现错误');
-            }
-
-        }, 'exit');
+        $obj->$method();
     }
 }
 

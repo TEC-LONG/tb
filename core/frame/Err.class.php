@@ -26,7 +26,7 @@ class Err{
      * __callStatic与__call 调取的公共方法
      */
     private static function magicCommon($name, $arguments){
-    
+
         if( $name=='throw' ){
         
             return self::$Err->gothrowErr($arguments[0]);
@@ -50,7 +50,7 @@ class Err{
     
         try{
 
-            $callback();
+            $re = $callback();
 
         }catch(\Exception $err){
 
@@ -62,20 +62,27 @@ class Err{
 
             return false;
         }
-
-        return true;
+        return $re;
     }
 
     /**
      * 异常处理
      */
     private function handle($err){
+
+        $trace      = [];
+        $trace_arr  = $err->getTrace();
+        foreach( $trace_arr as $k=>$this_trace){
+        
+            $trace[$k] = $this_trace['file'] . ' [第' . $this_trace['line'] . '行]: ' . $this_trace['class'] . $this_trace['type'] . $this_trace['function'];
+        }
         
         $msg = '';
         $msg .= '错误码：' . $err->getCode() . PHP_EOL;
-        $msg .= '目标文件：' . $err->getFile() . PHP_EOL;
+        $msg .= '出错行号：' . $trace_arr[2]['line'] . PHP_EOL;
+        $msg .= '目标文件：' . $trace_arr[2]['file'] . PHP_EOL;
         $msg .= '错误信息：' . $err->getMessage() . PHP_EOL;
-        $msg .= '追踪信息：' . PHP_EOL . $err->getTraceAsString() . PHP_EOL;
+        $msg .= '追踪信息：' . PHP_EOL . implode(PHP_EOL, $trace) . PHP_EOL;
 
         if( Config::C('DEBUG')==1 ){
         
