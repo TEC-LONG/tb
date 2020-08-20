@@ -1,16 +1,15 @@
 <?php
 
 class Json{
-    private $_re;
+    private $_re=null;
+    private static $Json=null;
 
     public function __construct(){
         
-        $this->obj()->stat()->msg();
+        $this->goobj()->gostat()->gomsg();
 
         return $this;
     }
-
-    private static $Json=null;
 
     public static function __callStatic($name, $arguments){
         
@@ -22,7 +21,7 @@ class Json{
     }
 
     public function __call($name, $arguments){
-    
+
         if( empty(self::$Json) ){
             self::$Json = new self;
         }
@@ -35,16 +34,34 @@ class Json{
      */
     private static function magicCommon($name, $arguments){
     
-        Err::try()
-
-        if( $name=='throwErr' ){
+        Err::try(function () use ($name, $arguments){
         
-            return self::$Json->throwErr($arguments[0]);
-        }
+            if( in_array($name, ['obj', 'stat', 'msg', 'navtab', 'vars', 'exec', 'decode']) ){
+            
+                $method = 'go' . $name;
+                return self::commonUse($method, $arguments);
+            }
 
-        $err = new \Exception('非法的操作: Err::'.$name);
-        self::$Err->handle($err);
-        exit;
+            Err::throw('非法的操作: Json::'.$name);
+
+        }, 'exit');
+
+        return self::$Json;
+    }
+
+    private static function commonUse($method, $arguments=null){
+    
+        if( is_array($arguments)&&isset($arguments[0]) ){
+
+            if( isset($arguments[1]) ){
+
+                return self::$Json->$method($arguments[0], $arguments[1]);
+            }
+            
+            return self::$Json->$method($arguments[0]);
+            
+        }
+        return self::$Json->$method();
     }
 
     /**
@@ -55,24 +72,9 @@ class Json{
      * 
      * @return    object
      */
-    public function obj($str='{}'){
+    private function goobj($str='{}'){
         
         $this->_re = json_decode($str);
-
-        return $this;
-    }
-
-    /**
-     * @method  arr
-     * 方法作用：调用此方法，可以最终根据指定的数组转换为json字符串
-     * 
-     * @param    $arr    array    数组
-     * 
-     * @return    object
-     */
-    public function arr($arr=[]){
-
-        $this->_re = $arr;
 
         return $this;
     }
@@ -85,12 +87,12 @@ class Json{
      * 
      * @return    object
      */
-    public function stat($stat=200){
+    private function gostat($stat=200){
     
         if( is_object($this->_re) ){
-            $this->_re->statusCode = $stat;
+            $this->_re->code = $stat;
         }elseif( is_array($this->_re) ){
-            $this->_re['statusCode'] = $stat;
+            $this->_re['code'] = $stat;
         }
 
         return $this;
@@ -104,7 +106,7 @@ class Json{
      * 
      * @return    object
      */
-    public function msg($msg='操作成功'){
+    private function gomsg($msg='操作成功'){
     
         if( is_object($this->_re) ){
             $this->_re->message = $msg;
@@ -123,7 +125,7 @@ class Json{
      * 
      * @return    object
      */
-    public function navtab($navtab){
+    private function gonavtab($navtab){
     
         if( is_object($this->_re) ){
             $this->_re->navTabId = $navtab;
@@ -138,29 +140,27 @@ class Json{
      * @method  vars
      * 方法作用：设置json额外内容，这个方法是用于拓展json返回的内容，请根据实际需要来调用
      * 
-     * @param    $key_val_arr    array    值对信息，如：$key_val_arr=['msg', 'xxxxx'] 或 $key_val_arr=[['stat', 300], ['msg', 'xxx']]
+     * @param    $key_val_arr    array    值对信息，如：$key_val_arr=['msg'=>'xxxxx', 'stat'=>300]
      * 
      * @return    object
      */
-    public function vars($key_val_arr){
-    
-        if( is_array($key_val_arr[0]) ){//二维数组，多个值对
-        
-            foreach( $key_val_arr as $v){
+    private function govars($key_val_arr){
+
+        if( empty($this->_re) ){
+
+            $this->_re = $key_val_arr;
+        }else{
+
+            foreach( $key_val_arr as $k=>$v){
+            
                 if( is_object($this->_re) ){
-                    $this->_re->$v[0] = $v[1];
+                    $this->_re->$k = $v;
                 }else{
-                    $this->_re[$v[0]] = $v[1];
+                    $this->_re[$k] = $v;
                 }
             }
-        }else{//一位数组，单个值对
-            
-            if( is_object($this->_re) ){
-                $this->_re->$key_val_arr[0] = $key_val_arr[1];
-            }else{
-                $this->_re[$key_val_arr[0]] = $key_val_arr[1];
-            }
         }
+
         return $this;
     }
 
@@ -173,7 +173,7 @@ class Json{
                         $type='return'表示以return方式返回json对象
      * @return    mixed
      */
-    public function exec($type='echo'){
+    private function goexec($type='echo'){
     
         if( $type==='echo' ){
             header('Content-Type:application/json');
@@ -193,7 +193,7 @@ class Json{
      * 
      * @return    mixed
      */
-    public function decode($str, $prefix='j_'){
+    private function godecode($str, $prefix='j_'){
     
         $data = json_decode($str, true);
         // if (($data && is_object($data)) || (is_array($data) && !empty($data))) {
