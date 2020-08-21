@@ -6,7 +6,7 @@ return [
     'WEB' => '/self/manage/user/list',
 
     /// 网站的域名配置
-    'url' => 'http://local.teclong.cn',
+    'URL' => 'http://local.teclong.cn',
 
     /// 平台 限定
     'LIMIT_PLAT' => ['self', 'blog', 'api'],

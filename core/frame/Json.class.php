@@ -42,7 +42,7 @@ class Json{
                 return self::commonUse($method, $arguments);
             }
 
-            Err::throw('非法的操作: Json::'.$name);
+            Err::throw('非法的操作: '.__CLASS__.'::'.$name);
 
         }, 'exit');
 
