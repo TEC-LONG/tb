@@ -36,7 +36,7 @@ class App{
         $class_name_explode = explode('\\', $className);
         $single_class_name  = $class_name_explode[count($class_name_explode)-1];
 
-        if( in_array($single_class_name, ['Model', 'NiceModel', 'Json']) ){
+        if( in_array($single_class_name, ['TB', 'Json']) ){
             
             $file = CORE_FRAME . '/' . $single_class_name . '.class.php';
         }elseif( substr($single_class_name, -10)==='Controller' ){
@@ -52,6 +52,7 @@ class App{
         
             $file = PLUGINS . '/' . $single_class_name . '.class.php';
         }
+var_dump($className);
 
         if( file_exists($file) ){
             

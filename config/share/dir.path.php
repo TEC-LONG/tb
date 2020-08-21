@@ -36,6 +36,8 @@ define('CORE_FRAME',    CORE.'/frame');
 define('CORE_FUN',      CORE.'/fun');
 define('CORE_MIDWARE',  CORE.'/midware');
 
+define('CORE_FRAME_SMARTY', CORE_FRAME.'/smarty');
+
 /**
  * /public
  */
