@@ -6,16 +6,14 @@
     RewriteEngine On
 
     #Redirect Default Images When User Task Images Were Deleted.
-    RewriteCond %{REQUEST_FILENAME}  !-f
-    RewriteRule ^attachment/task/(.*)\.(jpg|png|jpeg)$ /themes/default/assets/xmpt/img/task_default.png [L,R=301]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    #RewriteRule ^attachment/task/(.*)\.(jpg|png|jpeg)$ /themes/default/assets/xmpt/img/task_default.png [L,R=301]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)/$ /$1 [L,R=301]
 
     # Handle Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
 

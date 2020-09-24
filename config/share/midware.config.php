@@ -3,6 +3,7 @@
 return [
 
     'MIDWARE' => [
-        'auth:check' => 'Author:checkLogin'
+        'auth:check' => 'Author:checkLogin',
+        'auth:func1' => 'Author:func1'
     ]
 ];

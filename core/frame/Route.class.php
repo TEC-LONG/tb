@@ -15,12 +15,12 @@ class Route{
     private static $prefixes=[];
     private static $count=[];
 
-    public static $_get=[];
-    public static $_post=[];
-    public static $_request=[];
+    private static $_get=[];
+    private static $_post=[];
+    private static $_request=[];
 
     private static $selfObj=NULL;
-    private static $teamCount=0;
+    private static $teamCount=[];
 
     public static function get($route, $map){
 
@@ -39,15 +39,19 @@ class Route{
 
     public static function team($info, $callback){
     
-        if( self::$teamCount==0 ){
+        if( empty(self::$teamCount) ){
+            $key            = 0;
             self::$prefixes = [];
+        }else {
+            $key = count(self::$teamCount);
         }
+        self::$teamCount[$key] = 'using';
 
-        self::$prefixes[self::$teamCount] = $info['prefix'];
-        self::$teamCount += 1;
+        self::$prefixes[$key] = $info['prefix'];
         $callback();
 
-        
+        unset(self::$teamCount[$key]);
+        unset(self::$prefixes[$key]);
     }
 
     /**

@@ -19,8 +19,10 @@ define('STORAGE',       ROOT.'/storage');
 /**
  * /app
  */
-define('APP_API',   APP.'/api');
 define('APP_BLOG',  APP.'/blog');
+define('APP_CMD',  APP.'/cmd');
+
+define('APP_API',   APP.'/api');
 define('APP_MODEL', APP.'/model');
 define('APP_SELF',  APP.'/self');
 
