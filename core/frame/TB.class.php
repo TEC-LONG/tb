@@ -87,7 +87,7 @@ class TB{
                 'orderby',
                 'groupby',
                 'limit',
-                'field',
+                'fields',
                 'update',
                 'insert',
                 'get',
@@ -311,7 +311,7 @@ class TB{
                     $this->_pdo->beginTransaction();
                     foreach( $sql as $one_sql){
                     
-                        $this->_pdo->goexec($one_sql);
+                        $this->_pdo->exec($one_sql);
                     }
                     $re = $this->_pdo->commit();//全部执行成功则提交事务
                     // $this->init();//执行完SQL语句则初始化一次
@@ -332,7 +332,7 @@ class TB{
             }else{
 
                 try{
-                    $this->_pdo->goexec($sql);
+                    $this->_pdo->exec($sql);
                     // $this->init();//执行完SQL语句则初始化一次
                 }catch(\PDOException $e){
         
@@ -399,7 +399,7 @@ class TB{
         $sql = '';
         if( $type==1 ){//返回查询sql语句
 
-            $sql = 'select %s from %s%s where %s';
+            $sql = 'SELECT %s FROM `%s`%s WHERE %s';
             if( empty($this->select) ) $this->select='*';
             if( empty($this->where) ) $this->where='1';
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
@@ -414,7 +414,8 @@ class TB{
 
             if( $this->flag==='insert' )://新增
                 //      insert into xx (x, x, x) values (x, x, x)
-                $sql = 'insert into %s %s values %s';
+                $sql = 'INSERT INTO `%s` %s VALUES %s';
+                
                 $sql = sprintf($sql, $this->table, $this->fields, implode(',', $this->insert));
             elseif ($this->flag==='update')://更新
     
@@ -433,11 +434,11 @@ class TB{
                     
                     // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
 
-                    $sql = 'update %s set %s where %s';
+                    $sql = 'UPDATE `%s` SET %s WHERE %s';
 
                     $tmp_arr_target = [];
                     foreach( $this->update_fields[0] as $k=>$field){
-                        $tmp_arr_target[] = isset($this->update[0][$k]) ? '`'.$field.'`='.$this->update[0][$k] : '`'.$field.'`='.$this->update[0][$field];
+                        $tmp_arr_target[] = isset($this->update[0][$k]) ? $field.'='.$this->update[0][$k] : $field.'='.$this->update[0][$field];
                     }
                     $target = implode(',', $tmp_arr_target);
 
@@ -453,11 +454,11 @@ class TB{
 
                         // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
 
-                        $tmp_sql = 'update %s set %s where %s';
+                        $tmp_sql = 'UPDATE `%s` SET %s WHERE %s';
 
                         $tmp_arr_target = [];
                         foreach( $fields_row as $k1=>$field){
-                            $tmp_arr_target[] = isset($this->update[$k][$k1]) ? '`'.$field.'`='.$this->update[$k][$k1] : '`'.$field.'`='.$this->update[$k][$field];
+                            $tmp_arr_target[] = isset($this->update[$k][$k1]) ? $field.'='.$this->update[$k][$k1] : $field.'='.$this->update[$k][$field];
                         }
                         $target = implode(',', $tmp_arr_target);
 
@@ -467,7 +468,7 @@ class TB{
                 
             elseif ($this->flag==='delete')://删除
                 
-                $sql = 'delete from %s where %s';
+                $sql = 'DELETE FROM `%s` WHERE %s';
                 $sql = sprintf($sql, $this->table, implode(' and ', $this->where));
                 
             endif;
@@ -481,7 +482,8 @@ class TB{
      * @param $fields string|array
                 可能的情况有：
                 (1) $fields='name, parent_id, post_date'   添加和修改均可使用这种方式指定字段 
-                (2) $fields=[
+                (2) $fields=['name', 'parent_id', 'post_date']   添加和修改均可使用这种方式指定字段 
+                (3) $fields=[
                         ['name', 'parent_id', 'post_date'],
                         ['name', 'parent_id'],
                         ['parent_id', 'post_date']
@@ -499,18 +501,21 @@ class TB{
             }elseif ( $this->is2arr($fields)==2 ) {//这个操作只针对搜集更新字段有效
                 
                 foreach( $fields as $row){
-                    $this->update_fields[] = $row;
+
+                    $this->update_fields[] = array_map(function ($elem){
+                        return '`' . trim($elem) . '`';
+                    }, $row);
                 }
             }
             
         }else {//传进来的是字符串  $fields='name, age,...'
 
             $tmp = explode(',', $fields);
-            $this->update_fields[] = array_map(function ($val){
-                return trim($val);
+            $tmp = $this->update_fields[] = array_map(function ($val){
+                return '`'.trim($val).'`';
             }, $tmp);//这个操作只针对搜集更新字段有效
 
-            $this->fields = '(' . $fields . ')';//针对新增
+            $this->fields = '(' . implode(',', $tmp) . ')';//针对新增
         }
         return $this;
     }
@@ -575,10 +580,12 @@ class TB{
      * method:指定新增的数据
      * @param $insert string|array 通过fields方法指定字段对应的新增数据
                 可能的情况有：
-                (1) $insert='"bb", 12, '.time()   用于新增一条数据
-                (2) $insert=['aa', 12, time()]   用于新增一条数据
-                (3) $insert=['name'=>'ee', 'parent_id'=>17, 'post_date'=>time()]  用于新增一条数据，这种方式同时指定了数据对应的字段，所以可以不用额外使用fields方法指定字段
-                (4) $insert=[
+                (1) $insert='"bb", 12, '.time()     用于新增一条数据
+                (2) $insert="'bb', 12, ".time()     用于新增一条数据
+                (3) $insert='bb, 12, '.time()       用于新增一条数据
+                (4) $insert=['aa', 12, time()]      用于新增一条数据
+                (5) $insert=['name'=>'ee', 'parent_id'=>17, 'post_date'=>time()]  用于新增一条数据，这种方式同时指定了数据对应的字段，所以可以不用额外使用fields方法指定字段
+                (6) $insert=[
                         ['ff', 18, time()],
                         ['gg', 14, time()],
                         ['hh', 19, time()],
@@ -592,7 +599,7 @@ class TB{
 
             $tmp_keys = array_keys($insert);
             if(!is_numeric($tmp_keys[0])){//键为字符串类型，则表示传进来的数组下标代表字段名，值为数据值
-                $this->fields = '(`' . implode('`,`', $tmp_keys) . '`)';
+                $this->fields = '(' . implode(',', $tmp_keys) . ')';
             }
 
             $tmp = array_map(function ($val){
@@ -611,6 +618,33 @@ class TB{
                 $this->insert[] = '(' . implode(',', $tmp) . ')';
             }
         }else {//字符串    $insert = '"zhangsan", 12'
+
+            $insert_fields_val_arr = explode(',', $insert);
+            $insert_fields_val_arr = array_map(function ($elem){
+
+                $elem = trim($elem);
+
+                # 左侧的 单/双 引号去掉
+                if( 
+                    substr($elem, 0, 1)=='\'' ||
+                    substr($elem, 0, 1)=='"'
+                ){
+                    $elem = substr_replace($elem, '', 0, 1);
+                }
+
+                # 右侧的 单/双 引号去掉
+                if( 
+                    substr($elem, -1)=='\'' ||
+                    substr($elem, -1)=='"'
+                 ){
+                    $elem = substr_replace($elem, '', -1);
+                }
+
+                return $elem;
+            }, $insert_fields_val_arr);
+
+            $insert = '"' . implode('","', $insert_fields_val_arr) . '"';
+
             $this->insert[] = '(' . $insert . ')';
         }
 
