@@ -1,0 +1,103 @@
+>>>>>>>>>>[2020-09-25 03:05:20 mixed.start.log]
+错误码：0
+出错行号：53
+目标文件：/Users/teclong/web/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::throwErr
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:05:20 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-09-25 03:06:31 mixed.start.log]
+错误码：0
+出错行号：53
+目标文件：/Users/teclong/web/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::throwErr
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:06:31 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-09-25 03:07:26 mixed.start.log]
+错误码：0
+出错行号：53
+目标文件：/Users/teclong/web/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::throwErr
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:07:26 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-09-25 03:07:41 mixed.start.log]
+错误码：0
+出错行号：53
+目标文件：/Users/teclong/web/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::throwErr
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:07:41 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-09-25 03:08:06 mixed.start.log]
+错误码：0
+出错行号：53
+目标文件：/Users/teclong/web/www/tb/core/frame/Err.class.php
+错误信息：非法的操作: Err::throwErr
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:08:06 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------
+>>>>>>>>>>[2020-09-25 03:09:06 mixed.start.log]
+错误码：0
+出错行号：38
+目标文件：/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php
+错误信息：aaaa
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第32行]: Err->gothrowErr
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第38行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第39行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-09-25 03:09:06 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------

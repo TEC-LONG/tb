@@ -86,7 +86,8 @@ class Err{
 
         if( Config::C('DEBUG')==1 ){
         
-            echo str_replace(PHP_EOL, '<br/>', $msg);
+            // echo str_replace(PHP_EOL, '<br/>', $msg);
+            echo $msg;
         }
 
         Log::msg($msg);
