@@ -68,7 +68,7 @@ class App{
 
         $file = '';
     
-        if( in_array($single_class_name, ['TB', 'Json', 'Fun']) ){
+        if( in_array($single_class_name, ['TB', 'Json', 'Fun', 'baseCmd']) ){
             
             $file = CORE_FRAME . '/' . $single_class_name . '.class.php';
         }elseif ( substr($single_class_name, -5)==='Model' ) {
@@ -219,8 +219,8 @@ class App{
         $params = array_values($params);
 
         # 启动
-        $cmd_obj = new $cmd_name;
-        $cmd_obj->go($params);
+        $cmd_obj = new $cmd_name($params);
+        $cmd_obj->go();
     }
 
 }
