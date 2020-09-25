@@ -12,4 +12,4 @@ Config::builtGlobalConfigs();
 App::debug();
 
 /// 自动加载
-spl_autoload_register('App::autoload');
+spl_autoload_register('App::cmdAutoload');

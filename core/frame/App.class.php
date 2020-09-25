@@ -32,32 +32,73 @@ class App{
 
     public static function autoload($className){ 
 
-        $file               = '';
         //$className = basename($className);//得到了除去命名空间的纯类名，Linux下不认“\”做目录分隔符，basename无效
         $class_name_explode = explode('\\', $className);
         $single_class_name  = $class_name_explode[count($class_name_explode)-1];
 
+        $file = self::autoloadCommon($single_class_name);
+
+        if( empty($file) ){
+
+            if( substr($single_class_name, -10)==='Controller' ){
+
+                $file = APP . '/' . Route::$plat . '/' . Route::$way . '/controller/' . $single_class_name . '.class.php';
+            }elseif( substr($className, -7)==='Service' ){
+            
+                // $file = APP . '/' . Route::$plat . '/' . Route::$way . '/service/' . $single_class_name . '.class.php';
+            }elseif( substr($className, -6)==='Middle' ){
+
+                $file = CORE_MIDWARE . '/' . $single_class_name . '.class.php';
+            }
+        }
+
+        if( file_exists($file) ){
+            
+            include $file;
+        }else{
+
+            // 如果调试模式，则输出错误信息
+
+            Log::msg('文件不存在：'.$file.'; className: '.$className);
+            exit;
+        }
+    }
+
+    private static function autoloadCommon($single_class_name){
+
+        $file = '';
+    
         if( in_array($single_class_name, ['TB', 'Json', 'Fun']) ){
             
             $file = CORE_FRAME . '/' . $single_class_name . '.class.php';
-        }elseif( substr($single_class_name, -10)==='Controller' ){
-
-            $file = APP . '/' . Route::$plat . '/' . Route::$way . '/controller/' . $single_class_name . '.class.php';
         }elseif ( substr($single_class_name, -5)==='Model' ) {
             
             $file = APP_MODEL . '/' . $single_class_name . '.class.php';
-        }elseif( substr($className, -7)==='Service' ){
-        
-            // $file = APP . '/' . Route::$plat . '/' . Route::$way . '/service/' . $single_class_name . '.class.php';
-        }elseif( substr($className, -6)==='Middle' ){
-
-            $file = CORE_MIDWARE . '/' . $single_class_name . '.class.php';
-        }elseif( substr($className, -4)=='Plug' ){
+        }elseif( substr($single_class_name, -4)=='Plug' ){
         
             $file = PLUGINS . '/' . $single_class_name . '.class.php';
-        }elseif( substr($className, -3)=='Cmd' ){
+        }
+
+        return $file;
+    }
+
+    public static function cmdAutoload($className){ 
+
+        //$className = basename($className);//得到了除去命名空间的纯类名，Linux下不认“\”做目录分隔符，basename无效
+        $class_name_explode = explode('\\', $className);
+        $single_class_name  = $class_name_explode[count($class_name_explode)-1];
+
+        $file = self::autoloadCommon($single_class_name);
+
+        if( empty($file) ){
+
+            if( substr($single_class_name, -7)==='Service' ){
         
-            $file = APP_CMD . '/' . $single_class_name . '.class.php';
+                $file = APP_CMD . '/service/' . $single_class_name . '.class.php';
+            }elseif( substr($single_class_name, -3)=='Cmd' ){
+        
+                $file = APP_CMD . '/' . $single_class_name . '.class.php';
+            }
         }
 
         if( file_exists($file) ){
@@ -170,10 +211,16 @@ class App{
         /// 启动对应的cmd功能
         # 文件名   \cmd\OrderCmd
         $cmd_name = '\\cmd\\'.$cmd_name . 'Cmd';
-        
+
+        /// 参数组装
+        $params = $argv;
+        array_shift($params);
+        array_shift($params);
+        $params = array_values($params);
+
         # 启动
         $cmd_obj = new $cmd_name;
-        $cmd_obj->go();
+        $cmd_obj->go($params);
     }
 
 }
