@@ -36,9 +36,25 @@ class GupiaoCmd extends baseCmd{
             
                 $gupiao_service->gupiaoAdd();
             break;
-            case 2:# 更新shares_details_byday原始数据  php cmd.php Gupiao 2
+            case 2:# 更新shares_details_byday原始数据（先有1，再有本条）  php cmd.php Gupiao 2
             
                 $gupiao_service->updateOriginal();
+            break;
+            case 3:# 补充shares表发行日期（先有1，2，再有本条）  php cmd.php Gupiao 3
+            
+                $gupiao_service->updateIssueDate();
+            break;
+            case 4:# 计算均价（先有2，再有本条）  php cmd.php Gupiao 4
+            
+                $gupiao_service->maPrice();
+            break;
+            case 5:# 计算均线角（先有4，再有本条）  php cmd.php Gupiao 5
+            
+                $gupiao_service->maAngle();
+            break;
+            case 6:# 补充量价指数  php cmd.php Gupiao 6
+            
+                $gupiao_service->maAngle();
             break;
             }
         });

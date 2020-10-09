@@ -1,0 +1,19 @@
+>>>>>>>>>>[2020-10-09 01:09:54 mixed.start.log]
+错误码：1130
+出错行号：750
+目标文件：/Users/teclong/web/www/tb/app/cmd/service/GupiaoService.class.php
+错误信息：SQLSTATE[HY000] [1130] Host '192.168.1.128' is not allowed to connect to this MySQL server
+追踪信息：
+/Users/teclong/web/www/tb/core/frame/TB.class.php [第38行]: PDO->__construct
+/Users/teclong/web/www/tb/core/frame/TB.class.php [第58行]: TB->__construct
+/Users/teclong/web/www/tb/app/cmd/service/GupiaoService.class.php [第750行]: TB::__callStatic
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第53行]: cmd\service\GupiaoService->maAngle
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第53行]: cmd\GupiaoCmd->cmd\{closure}
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第38行]: Err->gotry
+/Users/teclong/web/www/tb/core/frame/Err.class.php [第13行]: Err::magicCommon
+/Users/teclong/web/www/tb/app/cmd/GupiaoCmd.class.php [第60行]: Err::__callStatic
+/Users/teclong/web/www/tb/core/frame/App.class.php [第223行]: cmd\GupiaoCmd->go
+/Users/teclong/web/www/tb/cmd.php [第11行]: App::runCmd
+
+>>>>>>>>>>[2020-10-09 01:09:54 mixed.end.log]
+--------------------------------------------------------------------------------------------------------------------------

@@ -349,4 +349,519 @@ class GupiaoService
         }
         return true;
     }
+
+    /**
+     * 更新shares表发行日期
+     */
+    public function updateIssueDate(){
+        /// 最大id
+        $max_row_id = TB::table('shares')->select('max(id) as id')->where(1)->find();
+        $max_row_id = $max_row_id['id'];
+
+        for ($i=$max_row_id; $i>0 ; $i--) { 
+
+            /// 校验数据
+            # shares表是否存在此id的数据
+            $shares_has_row = TB::table('shares')->select('*')->where(['id', $i])->find();
+            if( empty($shares_has_row) ){
+                echo '当前id: '.$i.' 在shares表无对应的记录！'.PHP_EOL;
+                continue;
+            }
+
+            # 是否存在issue_date和issue_date_timestamp数据
+            if( 
+                !empty($shares_has_row['issue_date']) ||
+                !empty($shares_has_row['issue_date_timestamp'])
+            ){
+                echo 'id为：'.$i.'的记录已经拥有发行日期数据，无需重复更新！'.PHP_EOL;
+            }
+
+            /// id最大的数据为最早的数据
+            $tmp_where = [
+                ['shares_id', $i]
+            ];
+
+            $tmp_shares_details_byday_row = TB::table('shares_details_byday')->select('active_date')->where($tmp_where)->orderby('id desc')->find();
+            
+            if( empty($tmp_shares_details_byday_row) ){
+                echo '无关联数据 --》》》' . $i . PHP_EOL;
+                continue;
+            }
+
+            /// 更新数据
+            $tmp_update = [
+                'issue_date'            => $tmp_shares_details_byday_row['active_date'],
+                'issue_date_timestamp'  => !empty($tmp_shares_details_byday_row['active_date']) ? strtotime($tmp_shares_details_byday_row['active_date'] . ' 15:00:00') : 0
+            ];
+
+            $re = TB::table('shares')
+            ->update($tmp_update)
+            ->where(['id', '=', $i])
+            ->exec();
+
+            if( !$re ){
+                echo '更新失败！--》》' . $i . PHP_EOL;
+            }else{
+                echo '更新成功 --》' . $i . PHP_EOL;
+            }
+        }
+    }
+
+    /**
+     * 计算均价
+     */
+    public function maPrice(){
+
+        $now = time();
+    
+        /// 获取shares所有id
+        $ids = TB::table('shares')->select('id')->where(1)->get();
+
+        foreach( $ids as $v){
+
+            /// 获取当前票的所有记录
+            $this_shares_details_byday_row = TB::table('shares_details_byday as sdb')->select('
+                sdb.id,
+                sdb.shares__id,
+                sdb.active_date,
+                sdb.active_date_timestamp,
+                sma.id as sma_id,
+                sdb.day_end_price,
+                sma.ma5_price,
+                sma.ma4_price,
+                sma.ma10_price,
+                sma.ma9_price,
+                sma.ma15_price,
+                sma.ma14_price,
+                sma.ma20_price,
+                sma.ma19_price,
+                sma.ma30_price,
+                sma.ma29_price,
+                sma.ma60_price,
+                sma.ma59_price,
+                sma.ma120_price,
+                sma.ma119_price,
+                sma.ma240_price,
+                sma.ma239_price
+            ')
+            ->leftjoin('sdb_statistics_moving_average as sma', 'sma.shares_details_byday__id=sdb.id')
+            ->where(['sdb.shares__id', $v['id']])
+            ->orderby('active_date_timestamp desc')
+            ->get();
+
+            if( empty($this_shares_details_byday_row) ) continue;
+
+            $last_price = [
+                'price' => 0
+            ];
+            foreach( $this_shares_details_byday_row as $k=>$sdbr_v){
+            
+                $ma = [];
+
+                /// 不存在则新增
+                if( empty($sdbr_v['sma_id']) ){
+
+                    $flag = 1;
+                    
+                    $ma4_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 4, $last_price);
+                    $ma['ma4_price'] = $ma4_price;
+                    $ma5_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 5, $last_price, $ma4_price);
+                    $ma['ma5_price'] = $ma5_price;
+
+                    $ma9_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 9, $last_price, $ma5_price);
+                    $ma['ma9_price'] = $ma9_price;
+                    $ma10_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 10, $last_price, $ma9_price);
+                    $ma['ma10_price'] = $ma10_price;
+
+                    $ma14_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 14, $last_price, $ma10_price);
+                    $ma['ma14_price'] = $ma14_price;
+                    $ma15_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 15, $last_price, $ma14_price);
+                    $ma['ma15_price'] = $ma15_price;
+
+                    $ma19_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 19, $last_price, $ma15_price);
+                    $ma['ma19_price'] = $ma19_price;
+                    $ma20_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 20, $last_price, $ma19_price);
+                    $ma['ma20_price'] = $ma20_price;
+
+                    $ma29_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 29, $last_price, $ma20_price);
+                    $ma['ma29_price'] = $ma29_price;
+                    $ma30_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 30, $last_price, $ma29_price);
+                    $ma['ma30_price'] = $ma30_price;
+
+                    $ma59_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 59, $last_price, $ma30_price);
+                    $ma['ma59_price'] = $ma59_price;
+                    $ma60_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 60, $last_price, $ma59_price);
+                    $ma['ma60_price'] = $ma60_price;
+
+                    $ma119_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 119, $last_price, $ma60_price);
+                    $ma['ma119_price'] = $ma119_price;
+                    $ma120_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 120, $last_price, $ma119_price);
+                    $ma['ma120_price'] = $ma120_price;
+
+                    $ma239_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 239, $last_price, $ma120_price);
+                    $ma['ma239_price'] = $ma239_price;
+                    $ma240_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 240, $last_price, $ma239_price);
+                    $ma['ma240_price'] = $ma240_price;
+
+                    $ma['shares__id']               = $sdbr_v['shares__id'];
+                    $ma['shares_details_byday__id'] = $sdbr_v['id'];
+                    $ma['active_date']              = $sdbr_v['active_date'];
+                    $ma['active_date_timestamp']    = $sdbr_v['active_date_timestamp'];
+                    $ma['ma_price_time']            = $now;
+                    $ma['created_time']             = $now;
+
+                }else{/// 存在则更新
+
+                    $flag = 2;
+
+                    // if( empty($sdbr_v['ma4_price']) ){
+                        $ma4_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 4, $last_price);
+                        $ma['ma4_price']    = $ma4_price;
+                    // }else{
+                    //     $ma4_price = $sdbr_v['ma4_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma5_price']) ){
+                        $ma5_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 5, $last_price, $ma4_price);
+                        $ma['ma5_price']    = $ma5_price;
+                    // }else{
+                    //     $ma5_price = $sdbr_v['ma5_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma9_price']) ){
+                        $ma9_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 9, $last_price, $ma5_price);
+                        $ma['ma9_price']   = $ma9_price;
+                    // }else{
+                        // $ma9_price = $sdbr_v['ma9_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma10_price']) ){
+                        $ma10_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 10, $last_price, $ma9_price);
+                        $ma['ma10_price']   = $ma10_price;
+                    // }else{
+                        // $ma10_price = $sdbr_v['ma10_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma14_price']) ){
+                        $ma14_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 14, $last_price, $ma10_price);
+                        $ma['ma14_price']   = $ma14_price;
+                    // }else{
+                    //     $ma14_price = $sdbr_v['ma14_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma15_price']) ){
+                        $ma15_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 15, $last_price, $ma14_price);
+                        $ma['ma15_price']   = $ma15_price;
+                    // }else{
+                    //     $ma15_price = $sdbr_v['ma15_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma19_price']) ){
+                        $ma19_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 19, $last_price, $ma15_price);
+                        $ma['ma19_price']   = $ma19_price;
+                    // }else{
+                    //     $ma19_price = $sdbr_v['ma19_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma20_price']) ){
+                        $ma20_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 20, $last_price, $ma19_price);
+                        $ma['ma20_price']   = $ma20_price;
+                    // }else{
+                    //     $ma20_price = $sdbr_v['ma20_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma29_price']) ){
+                        $ma29_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 29, $last_price, $ma20_price);
+                        $ma['ma29_price']   = $ma29_price;
+                    // }else{
+                    //     $ma29_price = $sdbr_v['ma29_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma30_price']) ){
+                        $ma30_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 30, $last_price, $ma29_price);
+                        $ma['ma30_price']   = $ma30_price;
+                    // }else{
+                    //     $ma30_price = $sdbr_v['ma30_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma59_price']) ){
+                        $ma59_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 59, $last_price, $ma30_price);
+                        $ma['ma59_price']   = $ma59_price;
+                    // }else{
+                    //     $ma59_price = $sdbr_v['ma59_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma60_price']) ){
+                        $ma60_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 60, $last_price, $ma59_price);
+                        $ma['ma60_price']   = $ma60_price;
+                    // }else{
+                    //     $ma60_price = $sdbr_v['ma60_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma119_price']) ){
+                        $ma119_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 119, $last_price, $ma60_price);
+                        $ma['ma119_price']  = $ma119_price;
+                    // }else{
+                    //     $ma119_price = $sdbr_v['ma119_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma120_price']) ){
+                        $ma120_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 120, $last_price, $ma119_price);
+                        $ma['ma120_price']  = $ma120_price;
+                    // }else{
+                    //     $ma120_price = $sdbr_v['ma120_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma239_price']) ){
+                        $ma239_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 239, $last_price, $ma120_price);
+                        $ma['ma239_price']  = $ma239_price;
+                    // }else{
+                    //     $ma239_price = $sdbr_v['ma239_price'];
+                    // }
+
+                    // if( empty($sdbr_v['ma240_price']) ){
+                        $ma240_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 240, $last_price, $ma239_price);
+                        $ma['ma240_price']  = $ma240_price;
+                    // }else{
+                    //     $ma240_price = $sdbr_v['ma240_price'];
+                    // }
+
+                    if( !empty($ma) ){
+                    
+                        $ma['ma_price_time'] = $now;
+                    }
+                }
+
+                if( empty($ma) ) continue;
+
+                if( $flag==1 ){/// 新增
+                
+                    $re = TB::table('sdb_statistics_moving_average')
+                    ->insert($ma)
+                    ->exec();
+
+                    if( !$re ){
+                        echo '新增失败！--》》shares_details_byday表id: ' . $sdbr_v['id'] . PHP_EOL;
+                    }else{
+                        $msg = '新增成功 --》shares_details_byday表id: ' . $sdbr_v['id'] . ' --》';
+                        $arr = [];
+                        foreach( $ma as $msg_k=>$msg_v){
+                        
+                            $arr[] =  $msg_k . ':' . $msg_v;
+                        }
+                        echo $msg . implode(' | ', $arr) . PHP_EOL;
+                    }
+
+                }else {/// 更新
+                    
+                    $re = TB::table('sdb_statistics_moving_average')
+                    ->update($ma)
+                    ->where(['id', '=', $sdbr_v['sma_id']])
+                    ->exec();
+
+                    if( !$re ){
+                        echo '更新失败！--》》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
+                    }else{
+                        $msg = '更新成功 --》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . ' --》';
+                        $arr = [];
+                        foreach( $ma as $msg_k=>$msg_v){
+                        
+                            $arr[] =  $msg_k . ':' . $msg_v;
+                        }
+                        echo $msg . implode(' | ', $arr) . PHP_EOL;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 计算均价
+     */
+    protected function getAveragePrice($k, $data, $count, &$pre, $last_ma_price=''){
+
+        if( 
+            $last_ma_price==='none' &&
+            $count!=4
+        ){
+            return $last_ma_price;
+        }
+    
+        $i          = 0;
+        $times      = 0;
+        $ma_price   = 0;
+        do {
+            
+            $now_k = $k+$i;
+            $i++;
+    
+            if( !isset($data[$now_k]) ){
+                $ma_price = 'none';
+                return $ma_price;
+            }
+    
+            if(
+                empty($data[$now_k]['day_end_price']) ||
+                $data[$now_k]['day_end_price']=='0.0'
+            ){/// 收盘价为空  可能的情况：当天停牌
+            
+                if( $now_k==$k ){# 如果是第一条，则这条数据不计算均价(当天停牌，无均价可言)
+                    return 'none';
+                }
+                continue;
+            }else{
+    
+                // if( 
+                //     $count==5 &&
+                //     $times==4
+                // ){
+                //     $pre['price']    = $data[$now_k]['day_end_price'];
+                //     $pre['m5_key']   = $now_k;
+                // }elseif ( $times==$count-1 ) {
+                    
+                //     $ma_key         = 'm'.$count.'_key';
+                //     $pre[$ma_key]   = $now_k;
+                // }
+    
+                $ma_price = $ma_price+$data[$now_k]['day_end_price'];
+                $times++;
+            }
+    
+        } while ($times<$count);
+    
+        $price = round($ma_price/$count, 6);
+    
+        // if( $price==0 ){
+        //     var_dump($ma_price);
+        //     exit;
+        // }
+    
+        return $price;
+    }
+
+    /**
+     * 计算均线角
+     */
+    public function maAngle(){
+
+        $now = time();
+    
+        /// 获取shares所有id
+        $ids = TB::table('shares')->select('id, title, code')->where(1)->get();
+
+        $dividend   = 1;
+        $divisor    = count($ids);
+        foreach( $ids as $v){
+
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
+
+            /// 获取当前票的所有记录
+            $this_shares_details_byday_row = TB::table('shares_details_byday as sdb')->select('
+                sdb.id,
+                sdb.shares__id,
+                sdb.active_date,
+                sdb.active_date_timestamp,
+                sma.id as sma_id,
+                sdb.day_end_price,
+                sma.ma5_angle,
+                sma.ma10_angle,
+                sma.ma15_angle,
+                sma.ma20_angle,
+                sma.ma30_angle,
+                sma.ma60_angle,
+                sma.ma120_angle,
+                sma.ma240_angle,
+                sma.ma5_price,
+                sma.ma10_price,
+                sma.ma15_price,
+                sma.ma20_price,
+                sma.ma30_price,
+                sma.ma60_price,
+                sma.ma120_price,
+                sma.ma240_price
+            ')
+            ->leftjoin('sdb_statistics_moving_average as sma', 'sma.shares_details_byday__id=sdb.id')
+            ->where(['sdb.shares__id', $v['id']])
+            ->orderby('active_date_timestamp desc')
+            ->get();
+
+            if( empty($this_shares_details_byday_row) ){
+                echo $v['title'].'；股票代码：'.$v['code'].' 无详情信息！'.PHP_EOL;
+                echo '完成：'. $percent . PHP_EOL;
+                continue;
+            }
+
+            $now_ma_price   = '';
+            $next_ma_price  = '';
+            foreach( $this_shares_details_byday_row as $k=>$sdbr_v){
+
+                /// 初始化参数
+                $ma_angle   = [];
+                $days       = [5, 10, 15, 20, 30, 60, 120, 240];
+
+                /// 计算均线角   横轴为时间，纵轴为均价；横轴时间一个单位值固定为10，表示一天
+                $now_ma_k   = $k;
+                $next_ma_k  = $k+1;
+
+                # 下一条均值不存在则无法计算当前均值的均线角
+                if( !isset($this_shares_details_byday_row[$next_ma_k]) ) continue;
+
+                foreach( $days as $day){
+
+                    $ma_num = 'ma'.$day;
+                    
+                    # 已经存在的无需再计算
+                    if( !empty($sdbr_v[$ma_num.'_angle']) ){
+                        // echo $v['title'].'；股票代码：'.$v['code'].'；shares_details_byday表id:'.$sdbr_v['id'].'已经存在'.$ma_num.'均线角'.PHP_EOL;
+                        continue;
+                    }
+    
+                    # 计算角度
+                    $now_ma_price   = $this_shares_details_byday_row[$now_ma_k][$ma_num.'_price'];
+                    $next_ma_price  = $this_shares_details_byday_row[$next_ma_k][$ma_num.'_price'];
+
+                    if( 
+                        is_null($now_ma_price) ||
+                        is_null($next_ma_price) ||
+                        $now_ma_price=='none' ||
+                        $next_ma_price=='none' ||
+                        trim($now_ma_price)==='' ||
+                        trim($next_ma_price)===''
+                     ){
+                        continue;
+                    }
+                    // var_dump($now_ma_price);
+                    // var_dump($next_ma_price);
+
+                    $ma_diff_price  = $now_ma_price-$next_ma_price;
+                    $numb1          = ($ma_diff_price/$next_ma_price)*100;
+                    $numb2          = 10;
+                    $angle          = rad2deg(atan($numb1/$numb2));# red2deg弧度转角度
+    
+                    // var_dump($angle);
+                    // echo '-------------'.PHP_EOL;
+                    $ma_angle[$ma_num.'_angle'] = $angle;
+                }
+
+                if( empty($ma_angle) ) continue;
+
+                // $ma_angle['ma_angle_time'] = $now;
+
+                # 更新数据
+                $re = TB::table('sdb_statistics_moving_average')
+                ->update($ma_angle)
+                ->where(['id', '=', $sdbr_v['sma_id']])
+                ->exec();
+
+                if( !$re ){
+                    echo '更新失败！--》》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
+                }else{
+                    echo '更新成功 --》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
+                    echo '完成：'. $percent . PHP_EOL;
+                }
+            }
+            echo '完成：'. $percent . PHP_EOL;
+            $dividend++;
+        }
+    }
 }
