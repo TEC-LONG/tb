@@ -158,7 +158,7 @@ class TB{
      * method:指定条件
      * @param $where string|array 条件
                 可能的情况有：
-                (1) $where=['id', '>', 10]
+                (1) $where=['id', '>', 10] 或 $where=['id', 10] ==》等同于 $where=['id', '=', 10]
                 (2) $where="name='zhangsan' and id in (1, 2, 3)"
                 (3) $where=[['age',12],['height', '<=', '2.0'], ['title', 'like', 'aa']]
                 (4) $where='user.id=1'
@@ -171,6 +171,8 @@ class TB{
         $tmp_no_need_quote = ['in', 'not in', 'between'];//不需要在值两侧包裹引号的
         $tmp_need_space = ['in', 'not in', 'like', 'between'];//需要在0,1,2元素之间加上空格的
         if( $this->is2arr($where)==1 ){//一维数组  $where=['name', '=', 'xxx']
+
+            $where[0] = $this->explodePointField($where[0]);# `xx`.`xx`
 
             // $where[0] = '`' . $where[0] . '`';//字段两侧加反引号
             if( count($where)==3 ){//三个元素  $where=['name', '=', 'xxx']
@@ -201,7 +203,8 @@ class TB{
             $tmp = [];
             foreach( $where as $one){
                 
-                // $one[0] = '`' . $one[0] . '`';
+                $son[0] = $this->explodePointField($where[0]);# `xx`.`xx`
+
                 if( count($one)==3 ){//三个元素  $one=['name', '=', 'xxx']
 
                     if( $one[1]=='like' ){
@@ -399,7 +402,7 @@ class TB{
         $sql = '';
         if( $type==1 ){//返回查询sql语句
 
-            $sql = 'SELECT %s FROM `%s`%s WHERE %s';
+            $sql = 'SELECT %s FROM %s%s WHERE %s';
             if( empty($this->select) ) $this->select='*';
             if( empty($this->where) ) $this->where='1';
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
@@ -414,7 +417,7 @@ class TB{
 
             if( $this->flag==='insert' )://新增
                 //      insert into xx (x, x, x) values (x, x, x)
-                $sql = 'INSERT INTO `%s` %s VALUES %s';
+                $sql = 'INSERT INTO %s %s VALUES %s';
                 
                 $sql = sprintf($sql, $this->table, $this->fields, implode(',', $this->insert));
             elseif ($this->flag==='update')://更新
@@ -434,7 +437,7 @@ class TB{
                     
                     // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
 
-                    $sql = 'UPDATE `%s` SET %s WHERE %s';
+                    $sql = 'UPDATE %s SET %s WHERE %s';
 
                     $tmp_arr_target = [];
                     foreach( $this->update_fields[0] as $k=>$field){
@@ -454,7 +457,7 @@ class TB{
 
                         // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
 
-                        $tmp_sql = 'UPDATE `%s` SET %s WHERE %s';
+                        $tmp_sql = 'UPDATE %s SET %s WHERE %s';
 
                         $tmp_arr_target = [];
                         foreach( $fields_row as $k1=>$field){
@@ -468,7 +471,7 @@ class TB{
                 
             elseif ($this->flag==='delete')://删除
                 
-                $sql = 'DELETE FROM `%s` WHERE %s';
+                $sql = 'DELETE FROM %s WHERE %s';
                 $sql = sprintf($sql, $this->table, implode(' and ', $this->where));
                 
             endif;
@@ -491,19 +494,27 @@ class TB{
      * @return object
      */
     protected function gofields($fields){
+
+        $that = $this;
     
         if( is_array($fields) ){//传进来的是数组  $fields=['name', 'age',...]
 
             if( $this->is2arr($fields)==1 ){
 
-                $this->update_fields[] = $fields;//这个操作只针对搜集更新字段有效
-                $this->fields = '(`' . implode('`,`', $fields) . '`)';
+                $this->update_fields[]  = $fields;//这个操作只针对搜集更新字段有效
+                
+                $fields = array_map(function ($elem) use($that){
+                    return $that->explodePointField($elem);
+                }, $fields);
+
+                $this->fields = '(' . implode(',', $fields) . ')';
+
             }elseif ( $this->is2arr($fields)==2 ) {//这个操作只针对搜集更新字段有效
                 
                 foreach( $fields as $row){
 
-                    $this->update_fields[] = array_map(function ($elem){
-                        return '`' . trim($elem) . '`';
+                    $this->update_fields[] = array_map(function ($elem) use($that){
+                        return $that->explodePointField(trim($elem));
                     }, $row);
                 }
             }
@@ -511,13 +522,24 @@ class TB{
         }else {//传进来的是字符串  $fields='name, age,...'
 
             $tmp = explode(',', $fields);
-            $tmp = $this->update_fields[] = array_map(function ($val){
-                return '`'.trim($val).'`';
+            $tmp = $this->update_fields[] = array_map(function ($val) use($that){
+                return $that->explodePointField(trim($val));
             }, $tmp);//这个操作只针对搜集更新字段有效
 
             $this->fields = '(' . implode(',', $tmp) . ')';//针对新增
         }
         return $this;
+    }
+
+    /**
+     * 拆分 xx.xx字段结构
+     */
+    protected function explodePointField($field){
+    
+        if( !strpos($field, '.') ) return $field;
+
+        $arr = explode('.', $field);
+        return '`'.$arr[0].'`.`'.$arr[1].'`';
     }
 
     protected function godelete(){

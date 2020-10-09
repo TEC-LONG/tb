@@ -22,7 +22,8 @@ CREATE TABLE `plate` (
     `come_from` tinyint NOT NULL DEFAULT 0 COMMENT '板块来源参照；0=自定义；1=东海通；2=益盟-智盈；3=通达信',
     `alias` varchar(255) NOT NULL DEFAULT '' COMMENT '同概念别名，多个以逗号分隔',
     `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票行业板块表';
 
 
@@ -155,13 +156,21 @@ CREATE TABLE `sdb_statistics_moving_average` (
     `ma240_angle` varchar(30) NOT NULL DEFAULT '' COMMENT '240日均线角(moving average of 240 days)',
     `ma_angle_time` int NOT NULL DEFAULT 0 COMMENT '均线角统计日期时间戳',
     `ma5_price` varchar(30) NOT NULL DEFAULT '' COMMENT '5日均价',
+    `ma4_price` varchar(30) NOT NULL DEFAULT '' COMMENT '4日均价',
     `ma10_price` varchar(30) NOT NULL DEFAULT '' COMMENT '10日均价',
+    `ma9_price` varchar(30) NOT NULL DEFAULT '' COMMENT '9日均价',
     `ma15_price` varchar(30) NOT NULL DEFAULT '' COMMENT '15日均价',
+    `ma14_price` varchar(30) NOT NULL DEFAULT '' COMMENT '14日均价',
     `ma20_price` varchar(30) NOT NULL DEFAULT '' COMMENT '20日均价',
+    `ma19_price` varchar(30) NOT NULL DEFAULT '' COMMENT '19日均价',
     `ma30_price` varchar(30) NOT NULL DEFAULT '' COMMENT '30日均价',
+    `ma29_price` varchar(30) NOT NULL DEFAULT '' COMMENT '29日均价',
     `ma60_price` varchar(30) NOT NULL DEFAULT '' COMMENT '60日均价',
+    `ma59_price` varchar(30) NOT NULL DEFAULT '' COMMENT '59日均价',
     `ma120_price` varchar(30) NOT NULL DEFAULT '' COMMENT '120日均价',
+    `ma119_price` varchar(30) NOT NULL DEFAULT '' COMMENT '119日均价',
     `ma240_price` varchar(30) NOT NULL DEFAULT '' COMMENT '240日均价',
+    `ma239_price` varchar(30) NOT NULL DEFAULT '' COMMENT '239日均价',
     `ma_price_time` int NOT NULL DEFAULT 0 COMMENT '均价统计日期时间戳',
     `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
@@ -242,3 +251,24 @@ values
 ('多元金融', '991289', 1, 1);
 
 
+/**
+ * plate__id
+ */
+# 电力
+select id from plate where code='991003';
+
+
+/**
+ * shares__id
+ */
+# 电力
+select id from shares where code in (
+    688390
+    601778
+    000591
+    000862
+    601908
+    601619
+    300853
+    
+)
