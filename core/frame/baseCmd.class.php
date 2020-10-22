@@ -21,9 +21,9 @@ class baseCmd{
         }
     }
 
-    protected function request($name){
+    protected function request($name, $default=null){
     
-        return isset($this->_datas[$name]) ? $this->_datas[$name] : null;
+        return isset($this->_datas[$name]) ? $this->_datas[$name] : ($default===null ? null : $default);
     }
 
 }

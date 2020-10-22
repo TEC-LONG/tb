@@ -15,6 +15,7 @@ class GupiaoCmd extends baseCmd{
      */
     protected $signal = [
         'type',
+        'road',
         'bdate',
         'edate'
     ];
@@ -23,14 +24,85 @@ class GupiaoCmd extends baseCmd{
 
         /// 初始化参数
         $type   = $this->request('type');
+        $road   = $this->request('road', 0);# 0: 网易线路  1: 凤凰财经线路
         $bdate  = $this->request('bdate');
         $edate  = $this->request('edate');
 
         $gupiao_service = new GupiaoService;
 
+        /**
+         * 1. 补充新的股票
+         * 补充新发行股票:             $gupiao_service->gupiaoAdd();
+         * 更新新增股票的每日数据:      $gupiao_service->updateOriginal();
+         * 更新新增股票的发行日期:      $gupiao_service->updateIssueDate();
+         * 计算新增股票每日均价:        $gupiao_service->maPrice();
+         * 计算新增股票每日均线角:      $gupiao_service->maAngle();
+         * 
+         * 2. 更新股票每日数据
+         * 更新股票的每日数据:      $gupiao_service->updateOriginal();
+         * 计算股票每日均价:        $gupiao_service->maPrice();
+         * 计算股票每日均线角:      $gupiao_service->maAngle();
+         * 
+         * 3. 更新股票对应的企业信息
+         * 抓取更新股票对应企业最新相关信息:  $gupiao_service->getCompanyDetails();
+         * 
+         * 4. 计算每日最高价是否创一年新高
+         * 抓取更新股票对应企业最新相关信息:  $gupiao_service->yearXingao();
+         */
+
         /// 执行功能
-        Err::try(function () use($type, $bdate, $edate, $gupiao_service){
-        
+        Err::try(function () use($type, $road, $bdate, $edate, $gupiao_service){
+
+            switch($type){
+
+                /**
+                 * 1. 补充新的股票
+                 * 补充新发行股票:             $gupiao_service->gupiaoAdd();
+                 * 更新新增股票的每日数据:      $gupiao_service->updateOriginal();
+                 * 更新新增股票的发行日期:      $gupiao_service->updateIssueDate();
+                 * 计算新增股票每日均价:        $gupiao_service->maPrice();
+                 * 计算新增股票每日均线角:      $gupiao_service->maAngle();
+                 */
+                case 1:# php cmd.php Gupiao 1
+                    $gupiao_service->gupiaoAdd($road);
+                    $gupiao_service->updateOriginal($road);
+                    $gupiao_service->updateIssueDate();
+                    $gupiao_service->maPrice();
+                    $gupiao_service->maAngle();
+                break;
+                /**
+                 * 2. 更新股票每日数据
+                 * 更新股票的每日数据:      $gupiao_service->updateOriginal();
+                 * 计算股票每日均价:        $gupiao_service->maPrice();
+                 * 计算股票每日均线角:      $gupiao_service->maAngle();
+                 */
+                case 2:# php cmd.php Gupiao 2
+                    // $gupiao_service->updateOriginal($road);
+                    // $gupiao_service->maPrice();
+                    $gupiao_service->maAngle();
+                break;
+                /**
+                 * 3. 更新股票对应的企业信息
+                 * 抓取更新股票对应企业最新相关信息:  $gupiao_service->getCompanyDetails();
+                 */
+                case 3:# php cmd.php Gupiao 3
+                    $gupiao_service->getCompanyDetails();
+                break;
+                /**
+                 * 4. 计算每日最高价是否创一年新高
+                 * 抓取更新股票对应企业最新相关信息:  $gupiao_service->yearXingao();
+                 */
+                case 4:# php cmd.php Gupiao 4
+                    $gupiao_service->yearXingao();
+                break;
+                case 0:# php cmd.php Gupiao 0
+                    $gupiao_service->test();
+                break;
+            }
+
+            exit;
+            
+    
             switch($type){
             case 1:# 新增股票数据  php cmd.php Gupiao 1
             
@@ -52,9 +124,21 @@ class GupiaoCmd extends baseCmd{
             
                 $gupiao_service->maAngle();
             break;
-            case 6:# 补充量价指数  php cmd.php Gupiao 6
+            case 6:#   php cmd.php Gupiao 6
             
-                $gupiao_service->maAngle();
+                // $gupiao_service->maAngle();
+            break;
+            case 7:# 抓取股票对应企业相关信息  php cmd.php Gupiao 7
+            
+                $gupiao_service->getCompanyDetails();
+            break;
+            case 8:# 分类拆分  php cmd.php Gupiao 8
+            
+                $gupiao_service->extraDoing();
+            break;
+            case 9:# 计算每日最高价是否创一年新高  php cmd.php Gupiao 9
+            
+                $gupiao_service->yearXingao();
             break;
             }
         });

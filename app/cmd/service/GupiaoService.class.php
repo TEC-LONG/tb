@@ -13,7 +13,7 @@ class GupiaoService
     /**
      * 新增股票
      */
-    public function gupiaoAdd(){
+    public function gupiaoAdd($road){
 
         /*
         深圳证券交易市场的股票代码以000开头的是主板、3开头的是创业板，上海股票交易市场的股票代码是以6开头的，全部的上海股票都是主板
@@ -55,7 +55,7 @@ class GupiaoService
                     #                 600       002
                     $tmp_whole_num = $h_num . $tmp_num;
         
-                    $this->gupiaoInDB($v[0], $tmp_whole_num, $this->gupiao_b_time, date('Ymd'));
+                    $this->gupiaoInDB($road, $v[0], $tmp_whole_num, $this->gupiao_b_time, date('Ymd'));
                 }
             }
         }
@@ -64,17 +64,32 @@ class GupiaoService
     /**
      * 请求接口获取数据
      */
-    protected function getCurlData($type, $code, $start, $end){
+    protected function getCurlData($road, $type, $code, $start, $end){
+
+        if( $road==0 ){
+        
+            /**
+             * 自定义列可定义TCLOSE收盘价 ;HIGH最高价;LOW最低价;TOPEN开盘价;LCLOSE前收盘价;CHG涨跌额;PCHG涨跌幅;TURNOVER换手率;VOTURNOVER成交量;VATURNOVER成交金额;TCAP总市值;MCAP流通市值这些值
+             */
+            $getfields  = 'TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;VOTURNOVER;VATURNOVER;TCAP;MCAP';
+            $url        = 'http://quotes.money.163.com/service/chddata.html?code='.$type.$code.'&start='.$start.'&end='.$end.'&fields='.$getfields;
     
-        $getfields  = 'TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;VOTURNOVER;VATURNOVER';
-        $url        = 'http://quotes.money.163.com/service/chddata.html?code='.$type.$code.'&start='.$start.'&end='.$end.'&fields='.$getfields;
+            /// 转码
+            $content    = $this->sendCurl($url);
+            $content    = mb_convert_encoding($content, "UTF-8", "GBK");
+    
+            if( strlen($content)<=121 ){
+                return false;
+            }
+        }elseif( $road==1 ){
+            
+            $url = 'http://api.finance.ifeng.com/akdaily/?code='.$type.$code.'&type=last';
+            $content = $this->sendCurl($url);
+            $content = json_decode($content, true);
 
-        /// 转码
-        $content    = $this->sendCurl($url);
-        $content    = mb_convert_encoding($content, "UTF-8", "GBK");
-
-        if( strlen($content)<=121 ){
-            return false;
+            if( empty($content['record']) ){
+                return false;
+            }
         }
 
         return $content;
@@ -107,19 +122,26 @@ class GupiaoService
     /**
      * 数据表type 转 链接type 值
      * linktype 0=沪市  1=深市
+     *  $road=0 网易线路   $road=1 凤凰财经线路
      */
-    protected function tbtype2linktype($tbtype){
+    protected function tbtype2linktype($tbtype, $road=0){
     
-        return $tbtype==1 ? $tbtype : ($tbtype==2 ? 0 : 100);
+        if( $road==0 ){
+        
+            return $tbtype==1 ? $tbtype : ($tbtype==2 ? 0 : 100);
+        }elseif( $road==1 ){
+        
+            return $tbtype==1 ? 'sz' : ($tbtype==2 ? 'sh' : '');
+        }
     }
 
     /**
      * 新增股票数据入库
      */
-    protected function gupiaoInDB($type, $code, $start, $end){
+    protected function gupiaoInDB($road, $type, $code, $start, $end){
     
         /// 请求接口获取数据
-        $content = $this->getCurlData($type, $code, $start, $end);
+        $content = $this->getCurlData($road, $type, $code, $start, $end);
         if( $content===false ){
             echo  '无数据-01! type: '.$type.'; code: '.$code . PHP_EOL;
             return false;
@@ -215,16 +237,19 @@ class GupiaoService
     /**
      * 更新shares_details_byday原始数据
      */
-    public function updateOriginal(){
+    public function updateOriginal($road){
     
         $end_time = time();
 
         /// 获取shares所有id
         $codes = TB::table('shares')->select('id, code, type, sdb_last_update_time')->where(1)->get();
 
+        $dividend   = 1;
+        $divisor    = count($codes);
         foreach( $codes as $shares_row){
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
 
-            $type       = $this->tbtype2linktype($shares_row['type']);
+            $type       = $this->tbtype2linktype($shares_row['type'], $road);
             $code       = $shares_row['code'];
             $start      = empty($shares_row['sdb_last_update_time']) ? $this->gupiao_b_time : date('Ymd', $shares_row['sdb_last_update_time']);
             // $end        = date('Ymd', $end_time-86400);
@@ -232,32 +257,74 @@ class GupiaoService
             $shares_id  = $shares_row['id'];
 
             /// 请求接口获取数据
-            $content = $this->getCurlData($type, $code, $start, $end);
+            $content = $this->getCurlData($road, $type, $code, $start, $end);
             if( $content===false ){
                 echo  '无数据-01! type: '.$type.'; code: '.$code . PHP_EOL;
                 continue;
             }
 
-            /// 剥离拆分数据
-            $original_data = $this->splitData($content);
+            if( $road==0 ){
 
-            # 初始化参数  日期,股票代码,名称,收盘价,最高价,最低价,开盘价,前收盘,涨跌额,涨跌幅,成交量,成交金额
-            $first_row_arr  = isset($original_data[0]) ? explode(',', $original_data[0]) : [];
-            if( empty($first_row_arr) ){
-                echo '无数据-02! type: ' . $type . '; code: ' . $code . PHP_EOL;
-                continue;
+                /// 剥离拆分数据
+                $original_data = $this->splitData($content);
+    
+                # 初始化参数  日期,股票代码,名称,收盘价,最高价,最低价,开盘价,前收盘,涨跌额,涨跌幅,成交量,成交金额
+                $first_row_arr  = isset($original_data[0]) ? explode(',', $original_data[0]) : [];
+                if( empty($first_row_arr) ){
+                    echo '无数据-02! type: ' . $type . '; code: ' . $code . PHP_EOL;
+                    continue;
+                }
+            
+            }elseif( $road==1 ){
+            
+                $original_data = $content['record'];
+
+                /* foreach( $original_data as $kk=>$vv){
+                
+                    if( $vv[0]=='2012-05-30' ){
+                    
+                        print_r($vv);
+                    }
+                }
+
+                exit; */
             }
 
             /// 录入shares_details_byday表数据
             $data = [];
+            $sdb_last_update_time       = 0;
+            $this_last_day_end_price    = '';
             foreach( $original_data as $k=>$v){
 
-                /// 拆分原始数据
-                $this_row = explode(',', $v);
+                if( $road==0 ){
                 
-                $this_row = array_filter($this_row, function($elem){
-                    return trim($elem);
-                });
+                    /// 拆分原始数据
+                    $this_row = explode(',', $v);
+                    
+                    $this_row = array_filter($this_row, function($elem){
+                        return trim($elem);
+                    });
+                }elseif( $road==1 ){
+                
+                    /**
+                     * 0  日期
+                     * 1  开盘价
+                     * 2  最高价
+                     * 3  收盘价
+                     * 4  最低价
+                     * 5  成交量
+                     * 6  涨跌额
+                     * 7  涨跌幅
+                     * 8  5日均价
+                     * 9  10日均价
+                     * 10 20日均价
+                     * 11 5日均量
+                     * 12 10日均量
+                     * 13 20日均量
+                     * 14 换手率
+                     */
+                    $this_row = $v;
+                }
 
                 /// 没有日期则跳过
                 if( 
@@ -276,31 +343,76 @@ class GupiaoService
                 $has_row = TB::table('shares_details_byday')->select('id')->where($check_row)->find();
 
                 if( !empty($has_row) ){
+
+                    if( $road==1 ){
+                        $this_last_day_end_price = $this_row[3];
+                    }
                     continue;
                 }
-
+                
                 /// 组装数据
+                if( $road==0 ){
+                
+                    $this_original_data    = $v;
+                    $active_date           = (isset($this_row[0])&&!empty($this_row[0]) ) ? $this_row[0] : '';
+                    $day_start_price       = (isset($this_row[6])&&!empty($this_row[6]) ) ? $this_row[6] : '';
+                    $day_end_price         = (isset($this_row[3])&&!empty($this_row[3]) ) ? $this_row[3] : '';
+                    $day_max_price         = (isset($this_row[4])&&!empty($this_row[4]) ) ? $this_row[4] : '';
+                    $day_min_price         = (isset($this_row[5])&&!empty($this_row[5]) ) ? $this_row[5] : '';
+                    $last_day_end_price    = (isset($this_row[7])&&!empty($this_row[7]) ) ? $this_row[7] : '';
+                    $uad_price             = (isset($this_row[8])&&!empty($this_row[8]) ) ? $this_row[8] : '';
+                    $uad_range             = (isset($this_row[9])&&!empty($this_row[9]) ) ? $this_row[9] : '';
+                    $volume                = (isset($this_row[10])&&!empty($this_row[10]) ) ? $this_row[10] : '';
+                    $transaction_amount    = (isset($this_row[11])&&!empty($this_row[11]) ) ? $this_row[11] : '';
+                    $step                  = 1;
+                    $created_time          = time();
+                    $active_date_timestamp = (isset($this_row[0])&&!empty($this_row[0]) ) ? strtotime($this_row[0] . ' 15:00:00') : 0;
+                    
+                }elseif( $road==1 ){
+
+                    $this_original_data    = json_encode($v);
+                    $active_date           = $this_row[0];
+                    $day_start_price       = $this_row[1];
+                    $day_end_price         = $this_row[3];
+                    $day_max_price         = $this_row[2];
+                    $day_min_price         = $this_row[4];
+                    $last_day_end_price    = ($k==0) ? '' : $this_last_day_end_price;
+                    $uad_price             = !empty($this_last_day_end_price) ? ($this_row[3]-$this_last_day_end_price) : '';# 今日收盘价-昨日收盘价
+                    $uad_range             = (!empty($uad_price)&&$uad_price!=0) ? (($uad_price/$this_last_day_end_price)*100) : '';# 涨跌额/昨日收盘价
+                    $volume                = $this_row[5];
+                    $transaction_amount    = '';
+                    $step                  = 1;
+                    $created_time          = time();
+                    $active_date_timestamp = (isset($this_row[0])&&!empty($this_row[0]) ) ? strtotime($this_row[0] . ' 15:00:00') : 0;
+
+                    $this_last_day_end_price = $day_end_price;
+                }
+
                 $data[$k] = [
-                    'shares__id'             => $shares_id,
-                    'original_data'         => $v,
-                    'active_date'           => (isset($this_row[0])&&!empty($this_row[0]) ) ? $this_row[0] : '',
-                    'day_start_price'       => (isset($this_row[6])&&!empty($this_row[6]) ) ? $this_row[6] : '',
-                    'day_end_price'         => (isset($this_row[3])&&!empty($this_row[3]) ) ? $this_row[3] : '',
-                    'day_max_price'         => (isset($this_row[4])&&!empty($this_row[4]) ) ? $this_row[4] : '',
-                    'day_min_price'         => (isset($this_row[5])&&!empty($this_row[5]) ) ? $this_row[5] : '',
-                    'last_day_end_price'    => (isset($this_row[7])&&!empty($this_row[7]) ) ? $this_row[7] : '',
-                    'uad_price'             => (isset($this_row[8])&&!empty($this_row[8]) ) ? $this_row[8] : '',
-                    'uad_range'             => (isset($this_row[9])&&!empty($this_row[9]) ) ? $this_row[9] : '',
-                    'volume'                => (isset($this_row[10])&&!empty($this_row[10]) ) ? $this_row[10] : '',
-                    'transaction_amount'    => (isset($this_row[11])&&!empty($this_row[11]) ) ? $this_row[11] : '',
-                    'step'                  => 1,
-                    'created_time'          => time(),
-                    'active_date_timestamp' => (isset($this_row[0])&&!empty($this_row[0]) ) ? strtotime($this_row[0] . ' 15:00:00') : 0
+                    'shares__id'            => $shares_id,
+                    'original_data'         => $this_original_data,
+                    'active_date'           => $active_date,
+                    'day_start_price'       => $day_start_price,
+                    'day_end_price'         => $day_end_price,
+                    'day_max_price'         => $day_max_price,
+                    'day_min_price'         => $day_min_price,
+                    'last_day_end_price'    => $last_day_end_price,
+                    'uad_price'             => $uad_price,
+                    'uad_range'             => $uad_range,
+                    'volume'                => $volume,
+                    'transaction_amount'    => $transaction_amount,
+                    'step'                  => $step,
+                    'created_time'          => $created_time,
+                    'active_date_timestamp' => $active_date_timestamp
                 ];
+
+                $sdb_last_update_time = $active_date_timestamp;
             }
 
             if( empty($data) ){
                 echo 'type: '.$type.'; code: '.$code . '已是最新!' . PHP_EOL;
+                echo 'type: '.$type.'; code: '.$code.'完成：'. $percent . PHP_EOL;
+                $dividend++;
                 continue;
             }
 
@@ -327,12 +439,14 @@ class GupiaoService
 
             if( !$re ){
                 echo '录入子表数据失败! original_data: ' . serialize($original_data) . PHP_EOL;
+                echo 'type: '.$type.'; code: '.$code.'完成：'. $percent . PHP_EOL;
+                $dividend++;
                 continue;
             }
 
             /// 更新主表数据
             $shares_data = [
-                'sdb_last_update_time' => $end_time
+                'sdb_last_update_time' => $sdb_last_update_time
             ];
 
             $re = TB::table('shares')
@@ -341,11 +455,15 @@ class GupiaoService
             ->exec();
 
             if( !$re ){
-                echo '更新shares主表失败! original_data: id: ' . $shares_id . '; sdb_last_update_time: ' . $end_time . PHP_EOL;
+                echo '更新shares主表失败! original_data: id: ' . $shares_id . '; sdb_last_update_time: ' . $sdb_last_update_time . PHP_EOL;
+                echo 'type: '.$type.'; code: '.$code.'完成：'. $percent . PHP_EOL;
+                $dividend++;
                 continue;
             }
             
-            echo 'shares_details_byday更新数据成功! type: '.$type.'; code: '.$code . PHP_EOL;
+            // echo 'shares_details_byday更新数据成功! type: '.$type.'; code: '.$code . PHP_EOL;
+            echo 'type: '.$type.'; code: '.$code.'；完成：'. $percent . PHP_EOL;
+            $dividend++;
         }
         return true;
     }
@@ -378,7 +496,7 @@ class GupiaoService
 
             /// id最大的数据为最早的数据
             $tmp_where = [
-                ['shares_id', $i]
+                ['shares__id', $i]
             ];
 
             $tmp_shares_details_byday_row = TB::table('shares_details_byday')->select('active_date')->where($tmp_where)->orderby('id desc')->find();
@@ -417,7 +535,10 @@ class GupiaoService
         /// 获取shares所有id
         $ids = TB::table('shares')->select('id')->where(1)->get();
 
+        $dividend   = 1;
+        $divisor    = count($ids);
         foreach( $ids as $v){
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
 
             /// 获取当前票的所有记录
             $this_shares_details_byday_row = TB::table('shares_details_byday as sdb')->select('
@@ -514,117 +635,117 @@ class GupiaoService
 
                     $flag = 2;
 
-                    // if( empty($sdbr_v['ma4_price']) ){
+                    if( empty($sdbr_v['ma4_price']) ){
                         $ma4_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 4, $last_price);
                         $ma['ma4_price']    = $ma4_price;
-                    // }else{
-                    //     $ma4_price = $sdbr_v['ma4_price'];
-                    // }
+                    }else{
+                        $ma4_price = $sdbr_v['ma4_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma5_price']) ){
+                    if( empty($sdbr_v['ma5_price']) ){
                         $ma5_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 5, $last_price, $ma4_price);
                         $ma['ma5_price']    = $ma5_price;
-                    // }else{
-                    //     $ma5_price = $sdbr_v['ma5_price'];
-                    // }
+                    }else{
+                        $ma5_price = $sdbr_v['ma5_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma9_price']) ){
+                    if( empty($sdbr_v['ma9_price']) ){
                         $ma9_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 9, $last_price, $ma5_price);
                         $ma['ma9_price']   = $ma9_price;
-                    // }else{
-                        // $ma9_price = $sdbr_v['ma9_price'];
-                    // }
+                    }else{
+                        $ma9_price = $sdbr_v['ma9_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma10_price']) ){
+                    if( empty($sdbr_v['ma10_price']) ){
                         $ma10_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 10, $last_price, $ma9_price);
                         $ma['ma10_price']   = $ma10_price;
-                    // }else{
-                        // $ma10_price = $sdbr_v['ma10_price'];
-                    // }
+                    }else{
+                        $ma10_price = $sdbr_v['ma10_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma14_price']) ){
+                    if( empty($sdbr_v['ma14_price']) ){
                         $ma14_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 14, $last_price, $ma10_price);
                         $ma['ma14_price']   = $ma14_price;
-                    // }else{
-                    //     $ma14_price = $sdbr_v['ma14_price'];
-                    // }
+                    }else{
+                        $ma14_price = $sdbr_v['ma14_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma15_price']) ){
+                    if( empty($sdbr_v['ma15_price']) ){
                         $ma15_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 15, $last_price, $ma14_price);
                         $ma['ma15_price']   = $ma15_price;
-                    // }else{
-                    //     $ma15_price = $sdbr_v['ma15_price'];
-                    // }
+                    }else{
+                        $ma15_price = $sdbr_v['ma15_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma19_price']) ){
+                    if( empty($sdbr_v['ma19_price']) ){
                         $ma19_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 19, $last_price, $ma15_price);
                         $ma['ma19_price']   = $ma19_price;
-                    // }else{
-                    //     $ma19_price = $sdbr_v['ma19_price'];
-                    // }
+                    }else{
+                        $ma19_price = $sdbr_v['ma19_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma20_price']) ){
+                    if( empty($sdbr_v['ma20_price']) ){
                         $ma20_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 20, $last_price, $ma19_price);
                         $ma['ma20_price']   = $ma20_price;
-                    // }else{
-                    //     $ma20_price = $sdbr_v['ma20_price'];
-                    // }
+                    }else{
+                        $ma20_price = $sdbr_v['ma20_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma29_price']) ){
+                    if( empty($sdbr_v['ma29_price']) ){
                         $ma29_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 29, $last_price, $ma20_price);
                         $ma['ma29_price']   = $ma29_price;
-                    // }else{
-                    //     $ma29_price = $sdbr_v['ma29_price'];
-                    // }
+                    }else{
+                        $ma29_price = $sdbr_v['ma29_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma30_price']) ){
+                    if( empty($sdbr_v['ma30_price']) ){
                         $ma30_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 30, $last_price, $ma29_price);
                         $ma['ma30_price']   = $ma30_price;
-                    // }else{
-                    //     $ma30_price = $sdbr_v['ma30_price'];
-                    // }
+                    }else{
+                        $ma30_price = $sdbr_v['ma30_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma59_price']) ){
+                    if( empty($sdbr_v['ma59_price']) ){
                         $ma59_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 59, $last_price, $ma30_price);
                         $ma['ma59_price']   = $ma59_price;
-                    // }else{
-                    //     $ma59_price = $sdbr_v['ma59_price'];
-                    // }
+                    }else{
+                        $ma59_price = $sdbr_v['ma59_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma60_price']) ){
+                    if( empty($sdbr_v['ma60_price']) ){
                         $ma60_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 60, $last_price, $ma59_price);
                         $ma['ma60_price']   = $ma60_price;
-                    // }else{
-                    //     $ma60_price = $sdbr_v['ma60_price'];
-                    // }
+                    }else{
+                        $ma60_price = $sdbr_v['ma60_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma119_price']) ){
+                    if( empty($sdbr_v['ma119_price']) ){
                         $ma119_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 119, $last_price, $ma60_price);
                         $ma['ma119_price']  = $ma119_price;
-                    // }else{
-                    //     $ma119_price = $sdbr_v['ma119_price'];
-                    // }
+                    }else{
+                        $ma119_price = $sdbr_v['ma119_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma120_price']) ){
+                    if( empty($sdbr_v['ma120_price']) ){
                         $ma120_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 120, $last_price, $ma119_price);
                         $ma['ma120_price']  = $ma120_price;
-                    // }else{
-                    //     $ma120_price = $sdbr_v['ma120_price'];
-                    // }
+                    }else{
+                        $ma120_price = $sdbr_v['ma120_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma239_price']) ){
+                    if( empty($sdbr_v['ma239_price']) ){
                         $ma239_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 239, $last_price, $ma120_price);
                         $ma['ma239_price']  = $ma239_price;
-                    // }else{
-                    //     $ma239_price = $sdbr_v['ma239_price'];
-                    // }
+                    }else{
+                        $ma239_price = $sdbr_v['ma239_price'];
+                    }
 
-                    // if( empty($sdbr_v['ma240_price']) ){
+                    if( empty($sdbr_v['ma240_price']) ){
                         $ma240_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 240, $last_price, $ma239_price);
                         $ma['ma240_price']  = $ma240_price;
-                    // }else{
-                    //     $ma240_price = $sdbr_v['ma240_price'];
-                    // }
+                    }else{
+                        $ma240_price = $sdbr_v['ma240_price'];
+                    }
 
                     if( !empty($ma) ){
                     
@@ -672,6 +793,9 @@ class GupiaoService
                     }
                 }
             }
+
+            echo '完成：'. $percent . PHP_EOL;
+            $dividend++;
         }
     }
 
@@ -863,5 +987,303 @@ class GupiaoService
             echo '完成：'. $percent . PHP_EOL;
             $dividend++;
         }
+    }
+    
+    /**
+     * 抓取股票对应的企业信息
+     */
+    public function getCompanyDetails(){
+
+        $codes = TB::table('shares')->select('id, code')->where(1)->get();
+
+        $dividend   = 1;
+        $divisor    = count($codes);
+        foreach( $codes as $v){
+
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
+        
+            /// 初始化参数
+            $url = 'http://basic.10jqka.com.cn/'.$v['code'].'/company.html';
+    
+            /// 转码
+            $content    = $this->sendCurl($url);
+            $content    = mb_convert_encoding($content, "UTF-8", "GBK");
+    
+            /// 提取数据
+            # 公司名称   公司名称：</strong><span>中国船舶重工集团动力股份有限公司</span>
+            $company_name = $this->regexInfo('公司名称：<\/strong><span>', '<\/span>', $content);
+    
+            # 公司曾用名
+            $company_name_once_used = $this->regexInfo('曾 用 名：<\/strong><span>', '<\/span>', $content);
+    
+            # 所属申万行业
+            $sw_cate = $this->regexInfo('所属申万行业：<\/strong><span>', '<\/span>', $content);
+    
+            # 主营业务
+            $main_business = $this->regexInfo('主营业务：<\/strong>\s+<span>', '<\/span>', $content);
+    
+            # 产品名称
+            $product_names = $this->regexInfo('产品名称：<\/strong>', '<\/td>', $content);
+            $product_names = $this->regexDelTag($product_names);
+    
+            # 公司简介
+            // $intro = $this->regexInfo('公司简介：<\/strong>', '<\/td>', $content);
+            // $intro = $this->regexDelTag($intro);
+            $intro = '';
+
+            # 所属地域
+            $province = $this->regexInfo('所属地域：<\/strong><span>', '<\/span>', $content);
+
+            /// 更新数据
+            $tmp_update = [
+                'company_name'              => $company_name,
+                'company_name_once_used'    => $company_name_once_used,
+                'sw_cate'                   => $sw_cate,
+                'main_business'             => $main_business,
+                'product_names'             => $product_names,
+                'intro'                     => $intro,
+                'province'                     => $province,
+            ];
+
+            $re = TB::table('shares')
+            ->update($tmp_update)
+            ->where(['id', '=', $v['id']])
+            ->exec();
+
+            if( !$re ){
+                echo '更新失败！--》》' . $v['code'] . PHP_EOL;
+            }else{
+                echo '更新成功 --》' . $v['code'] . PHP_EOL;
+            }
+
+            echo '完成：'. $percent . PHP_EOL;
+            $dividend++;
+        }
+    }
+
+    public function regexInfo($b_str, $e_str, $content, $mode='Us'){
+    
+        preg_match('/'.$b_str.'.*'.$e_str.'/'.$mode, $content, $matches);
+
+        if( empty($matches) ) return '';
+
+        $b_str = preg_replace('/\s+/', '', str_replace('\\', '', str_replace('\s+', '', $b_str)));
+        $e_str = str_replace('\\', '', $e_str);
+        $matches[0] = preg_replace('/\s+/', '', $matches[0]);
+        
+        return str_replace($e_str, '', str_replace($b_str, '', $matches[0]));
+    }
+
+    public function regexDelTag($target){
+
+        if( empty($target) ) return '';
+    
+        preg_match_all('/<.*>/Us', $target, $matches);# U 懒惰模式，匹配最短的  s 使得.具有匹配换行符的作用
+
+        if( !empty($matches) ){
+            
+            foreach( $matches as $v){
+            
+                $target = str_replace($v, '', $target);
+            }
+        }
+
+        return $target;
+    }
+
+    /**
+     * 额外零散处理功能
+     */
+    public function extraDoing(){
+
+        $now = time();
+    
+        /// 分类拆分
+        # 获取所有数据
+        $shares = TB::table('shares')->select('id, code, sw_cate')->where(1)->get();
+
+        # 整理分类数据
+        $sw_cates_lv1   = [];
+        $sw_cates_lv2   = [];
+        $dividend       = 1;
+        $divisor        = count($shares);
+
+        foreach( $shares as $k=>$v){
+
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
+
+            $this_sw_cate = trim($v['sw_cate']);
+            if( empty($this_sw_cate) ) continue;
+        
+            $this_explode_cate  = explode('—', $v['sw_cate']);
+            $this_cate1         = trim($this_explode_cate[0]);
+            $this_cate2         = trim($this_explode_cate[1]);
+
+            if( $this_cate1=='-' ) echo $v['code'] . PHP_EOL;
+            if( $this_cate1=='—' ) continue;
+
+            # 更新shares数据表
+            $re = TB::table('shares')->update([
+                'tmp4' => $this_cate1,
+                'tmp5' => $this_cate2,
+                'is_explode_cate'   => 1,
+                'explode_cate_time' => $now
+            ])->where(['id', $v['id']])->exec();
+
+            if( !$re ){
+                exit('更新失败');
+            }
+
+            /* if( ($lv1_key=array_search($this_cate1, $sw_cates_lv1))===false ){
+            
+                $sw_cates_lv1[] = $this_cate1;
+                $lv1_key        = array_search($this_cate1, $sw_cates_lv1);
+            }
+
+            if( isset($sw_cates_lv2[$lv1_key]) ){
+            
+                $this_lv2 = $sw_cates_lv2[$lv1_key];
+                if( ($lv2_key=array_search($this_cate2, $this_lv2))===false ){
+                
+                    $sw_cates_lv2[$lv1_key][] = $this_cate2;
+                
+                }
+            }else{
+
+                $sw_cates_lv2[$lv1_key]     = [];
+                $sw_cates_lv2[$lv1_key][]   = $this_cate2;
+            } */
+
+            echo '完成：'. $percent . PHP_EOL;
+            $dividend++;
+        }
+
+
+        print_r($sw_cates_lv1);
+        echo 'lv1共有：' . count($sw_cates_lv1) . '种分类' . PHP_EOL;
+        print_r($sw_cates_lv2);
+    }
+
+    /**
+     * 补充股票每日一年新高数据
+     */
+    public function yearXingao(){
+    
+        /// 获取所有股票数据
+        $shares = TB::table('shares')->select('id, code')->where(1)->get();
+
+        $dividend   = 1;
+        $divisor    = count($shares);
+        foreach( $shares as $k=>$v){
+            // $v['code'] = '000014';
+            // $v['id'] = '1574';
+            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
+        
+            /// 获取当前股票历史数据
+            $this_share_details_byday = TB::table('shares_details_byday')->select('id, day_max_price, day_end_price, has_statistics_year_xingao')
+            ->where(['shares__id', $v['id']])
+            ->orderby('active_date_timestamp asc')
+            ->get();
+
+            if( empty($this_share_details_byday) ) continue;
+
+            $passed_share_history_info = [];
+            // $_c = 0;
+            foreach( $this_share_details_byday as $detail_k=>$detail){
+
+                /// 初始化参数
+                $now_day_max_price = (empty($detail['day_max_price'])||$detail['day_max_price']=='0.0') ? 
+                ( (empty($detail['day_end_price'])||$detail['day_end_price']=='0.0') ? 
+                    0 : 
+                    intval($detail['day_end_price']*10000000)) : 
+                intval($detail['day_max_price'] * 10000000);
+
+                /// 已统计的跳过
+                if( $detail['has_statistics_year_xingao']==1 ){
+                
+                    # 超过一年的，去除第一个
+                    if( count($passed_share_history_info)>=240 ){## 一年365天 减去20个假日 减去周末约240个工作日
+                        
+                        array_shift($passed_share_history_info);
+                    }
+
+                    $passed_share_history_info[] = $now_day_max_price;
+                    continue;
+                }
+
+                /// 修改
+                $_upd = [
+                    'is_year_xingao'                => 0,
+                    'has_statistics_year_xingao'    => 1
+                ];
+
+                if( !empty($passed_share_history_info) ){
+
+                    $pshi_bak = $passed_share_history_info;
+                    # 倒序    
+                    rsort($pshi_bak);
+
+                    # 数据目标转整形
+                    $history_year_max_price = $pshi_bak[0];
+
+                    # 创1年新高
+                    if( $now_day_max_price>$history_year_max_price ){
+                    
+                        $_upd['is_year_xingao'] = 1;
+                    }
+
+                    # 超过一年的，去除第一个
+                    if( count($passed_share_history_info)>=240 ){## 一年365天 减去20个假日 减去周末约240个工作日
+                        
+                        array_shift($passed_share_history_info);
+                    }
+
+                }else{
+                    $_upd['is_year_xingao'] = 1;
+                }
+
+                # 将当前价格添加进目标历史集合中
+                $passed_share_history_info[] = $now_day_max_price;
+
+                /* if( $v['code']=='000014'&&$detail['id']==5193744 ){
+
+                    var_dump($now_day_max_price);
+                    var_dump($history_year_max_price);
+                    print_r($pshi_bak);
+                    exit;
+                    
+                } */
+
+                // $_c++;
+
+                # 更新
+                $re = TB::table('shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
+                if( !$re ){
+                    echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
+                }
+            }
+
+            echo 'code: '.$v['code'].'；完成：'. $percent . PHP_EOL;
+            $dividend++;
+        }
+    }
+
+    /**
+     * test
+     */
+    public function test(){
+    
+        $getfields  = 'TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;VOTURNOVER;VATURNOVER';
+        $url        = 'http://cloud.10jqka.com.cn/storage/stockblock_ths/union7/%26storetype%7E1%26version%7E99765%26reqtype%7Edownload';
+
+        /// 转码
+        $content    = $this->sendCurl($url);
+        // $content    = mb_convert_encoding($content, "UTF-8", "GBK");
+        $content    = mb_convert_encoding($content, "UTF-8", "GBK");
+
+        $this_charset = mb_detect_encoding($content, ['ASCII', 'UTF-8', 'GBK', 'GB2312', 'BIG5']);
+        // var_dump($this_charset);
+
+        var_dump($content);
     }
 }
