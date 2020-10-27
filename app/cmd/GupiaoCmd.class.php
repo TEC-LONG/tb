@@ -71,15 +71,11 @@ class GupiaoCmd extends baseCmd{
                     $gupiao_service->maAngle();
                 break;
                 /**
-                 * 2. 更新股票每日数据
+                 * 2. 已网易线路更新股票每日数据
                  * 更新股票的每日数据:      $gupiao_service->updateOriginal();
-                 * 计算股票每日均价:        $gupiao_service->maPrice();
-                 * 计算股票每日均线角:      $gupiao_service->maAngle();
                  */
                 case 2:# php cmd.php Gupiao 2
-                    // $gupiao_service->updateOriginal($road);
-                    // $gupiao_service->maPrice();
-                    $gupiao_service->maAngle();
+                    $gupiao_service->updateOriginal(0);
                 break;
                 /**
                  * 3. 更新股票对应的企业信息
@@ -89,21 +85,39 @@ class GupiaoCmd extends baseCmd{
                     $gupiao_service->getCompanyDetails();
                 break;
                 /**
-                 * 4. 计算每日最高价是否创一年新高
-                 * 抓取更新股票对应企业最新相关信息:  $gupiao_service->yearXingao();
+                 * 4. 计算每日最高价是否创一年新高，新低
+                 * 以凤凰线路更新最新数据:  $gupiao_service->updateOriginal(1);
+                 * 计算股票每日均价:        $gupiao_service->maPrice();
+                 * 计算股票每日均线角:      $gupiao_service->maAngle();
+                 * 计算一年新高:  $gupiao_service->yearXingao();
+                 * 计算一年新低:  $gupiao_service->yearXindi();
                  */
                 case 4:# php cmd.php Gupiao 4
-                    $gupiao_service->yearXingao();
+                    // $gupiao_service->updateOriginal(1);
+                    // $gupiao_service->maPrice();
+                    // $gupiao_service->maAngle();
+                    // $gupiao_service->yearXingao();
+                    $gupiao_service->yearXindi();
+                break;
+                /**
+                 * 5. 分类归档
+                 * 分类归档:  $gupiao_service->constructPlate();
+                 */
+                case 5:# 分类归档  php cmd.php Gupiao 5
+            
+                    $gupiao_service->constructPlate();
                 break;
                 case 0:# php cmd.php Gupiao 0
-                    $gupiao_service->test();
+                    // $gupiao_service->test();
+                    $gupiao_service->constructPlate();
+                    $gupiao_service->shineng();
                 break;
             }
 
             exit;
             
     
-            switch($type){
+            /* switch($type){
             case 1:# 新增股票数据  php cmd.php Gupiao 1
             
                 $gupiao_service->gupiaoAdd();
@@ -140,7 +154,7 @@ class GupiaoCmd extends baseCmd{
             
                 $gupiao_service->yearXingao();
             break;
-            }
+            } */
         });
 
 /*

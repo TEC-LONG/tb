@@ -20,6 +20,7 @@ CREATE TABLE `shares` (
     `cate_1` varchar(10) NOT NULL DEFAULT '' COMMENT '所属申万行业分类1',
     `cate_2` varchar(10) NOT NULL DEFAULT '' COMMENT '所属申万行业分类2',
     `province` varchar(10) NOT NULL DEFAULT '' COMMENT '所在省份',
+    `is_deprecated` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否弃用；0=否；1=是',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票信息表';
@@ -29,10 +30,11 @@ CREATE TABLE `plate` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
     `name` varchar(30) NOT NULL DEFAULT '' COMMENT '板块名称',
     `code` varchar(30) NOT NULL DEFAULT '' COMMENT '板块代码',
-    `type` tinyint NOT NULL DEFAULT 0 COMMENT '板块类型；0=无；1=行业板块；2=概念板块；3=地区板块',
-    `come_from` tinyint NOT NULL DEFAULT 0 COMMENT '板块来源参照；0=自定义；1=东海通；2=益盟-智盈；3=通达信; 4=同花顺',
+    `type` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '板块类型；0=无；1=行业板块；2=概念板块；3=地区板块',
+    `come_from` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '板块来源参照；0=自定义1；1=东海通；2=益盟-智盈；3=通达信; 4=同花顺1',
     `alias` varchar(255) NOT NULL DEFAULT '' COMMENT '同概念别名，多个以逗号分隔',
-    `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    `pid` int unsigned NOT NULL DEFAULT 0 COMMENT '上级id',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票行业板块表';
@@ -40,9 +42,9 @@ CREATE TABLE `plate` (
 
 CREATE TABLE `shares__plate` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-    `shares__id` int NOT NULL DEFAULT 0 COMMENT '股票信息表id',
-    `plate__id` tinyint NOT NULL DEFAULT 0 COMMENT '行业板块表id',
-    `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `plate__id` int unsigned NOT NULL DEFAULT 0 COMMENT '行业板块表id'
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_plate__id` (`plate__id`)
@@ -61,8 +63,6 @@ CREATE TABLE `plate_prosperity_index_statistics_day` (
     KEY `idx_plate__id` (`plate__id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='板块每日繁荣指数统计表';
 
-alter table plate_prosperity_index_statistics_day add `plate_volume` varchar(50) NOT NULL DEFAULT '' COMMENT '板块总成交量';
-
 
 CREATE TABLE `plate_prosperity_index_statistics_month` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
@@ -76,12 +76,10 @@ CREATE TABLE `plate_prosperity_index_statistics_month` (
     KEY `idx_plate__id` (`plate__id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='板块每月繁荣指数统计表';
 
-alter table plate_prosperity_index_statistics_month add `plate_volume` varchar(50) NOT NULL DEFAULT '' COMMENT '板块总成交量';
-
 
 CREATE TABLE `shares_details_byday` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-    `shares__id` int NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
     `original_data` varchar(1000) NOT NULL DEFAULT '' COMMENT '原始数据',
     `active_date` varchar(30) NOT NULL DEFAULT '' COMMENT '行情产生日期',
     `active_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '行情产生日期15:00:00时间的时间戳',
@@ -94,24 +92,64 @@ CREATE TABLE `shares_details_byday` (
     `uad_range` varchar(20) NOT NULL DEFAULT '' COMMENT '涨跌幅(up and down range)',
     `volume` varchar(50) NOT NULL DEFAULT '' COMMENT '成交量',
     `transaction_amount` varchar(50) NOT NULL DEFAULT '' COMMENT '成交金额',
-    `step` tinyint NOT NULL DEFAULT 0 COMMENT '所处步骤位置；0=无；1=拆分完原始数据',
-    `ma5_price` varchar(30) NOT NULL DEFAULT '' COMMENT '5日均价',
-    `ma10_price` varchar(30) NOT NULL DEFAULT '' COMMENT '10日均价',
-    `ma20_price` varchar(30) NOT NULL DEFAULT '' COMMENT '20日均价',
-    `ma30_price` varchar(30) NOT NULL DEFAULT '' COMMENT '30日均价',
-    `ma60_price` varchar(30) NOT NULL DEFAULT '' COMMENT '60日均价',
-    `ma120_price` varchar(30) NOT NULL DEFAULT '' COMMENT '120日均价',
-    `ma240_price` varchar(30) NOT NULL DEFAULT '' COMMENT '240日均价',
-    `is_year_xingao` tinyint NOT NULL DEFAULT 0 COMMENT '当日最高价是否创过去一年新高，0=否；1=是',
-    `has_statistics_year_xingao` tinyint NOT NULL DEFAULT 0 COMMENT '是否已统计一年新高指标，0=否；1=是',
-    `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
-    `channel` tinyint NOT NULL DEFAULT 1 COMMENT '数据渠道，1=网易；2=凤凰财经',
+    `step` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '所处步骤位置；0=无；1=拆分完原始数据',
+    `is_year_xingao` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '当日最高价是否创过去一年新高，0=否；1=是',
+    `has_statistics_year_xingao` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否已统计一年新高指标，0=否；1=是',
+    `is_year_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '当日最低价是否创过去一年新低，0=否；1=是',
+    `has_statistics_year_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否已统计一年新低指标，0=否；1=是',
+    `is_3month_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '当日最低价是否创过去一个季度新低，0=否；1=是',
+    `has_statistics_3month_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否已统计一个季度新低指标，0=否；1=是',
+    `is_month_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '当日最低价是否创过去一个月新低，0=否；1=是',
+    `has_statistics_month_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否已统计一个月新低指标，0=否；1=是',
+    `is_5day_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '当日最低价是否创过去5日新低，0=否；1=是',
+    `has_statistics_5day_xindi` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否已统计5日新低指标，0=否；1=是',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    `channel` tinyint unsigned NOT NULL DEFAULT 1 COMMENT '数据渠道，1=网易；2=凤凰财经',
     `total_shizhi` varchar(50) NOT NULL DEFAULT '' COMMENT '总市值',
     `deal_shizhi` varchar(50) NOT NULL DEFAULT '' COMMENT '成交市值',
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票详情表（按天记录)';
+
+
+CREATE TABLE `daily_weight_ths1` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `sdb__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票详情表（按天记录）id',
+    `active_date` varchar(30) NOT NULL DEFAULT '' COMMENT '行情产生日期',
+    `active_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '行情产生日期15:00:00时间的时间戳',
+    `weight` tinyint unsigned NOT NULL DEFAULT '' COMMENT '当日市值权重',
+    `day_start_price` varchar(20) NOT NULL DEFAULT '' COMMENT '当日开盘价',
+    `uad_price` varchar(20) NOT NULL DEFAULT '' COMMENT '涨跌额(up and down price)',
+    `uad_range` varchar(20) NOT NULL DEFAULT '' COMMENT '涨跌幅(up and down range)',
+    `volume` varchar(50) NOT NULL DEFAULT '' COMMENT '成交量',
+    `transaction_amount` varchar(50) NOT NULL DEFAULT '' COMMENT '成交金额',
+    `total_shizhi` varchar(50) NOT NULL DEFAULT '' COMMENT '总市值',
+    `deal_shizhi` varchar(50) NOT NULL DEFAULT '' COMMENT '成交市值',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_shares__id` (`shares__id`),
+    KEY `idx_sdb__id` (`sdb__id`),
+    KEY `idx_active_date_timestamp` (`active_date_timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日个股权重表（按同花顺1板块分类统计）';
+
+insert into daily_weight_ths1 (shares__id, sdb__id, active_date, active_date_timestamp, day_start_price, uad_price, uad_range, volume, transaction_amount, total_shizhi, deal_shizhi, created_time) (select sdb.shares__id, sdb.id, sdb.active_date, sdb.active_date_timestamp, sdb.day_start_price, sdb.uad_price, sdb.uad_range, sdb.volume, sdb.transaction_amount, sdb.total_shizhi, sdb.deal_shizhi, sdb.created_time from shares_details_byday sdb left join shares s on sdb.shares__id=s.id where s.sdb_last_update_time<>0)
+
+
+CREATE TABLE `daily_index_ths1` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `plate__id` int unsigned NOT NULL DEFAULT 0 COMMENT '',
+    `active_date` varchar(30) NOT NULL DEFAULT '' COMMENT '行情产生日期',
+    `active_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '行情产生日期15:00:00时间的时间戳',
+    `day_end_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日收盘板块指数',
+    `day_max_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日最高板块指数',
+    `day_min_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日最低板块指数',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_plate__id` (`plate__id`),
+    KEY `idx_active_date_timestamp` (`active_date_timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日板块指数表（按同花顺1板块分类统计）';
 
 
 CREATE TABLE `sdb_statistics` (
@@ -158,8 +196,8 @@ CREATE TABLE `sdb_statistics_price_deviate_probability` (
 
 CREATE TABLE `sdb_statistics_moving_average` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-    `shares__id` int NOT NULL DEFAULT 0 COMMENT '股票信息表id',
-    `shares_details_byday__id` int NOT NULL DEFAULT 0 COMMENT '股票详情表id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `shares_details_byday__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票详情表id',
     `active_date` varchar(30) NOT NULL DEFAULT '' COMMENT '行情产生日期',
     `active_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '行情产生日期15:00:00时间的时间戳',
     `ma5_angle` varchar(30) NOT NULL DEFAULT '' COMMENT '5日均线角(moving average of 5 days)(横轴一个时间单位为10，纵轴价差百分比*100)',
@@ -170,25 +208,17 @@ CREATE TABLE `sdb_statistics_moving_average` (
     `ma60_angle` varchar(30) NOT NULL DEFAULT '' COMMENT '60日均线角(moving average of 60 days)',
     `ma120_angle` varchar(30) NOT NULL DEFAULT '' COMMENT '120日均线角(moving average of 120 days)',
     `ma240_angle` varchar(30) NOT NULL DEFAULT '' COMMENT '240日均线角(moving average of 240 days)',
-    `ma_angle_time` int NOT NULL DEFAULT 0 COMMENT '均线角统计日期时间戳',
+    `ma_angle_time` int unsigned NOT NULL DEFAULT 0 COMMENT '均线角统计日期时间戳',
     `ma5_price` varchar(30) NOT NULL DEFAULT '' COMMENT '5日均价',
-    `ma4_price` varchar(30) NOT NULL DEFAULT '' COMMENT '4日均价',
     `ma10_price` varchar(30) NOT NULL DEFAULT '' COMMENT '10日均价',
-    `ma9_price` varchar(30) NOT NULL DEFAULT '' COMMENT '9日均价',
     `ma15_price` varchar(30) NOT NULL DEFAULT '' COMMENT '15日均价',
-    `ma14_price` varchar(30) NOT NULL DEFAULT '' COMMENT '14日均价',
     `ma20_price` varchar(30) NOT NULL DEFAULT '' COMMENT '20日均价',
-    `ma19_price` varchar(30) NOT NULL DEFAULT '' COMMENT '19日均价',
     `ma30_price` varchar(30) NOT NULL DEFAULT '' COMMENT '30日均价',
-    `ma29_price` varchar(30) NOT NULL DEFAULT '' COMMENT '29日均价',
     `ma60_price` varchar(30) NOT NULL DEFAULT '' COMMENT '60日均价',
-    `ma59_price` varchar(30) NOT NULL DEFAULT '' COMMENT '59日均价',
     `ma120_price` varchar(30) NOT NULL DEFAULT '' COMMENT '120日均价',
-    `ma119_price` varchar(30) NOT NULL DEFAULT '' COMMENT '119日均价',
     `ma240_price` varchar(30) NOT NULL DEFAULT '' COMMENT '240日均价',
-    `ma239_price` varchar(30) NOT NULL DEFAULT '' COMMENT '239日均价',
-    `ma_price_time` int NOT NULL DEFAULT 0 COMMENT '均价统计日期时间戳',
-    `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    `ma_price_time` int unsigned NOT NULL DEFAULT 0 COMMENT '均价统计日期时间戳',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_shares_details_byday__id` (`shares_details_byday__id`)
@@ -199,6 +229,152 @@ truncate shares;
 truncate shares_details_byday;
 
 alter table shares_details_byday ADD INDEX `idx_shares__id` (`shares__id`) USING BTREE;
+
+
+
+/* 年新高 */
+SELECT
+	 (@i:=@i+1) as '序号',
+	t.* 
+FROM
+    (select @i:=0) as it,
+	(
+SELECT
+	s.`code` AS `股票代码`,
+	s.title AS `名称`,
+	s.company_name AS `公司全称`,
+	p1.name AS `分类(一级)`,
+	p.name AS `分类(二级)`,
+	sdb.day_max_price as `年新高价格`,
+    sdb.active_date,
+    p1.id as p1_id,
+    p.id as p2_id
+FROM
+	shares AS s
+	LEFT JOIN shares_details_byday sdb ON sdb.shares__id = s.id 
+	LEFT JOIN shares__plate sp ON s.id = sp.shares__id 
+	LEFT JOIN plate p ON sp.plate__id = p.id
+	LEFT JOIN (select * from plate where 1) as p1 ON p1.id = p.pid
+WHERE
+	sdb.active_date_timestamp = '1603465200' 
+	AND sdb.is_year_xingao = 1 
+group by s.id
+order by p1.id, p.id
+	) AS t;
+
+/* 年新低 */
+SELECT
+	 (@i:=@i+1) as '序号',
+	t.* 
+FROM
+    (select @i:=0) as it,
+	(
+SELECT
+	s.`code` AS `股票代码`,
+	s.title AS `名称`,
+	s.company_name AS `公司全称`,
+	p1.name AS `分类(一级)`,
+	p.name AS `分类(二级)`,
+	sdb.day_min_price as `年新低价格`,
+	sdb.active_date,
+    p1.id as p1_id,
+    p.id as p2_id
+FROM
+	shares AS s
+	LEFT JOIN shares_details_byday sdb ON sdb.shares__id = s.id 
+	LEFT JOIN shares__plate sp ON s.id = sp.shares__id 
+	LEFT JOIN plate p ON sp.plate__id = p.id
+	LEFT JOIN (select * from plate where 1) as p1 ON p1.id = p.pid
+WHERE
+	sdb.active_date_timestamp = '1603810800' 
+	AND sdb.is_year_xindi = 1 
+group by s.id
+order by p1.id, p.id
+	) AS t;
+
+/* 月新低 */
+SELECT
+	 (@i:=@i+1) as '序号',
+	t.* 
+FROM
+    (select @i:=0) as it,
+	(
+SELECT
+	s.`code` AS `股票代码`,
+	s.title AS `名称`,
+	s.company_name AS `公司全称`,
+	p1.name AS `分类(一级)`,
+	p.name AS `分类(二级)`,
+	sdb.day_min_price as `月新低价格`,
+	sdb.active_date,
+    p1.id as p1_id,
+    p.id as p2_id
+FROM
+	shares AS s
+	LEFT JOIN shares_details_byday sdb ON sdb.shares__id = s.id 
+	LEFT JOIN shares__plate sp ON s.id = sp.shares__id 
+	LEFT JOIN plate p ON sp.plate__id = p.id
+	LEFT JOIN (select * from plate where 1) as p1 ON p1.id = p.pid
+WHERE
+	sdb.active_date_timestamp = '1603810800' 
+	AND sdb.is_month_xindi = 1 
+group by s.id
+order by p1.id, p.id
+	) AS t;
+
+/* 季度新低 */
+SELECT
+	 (@i:=@i+1) as '序号',
+	t.* 
+FROM
+    (select @i:=0) as it,
+	(
+SELECT
+	s.`code` AS `股票代码`,
+	s.title AS `名称`,
+	s.company_name AS `公司全称`,
+	p1.name AS `分类(一级)`,
+	p.name AS `分类(二级)`,
+	sdb.day_min_price as `季新低价格`,
+	sdb.active_date,
+    p1.id as p1_id,
+    p.id as p2_id
+FROM
+	shares AS s
+	LEFT JOIN shares_details_byday sdb ON sdb.shares__id = s.id 
+	LEFT JOIN shares__plate sp ON s.id = sp.shares__id 
+	LEFT JOIN plate p ON sp.plate__id = p.id
+	LEFT JOIN (select * from plate where 1) as p1 ON p1.id = p.pid
+WHERE
+	sdb.active_date_timestamp = '1603810800' 
+	AND sdb.is_3month_xindi = 1 
+group by s.id
+order by p1.id, p.id
+	) AS t;
+
+
+
+
+SELECT
+	active_date,
+	day_end_price,
+	day_max_price,
+	day_min_price,
+	is_year_xingao,
+	is_year_xindi,
+	is_3month_xindi,
+	is_month_xindi,
+	is_5day_xindi 
+FROM
+	shares_details_byday 
+WHERE
+	shares__id = 1 
+ORDER BY
+	active_date_timestamp;
+	
+update shares_details_byday set has_statistics_year_xindi=0, has_statistics_3month_xindi=0, has_statistics_month_xindi=0, has_statistics_5day_xindi=0 where shares__id<100;
+
+update shares_details_byday set has_statistics_year_xingao=0 where 1;
 
 
 insert into plate
