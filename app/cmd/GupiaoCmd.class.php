@@ -71,7 +71,7 @@ class GupiaoCmd extends baseCmd{
                     $gupiao_service->maAngle();
                 break;
                 /**
-                 * 2. 已网易线路更新股票每日数据
+                 * 2. 以网易线路更新股票每日数据
                  * 更新股票的每日数据:      $gupiao_service->updateOriginal();
                  */
                 case 2:# php cmd.php Gupiao 2
@@ -93,10 +93,10 @@ class GupiaoCmd extends baseCmd{
                  * 计算一年新低:  $gupiao_service->yearXindi();
                  */
                 case 4:# php cmd.php Gupiao 4
-                    // $gupiao_service->updateOriginal(1);
-                    // $gupiao_service->maPrice();
+                    $gupiao_service->updateOriginal(1);
+                    $gupiao_service->maPrice();
                     // $gupiao_service->maAngle();
-                    // $gupiao_service->yearXingao();
+                    $gupiao_service->yearXingao();
                     $gupiao_service->yearXindi();
                 break;
                 /**
