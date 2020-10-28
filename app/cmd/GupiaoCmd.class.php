@@ -109,7 +109,7 @@ class GupiaoCmd extends baseCmd{
                 break;
                 case 0:# php cmd.php Gupiao 0
                     // $gupiao_service->test();
-                    $gupiao_service->constructPlate();
+                    // $gupiao_service->constructPlate();
                     $gupiao_service->shineng();
                 break;
             }
