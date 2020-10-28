@@ -34,6 +34,7 @@ CREATE TABLE `plate` (
     `come_from` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '板块来源参照；0=自定义1；1=东海通；2=益盟-智盈；3=通达信; 4=同花顺1',
     `alias` varchar(255) NOT NULL DEFAULT '' COMMENT '同概念别名，多个以逗号分隔',
     `pid` int unsigned NOT NULL DEFAULT 0 COMMENT '上级id',
+    `is_deprecated` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否弃用；0=否；1=是',
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
