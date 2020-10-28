@@ -147,6 +147,7 @@ CREATE TABLE `daily_index_ths1` (
     `day_end_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日收盘板块指数',
     `day_max_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日最高板块指数',
     `day_min_index` smallint unsigned NOT NULL DEFAULT '' COMMENT '当日最低板块指数',
+    `total_shizhi` varchar(100) NOT NULL DEFAULT '' COMMENT '总市值',
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_plate__id` (`plate__id`),
