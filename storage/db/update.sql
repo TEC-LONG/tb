@@ -3,7 +3,6 @@ CREATE TABLE `shares` (
     `title` varchar(50) NOT NULL DEFAULT '' COMMENT '股票中文名称',
     `code` varchar(30) NOT NULL DEFAULT '' COMMENT '股票代码',
     `type` tinyint NOT NULL DEFAULT 0 COMMENT '股票类型，0=未知；1=深市；2=沪市；',
-    `belongs_to` tinyint NOT NULL DEFAULT 0 COMMENT '股票归属；1=沪市A股；2=深圳A股；3=深市中小板；4=创业板',
     `type_unknow_record` varchar(255) NOT NULL DEFAULT '' COMMENT '如果type值为0，则本字段记录下原始传入的type值',
     `issue_date` varchar(30) NOT NULL DEFAULT '' COMMENT '发行日期',
     `issue_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '发行日期15:00:00时间的时间戳',
@@ -112,6 +111,125 @@ CREATE TABLE `shares_details_byday` (
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票详情表（按天记录)';
+
+0.0的价格数据全部变为None
+为空的价格数据全部变为None
+
+
+CREATE TABLE `date_record` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `active_date` varchar(30) NOT NULL DEFAULT '' COMMENT '行情产生日期',
+    `active_date_timestamp` int unsigned NOT NULL DEFAULT 0 COMMENT '行情产生日期15:00:00时间的时间戳',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_active_date_timestamp` (`active_date_timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='行情日期表';
+
+insert into date_record (active_date_timestamp, active_date, created_time) (select distinct active_date_timestamp, active_date, active_date_timestamp from shares_details_byday where 1 order by active_date_timestamp asc);
+
+
+CREATE TABLE `xingao_and_xindi` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `date_record__id` int unsigned NOT NULL DEFAULT 0 COMMENT '行情日期表id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `title` varchar(50) NOT NULL DEFAULT '' COMMENT '股票中文名称',
+    `code` varchar(30) NOT NULL DEFAULT '' COMMENT '股票代码',
+    `company_name` varchar(100) NOT NULL DEFAULT '' COMMENT '公司名称',
+    `price` varchar(20) NOT NULL DEFAULT '' COMMENT '记录价格',
+    `type` tinyint unsigned NOT NULL DEFAULT 1 COMMENT '类型，1=一年新高；2=5日新低；3=1月新低；4=一个季度新低；5=一年新低',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_code` (`code`),
+    KEY `idx_shares__id` (`shares__id`),
+    KEY `idx_date_record__id` (`date_record__id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='新高新低数据记录表';
+
+
+/* 1年新高 */
+insert into xingao_and_xindi (date_record__id, shares__id, title, code, company_name, price, type, created_time) (select  
+dr.id as dr_id,
+sdb.shares__id,
+s.title,
+s.code,
+s.company_name,
+sdb.day_max_price,
+1,
+sdb.active_date_timestamp
+from date_record dr 
+left join shares_details_byday sdb on sdb.active_date_timestamp=dr.active_date_timestamp
+left join shares s on sdb.shares__id=s.id
+where sdb.is_year_xingao=1
+and s.is_deprecated=0
+order by sdb.active_date_timestamp)
+
+/* 5日新低 */
+insert into xingao_and_xindi (date_record__id, shares__id, title, code, company_name, price, type, created_time) (select  
+dr.id as dr_id,
+sdb.shares__id,
+s.title,
+s.code,
+s.company_name,
+sdb.day_min_price,
+2,
+sdb.active_date_timestamp
+from date_record dr 
+left join shares_details_byday sdb on sdb.active_date_timestamp=dr.active_date_timestamp
+left join shares s on sdb.shares__id=s.id
+where sdb.is_5day_xindi=1
+and s.is_deprecated=0
+order by sdb.active_date_timestamp)
+
+/* 1个月新低 */
+insert into xingao_and_xindi (date_record__id, shares__id, title, code, company_name, price, type, created_time) (select  
+dr.id as dr_id,
+sdb.shares__id,
+s.title,
+s.code,
+s.company_name,
+sdb.day_min_price,
+3,
+sdb.active_date_timestamp
+from date_record dr 
+left join shares_details_byday sdb on sdb.active_date_timestamp=dr.active_date_timestamp
+left join shares s on sdb.shares__id=s.id
+where sdb.is_month_xindi=1
+and s.is_deprecated=0
+order by sdb.active_date_timestamp)
+
+/* 1个季度新低 */
+insert into xingao_and_xindi (date_record__id, shares__id, title, code, company_name, price, type, created_time) (select  
+dr.id as dr_id,
+sdb.shares__id,
+s.title,
+s.code,
+s.company_name,
+sdb.day_min_price,
+4,
+sdb.active_date_timestamp
+from date_record dr 
+left join shares_details_byday sdb on sdb.active_date_timestamp=dr.active_date_timestamp
+left join shares s on sdb.shares__id=s.id
+where sdb.is_3month_xindi=1
+and s.is_deprecated=0
+order by sdb.active_date_timestamp)
+
+/* 1年新低 */
+insert into xingao_and_xindi (date_record__id, shares__id, title, code, company_name, price, type, created_time) (select  
+dr.id as dr_id,
+sdb.shares__id,
+s.title,
+s.code,
+s.company_name,
+sdb.day_min_price,
+5,
+sdb.active_date_timestamp
+from date_record dr 
+left join shares_details_byday sdb on sdb.active_date_timestamp=dr.active_date_timestamp
+left join shares s on sdb.shares__id=s.id
+where sdb.is_year_xindi=1
+and s.is_deprecated=0
+order by sdb.active_date_timestamp)
+
 
 
 CREATE TABLE `daily_weight_ths1` (
@@ -261,6 +379,7 @@ FROM
 WHERE
 	sdb.active_date_timestamp = '1603465200' 
 	AND sdb.is_year_xingao = 1 
+    AND s.is_deprecated = 0 
 group by s.id
 order by p1.id, p.id
 	) AS t;
@@ -291,6 +410,7 @@ FROM
 WHERE
 	sdb.active_date_timestamp = '1603810800' 
 	AND sdb.is_year_xindi = 1 
+    AND s.is_deprecated = 0 
 group by s.id
 order by p1.id, p.id
 	) AS t;
@@ -321,6 +441,7 @@ FROM
 WHERE
 	sdb.active_date_timestamp = '1603810800' 
 	AND sdb.is_month_xindi = 1 
+    AND s.is_deprecated = 0 
 group by s.id
 order by p1.id, p.id
 	) AS t;
@@ -351,6 +472,7 @@ FROM
 WHERE
 	sdb.active_date_timestamp = '1603810800' 
 	AND sdb.is_3month_xindi = 1 
+    AND s.is_deprecated = 0 
 group by s.id
 order by p1.id, p.id
 	) AS t;
