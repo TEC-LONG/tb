@@ -1,10 +1,16 @@
 <?php
 
 namespace blog\gp\controller;
-use \core\controller;
-use \model\ArticleCategoryModel;
-use \Validator;
+use \controller;
+use \Json;
+use \Err;
+use \Fun;
+use \TB;
+class StatisticsPageController extends Controller {
 
-class ArticleCategoryController extends Controller {
-
+    public function xgAndxd(){
+    
+        /// 
+        
+    }
 }
