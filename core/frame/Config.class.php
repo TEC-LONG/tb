@@ -18,7 +18,6 @@ class Config{
         /// 获取各级配置
         # 当前平台
         $plat_env_config_dir_files  = self::getSonFiles($plat_env_config_dir_path, -9, '.path.php');
-        
         self::includes($plat_env_config_dir_files);
 
         # 当前线路
