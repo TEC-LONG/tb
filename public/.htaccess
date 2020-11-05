@@ -1,22 +1,29 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews
-    </IfModule>
+	<IfModule mod_negotiation.c>
+		Options -MultiViews
+	</IfModule>
 
-    RewriteEngine On
+	RewriteEngine On
+	#RewiteBase /
 
-    #Redirect Default Images When User Task Images Were Deleted.
-    RewriteCond %{REQUEST_FILENAME} !-f
-    #RewriteRule ^attachment/task/(.*)\.(jpg|png|jpeg)$ /themes/default/assets/xmpt/img/task_default.png [L,R=301]
+	#当访问的upload下的图片不存在时，默认展示的图片
+	RewriteCond %{REQUEST_FILENAME}  !-f
+	RewriteRule ^upload/(.*)\.(jpg|png|jpeg)$ /upload/editormdimg/2020/02/task_default.png [L,R=301]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)/$ /$1 [L,R=301]
+	# Redirect Trailing Slashes If Not A Folder...
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*)/$ /$1 [L,R=301]
 
-    # Handle Front Controller...
-    RewriteRule ^ index.php [L]
+	# Handle Front Controller...
+	#RewriteCond %{REQUEST_URI} !^/public/
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^ index.php [L]
+
+	#防盗链
+	#RewriteCond %{HTTP_REFERER}!^$ [NC]
+	#RewriteCond %{HTTP_REFERER}!xxx.info [NC]
+	#RewriteRule \.(jpg|gif|png|bmp|swf|jpeg)$ /error/daolian.gif [R,NC,L]
 </IfModule>
 
 #ErrorDocument 404 http://local.teclong.cn/self/manage/user/list
-
-
