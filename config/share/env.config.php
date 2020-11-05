@@ -9,7 +9,7 @@ return [
     'URL' => 'http://local.teclong.cn',
 
     /// 平台 限定
-    'LIMIT_PLAT' => ['self', 'blog', 'api'],
+    'LIMIT_PLAT' => ['self', 'blog', 'api', 'system'],
 
     /// 调试模式
     'DEBUG' => 1,
