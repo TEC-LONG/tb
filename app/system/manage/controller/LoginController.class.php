@@ -22,9 +22,10 @@ class LoginController extends Controller {
 
         //检查验证码
         @session_start();
-        if( $_SESSION['checkcode']!==$request['checkcode'] ) J('验证码不正确！', '/tools/login/index');
+        if( $_SESSION['checkcode']!==$request['checkcode'] ) Fun::jump('/system/manage/login/index', '验证码不正确！');
 
         //检查账号密码
+        $row = 
         $row = M('UserModel')->select('*')->where([
             ['acc', $request['acc']],
             ['level', 1],
