@@ -7,6 +7,7 @@ Route::team(['prefix'=>'system'], function (){
         Route::team(['prefix'=>'login'], function (){
         
             Route::get('/index', 'LoginController@index');
+            Route::post('/check', 'LoginController@check');
         });
     });
 });

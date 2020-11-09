@@ -48,14 +48,13 @@ class TB{
             Log::msg('连接数据库失败！');
             exit;
         }
-    
-        if( isset($this->table) ) $this->gotable($this->table);
+        // if( isset($this->table) ) $this->gotable($this->table);
     }
 
     public static function __callStatic($name, $arguments){
         
         if( empty(self::$TB) ){
-            self::$TB = new self;
+            self::$TB = new static;# 此处不应该用self,而应该使用静态延时绑定的static,以支持子类的继承
         }
         
         return self::magicCommon($name, $arguments);
@@ -64,7 +63,7 @@ class TB{
     public function __call($name, $arguments){
     
         if( empty(self::$TB) ){
-            self::$TB = new self;
+            self::$TB = new static;
         }
 
         return self::magicCommon($name, $arguments);
@@ -398,7 +397,6 @@ class TB{
     }
 
     protected function get_sql($type=1){
-
         $sql = '';
         if( $type==1 ){//返回查询sql语句
 

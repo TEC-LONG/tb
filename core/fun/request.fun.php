@@ -2,5 +2,5 @@
 
 function request(){
 
-    return new RequestTool;
+    return new Request;
 }
