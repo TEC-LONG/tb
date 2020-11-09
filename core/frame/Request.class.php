@@ -1,6 +1,6 @@
 <?php
 
-class RequestTool{
+class Request{
 
     private $_request;
 
@@ -21,8 +21,6 @@ class RequestTool{
      * @return    array
      */
     public function all($mod='s'){
-        var_dump($mod);
-        exit;
         
         /// 公共处理
         $this->_request = $this->str_trim($this->_request);# trim处理

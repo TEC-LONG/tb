@@ -40,7 +40,7 @@
                     <p class="lead">XiTong HouTai</p>
                 </div>
                 <div class="body">
-                    <form class="form-auth-small" action="index.html">
+                    <form class="form-auth-small" method="post" action="{Fun::L('/system/manage/login/check')}">
                         <div class="form-group">
                             <label for="signin-email" class="control-label sr-only">Email</label>
                             <input name="acc" type="email" class="form-control round" id="signin-email" value="" placeholder="YouXiang">
@@ -48,6 +48,10 @@
                         <div class="form-group">
                             <label for="signin-password" class="control-label sr-only">Password</label>
                             <input name="pwd" type="password" class="form-control round" id="signin-password" value="" placeholder="MiMa">
+                        </div>
+                        <div class="form-group">
+                            <label for="signin-verify" class="control-label sr-only">YanZheng</label>
+                            <input name="pwd" type="text" class="form-control round" id="signin-text" value="" placeholder="YanZheng">
                         </div>
                         <div class="form-group clearfix">
                             <label class="fancy-checkbox element-left">
