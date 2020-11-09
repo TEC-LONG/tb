@@ -124,6 +124,24 @@ class Config{
 
     /**
      * 获取 或 设置配置参数
+     * 设置方式1：
+        C('name', 'zhangsan')
+        C('pdo.mysql.host', '192.xxx.xxx.xxx')
+     * 设置方式2：
+        C([
+            'pdo.mysql.host' => '192.xxx.xxx.xxx',
+            'pdo.mysql.port' => '3306'
+        ])
+     * 设置方式3：
+        C([
+            'pdo' => [
+                'mysql' => [
+                    'host' => '192.xxx.xxx.xxx',
+                    'port' => '3306'
+                ]
+            ],
+            'name' => 'zhangsan'
+        ], 'ORIGINAL)
      */
     public static function C($key, $val=null){
 
