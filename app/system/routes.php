@@ -11,5 +11,11 @@ Route::team(['prefix'=>'system'], function (){
         });
 
         Route::get('/index', 'IndexController@index');# 后台首页
+
+        Route::team(['prefix'=>'user'], function (){
+        
+            Route::get('/list', 'UserController@index');# 用户列表
+            Route::post('/edit', 'UserController@edit');# 添加/编辑用户
+        });
     });
 });
