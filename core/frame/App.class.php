@@ -44,8 +44,9 @@ class App{
 
                 $file = APP . '/' . Route::$plat . '/' . Route::$way . '/controller/' . $single_class_name . '.class.php';
             }elseif( substr($className, -7)==='Service' ){
-            
-                // $file = APP . '/' . Route::$plat . '/' . Route::$way . '/service/' . $single_class_name . '.class.php';
+                
+                $file = APP . '/' . implode('/', $class_name_explode) . '.class.php';
+                
             }elseif( substr($className, -6)==='Middle' ){
 
                 $file = CORE_MIDWARE . '/' . $single_class_name . '.class.php';

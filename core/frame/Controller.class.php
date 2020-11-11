@@ -2,6 +2,14 @@
 
 class Controller extends \Smarty{
 
+    /**
+     * 用于保存system后台登录者用户信息
+     */
+    public static $manager=null;
+
+    /**
+     * 构造方法
+     */
     public function __construct(){ 
 
         parent::__construct();
@@ -19,7 +27,6 @@ class Controller extends \Smarty{
 
         $this->setTemplateDir($path . Config::C('SMARTY.TEMPLATE_DIR_NAME'));
         $this->setCompileDir($path . Config::C('SMARTY.TEMPLATE_CACHE_DIR_NAME'));
-
     }
 
 }
