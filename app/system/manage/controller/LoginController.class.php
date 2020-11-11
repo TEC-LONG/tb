@@ -34,7 +34,7 @@ class LoginController extends Controller {
 
         if( $row['pwd']===$user_model->make_pwd($request['pwd'], $row['salt']) ){/// 账号密码正确，登陆成功
 
-            $_SESSION['admin'] = $row;
+            $_SESSION['manager'] = $row;
 
             //如果勾选了七天免登录
 

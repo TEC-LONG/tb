@@ -73,7 +73,7 @@ class IndexController extends Controller {
         ];
 
         /// 分配模板变量  &  渲染模板
-        $this->_datas['manager'] = $this->manager;
+        $this->_datas['manager'] = self::$manager;
         $this->assign($this->_datas);
         $this->display('index.tpl');
     }
