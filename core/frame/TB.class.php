@@ -154,6 +154,86 @@ class TB{
     }
 
     /**
+     * method:为指定目标增加包裹指定符号
+     * @param   $fuhao  string  符号标识
+                    'FANYIN'        反引号
+                    'DANYIN'        单引号
+                    'SHUANGYIN'     双引号
+                    'BAIFEN'        百分号
+                    'XIAOKUO'       小括号
+     */
+    protected function wrapFuhao($target, $fuhao='DANYIN'){
+
+        switch($fuhao){
+        case 'FANYIN':
+            return '`' . $target . '`';
+        case 'DANYIN':
+            return '\'' . $target . '\'';
+        case 'SHUANGYIN':
+            return '"' . $target . '"';
+        case 'BAIFEN':
+            return '%' . $target . '%';
+        case 'KONGGE':
+            return ' ' . $target . ' ';
+        case 'XIAOKUO':
+            return '(' . $target . ')';
+        default:
+            return $target;
+        }
+    }
+
+    /**
+     * method: 替换字符
+     * @param   $type   string  替换类型
+                S2D     双引换成单引
+     */
+    protected function tihuanStr($target, $type='S2D'){
+    
+        switch($type){
+        case 'S2D':
+            return str_replace('"', '\'', $target);
+        default:
+            return $target;
+        }
+    }
+
+    /**
+     * method: gowhere服务方法，负责处理where数据
+     * @param   $where  array   单个条件数组
+                    $where = ['acc', 'like', 'xxx']
+                    $where = ['id', 100]  或  $where = ['id', '=', 100]
+     */
+    protected function gowhere2($where, $tmp_no_need_quote=[], $tmp_need_space=[]){
+    
+        #                                     `xx`.`xx`
+        $where[0] = $this->explodePointField($where[0]);
+
+        if( count($where)==3 ){# 三个元素  $where=['name', '=', 'xxx']
+            
+            if( $where[1]=='like' ){
+                $where[2] = $this->wrapFuhao($where[2], 'BAIFEN');
+            }
+
+            if( !in_array($where[1], $tmp_no_need_quote) ){
+                $where[2] = $this->wrapFuhao($this->tihuanStr($where[2], 'S2D'), 'SHUANGYIN');## 数据两侧加双引号
+            }
+
+            if( in_array($where[1], $tmp_need_space) ){
+                $where = implode(' ', $where);
+            }else{
+                $where = implode('', $where);
+            }
+
+        }else{# 两个元素  $where=['name', 'xxx']
+            
+            $where[1] = $this->wrapFuhao($this->tihuanStr($where[1], 'S2D'), 'SHUANGYIN');
+            $where = $where[0] . '=' . $where[1];
+        }
+
+        return $where;
+    }
+
+    /**
      * method:指定条件
      * @param $where string|array 条件
                 可能的情况有：
@@ -167,69 +247,22 @@ class TB{
      */
     protected function gowhere($where){
 
-        $tmp_no_need_quote = ['in', 'not in', 'between'];//不需要在值两侧包裹引号的
-        $tmp_need_space = ['in', 'not in', 'like', 'between'];//需要在0,1,2元素之间加上空格的
-        if( $this->is2arr($where)==1 ){//一维数组  $where=['name', '=', 'xxx']
+        $tmp_no_need_quote  = ['in', 'not in', 'between'];# 不需要在值两侧包裹引号的
+        $tmp_need_space     = ['in', 'not in', 'like', 'between'];# 需要在0,1,2元素之间加上空格的
 
-            $where[0] = $this->explodePointField($where[0]);# `xx`.`xx`
+        if( $this->is2arr($where)==1 ){/// 一维数组  $where=['name', '=', 'xxx']
 
-            // $where[0] = '`' . $where[0] . '`';//字段两侧加反引号
-            if( count($where)==3 ){//三个元素  $where=['name', '=', 'xxx']
-                
-                if( $where[1]=='like' ){
-                    $where[2] = '%' . $where[2] . '%';
-                }
-
-                if( !in_array($where[1], $tmp_no_need_quote) ){
-                    $where[1] = ' ' . $where[1] . ' ';
-                    $where[2] = '"' . str_replace('"', '\'', $where[2]) . '"';//数据两侧加双引号
-                }
-
-                if( in_array($where[1], $tmp_need_space) ){
-                    $where = implode(' ', $where);
-                }else{
-                    $where = implode('', $where);
-                }
-
-            }else{//两个元素  $where=['name', 'xxx']
-                
-                $where[1] = '"' . str_replace('"', '\'', $where[1]) . '"';
-                $where = $where[0] . '=' . $where[1];
-            }
+            $where = $this->gowhere2($where, $tmp_no_need_quote, $tmp_need_space);
             
-        }elseif( $this->is2arr($where)==2 ){//二维数组    $where=[['name', '=', 'xxx'], ['age', '>=', 10]]
+        }elseif( $this->is2arr($where)==2 ){/// 二维数组    $where=[['name', '=', 'xxx'], ['age', '>=', 10]]
 
             $tmp = [];
             foreach( $where as $one){
                 
-                $son[0] = $this->explodePointField($where[0]);# `xx`.`xx`
-
-                if( count($one)==3 ){//三个元素  $one=['name', '=', 'xxx']
-
-                    if( $one[1]=='like' ){
-                        $one[2] = '%' . $one[2] . '%';
-                    }
-
-                    if( !in_array($one[1], $tmp_no_need_quote) ){
-                        $one[2] = '"' . str_replace('"', '\'', $one[2]) . '"';//  "xxx"//数据两侧加双引号
-                    }
-
-                    if( in_array($one[1], $tmp_need_space) ){
-
-                        $tmp1 = implode(' ', $one);// name in (1, 2, 3)
-                    }else{
-                        $tmp1 = implode('', $one);// name="xxx"
-                    }
-                }else{//两个元素  $one=['name', 'xxx']
-
-                    $one[1] = '"' . str_replace('"', '\'', $one[1]) . '"';
-                    $tmp1 = $one[0] . '=' . $one[1];
-                }
-                
-                $tmp[] = $tmp1;
+                $tmp[] = $this->gowhere2($one, $tmp_no_need_quote, $tmp_need_space);
             }
 
-            $where = implode(' and ', $tmp);//    name="xxx" and age="10"
+            $where = implode(' and ', $tmp);#    name="xxx" and age="10"
         }
 
         // $this->where[] = str_replace('\'', '"', $where);//统一数据包裹符号为双引号（这么做是不对的，没有考虑数据内的引号问题）
@@ -358,7 +391,7 @@ class TB{
         ///得到当前的查询语句
         $sql = $this->get_sql();
 
-        ///将select与from之间的内容替换成$this->pagination_select
+        ///将select与from之间的内容替换成统计聚合函数
         $pattern = '/^select.*from/';
         preg_match($pattern, $sql, $matches);
 
@@ -367,15 +400,15 @@ class TB{
             $this->sql = $sql = str_replace($matches[0], 'select count(*) as num from', $sql);
             
             $re = $this->query(1, $sql);
-            $this->pagination['pageNum'] = $nowPage;
+            $this->pagination['pageNum']    = $nowPage;
             $this->pagination['numPerPage'] = $numPerPage;
 
             if( $re ){
                 $row = $this->pdostatement->fetch(\PDO::FETCH_ASSOC);
                 
-                $this->pagination['totalNum'] = $row['num'];
-                $this->pagination['totalPageNum'] = intval(ceil(($this->pagination['totalNum']/$this->pagination['numPerPage'])));
-                $this->pagination['limitM'] = ($this->pagination['pageNum']-1)*$this->pagination['numPerPage'];
+                $this->pagination['totalNum']       = $row['num'];
+                $this->pagination['totalPageNum']   = intval(ceil(($this->pagination['totalNum']/$this->pagination['numPerPage'])));
+                $this->pagination['limitM']         = ($this->pagination['pageNum']-1)*$this->pagination['numPerPage'];
             }
 
             return $this;
@@ -409,8 +442,6 @@ class TB{
             if(!empty($this->orderby)) $sql .= ' ' . $this->orderby;
             if(!empty($this->limit)) $sql .= ' ' . $this->limit;
 
-            // $sql = 'select ' . $this->select . ' from ' . $this->table . implode(' ', $this->left_join) . ' where ' . implode(' and ', $this->where);
-            // if(!empty($this->limit)) $sql .= ' ' . $this->limit;
         }elseif ($type==2){ //返回 增/删/改 SQL语句
 
             if( $this->flag==='insert' )://新增
@@ -420,50 +451,22 @@ class TB{
                 $sql = sprintf($sql, $this->table, $this->fields, implode(',', $this->insert));
             elseif ($this->flag==='update')://更新
     
-                $count_fields = count($this->update_fields);
-                $count_update = count($this->update);
-                $count_where = count($this->where);
+                $count_fields   = count($this->update_fields);
+                $count_update   = count($this->update);
+                $count_where    = count($this->where);
 
-                $is_accordance = ($count_fields===$count_update) && ($count_fields===$count_where);
-
+                // $is_accordance = ($count_fields===$count_update) && ($count_fields===$count_where);
                 // if(!$is_accordance) echo '字段、数据和条件配对不一致！';
 
                 if( $count_fields===1 ){//单条更新
-                
-                    $count_fields_son = count($this->update_fields[0]);
-                    $count_update_son = count($this->count_update[0]);
-                    
-                    // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
 
-                    $sql = 'UPDATE %s SET %s WHERE %s';
-
-                    $tmp_arr_target = [];
-                    foreach( $this->update_fields[0] as $k=>$field){
-                        $tmp_arr_target[] = isset($this->update[0][$k]) ? $field.'='.$this->update[0][$k] : $field.'='.$this->update[0][$field];
-                    }
-                    $target = implode(',', $tmp_arr_target);
-
-                    $sql = sprintf($sql, $this->table, $target, $this->where[0]);
-
+                    $sql = $this->get_sql2($this->update_fields, $this->count_update, 0);
                 }else{//批量更新
                     
                     $sql = [];
                     foreach( $this->update_fields as $k=>$fields_row){
                     
-                        $count_fields_son = count($this->fields_row);
-                        $count_update_son = count($this->count_update[$k]);
-
-                        // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
-
-                        $tmp_sql = 'UPDATE %s SET %s WHERE %s';
-
-                        $tmp_arr_target = [];
-                        foreach( $fields_row as $k1=>$field){
-                            $tmp_arr_target[] = isset($this->update[$k][$k1]) ? $field.'='.$this->update[$k][$k1] : $field.'='.$this->update[$k][$field];
-                        }
-                        $target = implode(',', $tmp_arr_target);
-
-                        $sql[] = sprintf($tmp_sql, $this->table, $target, $this->where[$k]);
+                        $sql[] = $this->get_sql2($this->update_fields, $this->count_update, $k);
                     }
                 }
                 
@@ -476,6 +479,30 @@ class TB{
         }
 
         return $this->sql=$sql;
+    }
+
+    /**
+     * method: get_sql二次辅助处理方法
+     * @param   $num    int
+     */
+    protected function get_sql2($update_fields, $count_update, $num=0){
+    
+        $count_fields_son = count($update_fields[$num]);
+        $count_update_son = count($count_update[$num]);
+        
+        // if($count_fields_son!==$count_update_son) echo '字段个数与数据个数不匹配';
+
+        $sql = 'UPDATE %s SET %s WHERE %s';
+
+        $tmp_arr_target = [];
+        foreach( $update_fields[$num] as $k=>$field){
+            $tmp_arr_target[] = isset($this->update[$num][$k]) ? $field.'='.$this->update[$num][$k] : $field.'='.$this->update[$num][$field];
+        }
+        $target = implode(',', $tmp_arr_target);
+
+        $sql = sprintf($sql, $this->table, $target, $this->where[$num]);
+
+        return $sql;
     }
 
     /**
@@ -505,7 +532,7 @@ class TB{
                     return $that->explodePointField($elem);
                 }, $fields);
 
-                $this->fields = '(' . implode(',', $fields) . ')';
+                $this->fields = $this->wrapFuhao(implode(',', $fields), 'XIAOKUO');
 
             }elseif ( $this->is2arr($fields)==2 ) {//这个操作只针对搜集更新字段有效
                 
@@ -524,7 +551,7 @@ class TB{
                 return $that->explodePointField(trim($val));
             }, $tmp);//这个操作只针对搜集更新字段有效
 
-            $this->fields = '(' . implode(',', $tmp) . ')';//针对新增
+            $this->fields = $this->wrapFuhao(implode(',', $tmp), 'XIAOKUO');//针对新增
         }
         return $this;
     }
@@ -536,8 +563,13 @@ class TB{
     
         if( !strpos($field, '.') ) return $field;
 
+        $obj = $this;
         $arr = explode('.', $field);
-        return '`'.$arr[0].'`.`'.$arr[1].'`';
+        $arr = array_map(function ($elem) use ($obj){
+            
+            return $obj->wrapFuhao($elem, 'FANYIN');
+        }, $arr);
+        return implode('.', $arr);
     }
 
     protected function godelete(){
@@ -554,46 +586,49 @@ class TB{
      * method:指定更新的数据
      * @param $update array 通过fields方法指定字段对应的更新数据
                 可能的情况有：
-                (1) $update=['aaab', 18, time()]  这种方式用于更新一条数据
+                (1) $update=['aaab', 18, time(), '@age+1']  这种方式用于更新一条数据，带@符号的表示直接使用@后面的数据作为值且无需加引号
                 (2) $update=[
                         ['a', 18, time()],
                         ['b', 18],
-                        ['c', time()]
+                        ['c', time()],
+                        ['d', time(), '@num+1]
                     ]   这种方式用于批量更新数据
      * @return object
      */
     protected function goupdate($update){
 
-        if( $this->is2arr($update)==1 ){//一维数组  $insert=['zhangsan', 12, '@age+1', '@concat(child_ids, ',10')']
+        if( $this->is2arr($update)==1 ){//一维数组  $update=['zhangsan', 12, '@age+1', '@concat(child_ids, ',10')']
 
             $tmp_keys = array_keys($update);
             if(!is_numeric($tmp_keys[0])){//键为字符串类型，则表示传进来的数组下标代表字段名，值为数据值
                 $this->gofields($tmp_keys);
             }
 
-            $this->update[] = array_map(function ($val){
-                if( substr($val, 0, 1)=='@' ){#不加引号
-                    return str_replace('"', '\'', str_replace('@', '', $val));
-                }else{#加引号
-                    return '"' . str_replace('"', '\'', $val) . '"';
-                }
-            }, $update);
+            $this->update[] = $this->goupdate2($update, $this);
         
-        }elseif ($this->is2arr($update)==2) {//二维数组  $insert=[['zhangsan', 12],['lisi', 13]]
+        }elseif ($this->is2arr($update)==2) {//二维数组  $update=[['zhangsan', 12],['lisi', 13, '@age+1']]
             
             foreach( $update as $row){
             
-                $this->update[] = array_map(function ($val){
-                    if( substr($val, 0, 1)=='@' ){#不加引号
-                        return str_replace('"', '\'', str_replace('@', '', $val));
-                    }else{#加引号
-                        return '"' . str_replace('"', '\'', $val) . '"';
-                    }
-                }, $row);
+                $this->update[] = $this->goupdate2($row, $this);
             }
         }
         $this->flag = 'update';//操作标识， update代表接下来如果调用exec方法则将执行update操作
         return $this;
+    }
+
+    /**
+     * method: goupdate方法的二次数据处理方法
+     */
+    protected function goupdate2($update, $that){
+    
+        return array_map(function ($val) use ($that){
+            if( substr($val, 0, 1)=='@' ){#不加引号
+                return $that->tihuanStr(str_replace('@', '', $val), 'S2D');
+            }else{#加引号
+                return $that->wrapFuhao($that->tihuanStr($val, 'S2D'), 'SHUANGYIN');
+            }
+        }, $update);
     }
 
     /**
@@ -615,29 +650,30 @@ class TB{
      */
     protected function goinsert($insert){
         
-        if( $this->is2arr($insert)==1 ){//一维数组  $insert=['zhangsan', 12]或$insert=['name'=>'zhangsan', 'age'=>12]
+        $that = $this;
+        if( $this->is2arr($insert)==1 ){/// 一维数组  $insert=['zhangsan', 12]或$insert=['name'=>'zhangsan', 'age'=>12]
 
             $tmp_keys = array_keys($insert);
-            if(!is_numeric($tmp_keys[0])){//键为字符串类型，则表示传进来的数组下标代表字段名，值为数据值
-                $this->fields = '(' . implode(',', $tmp_keys) . ')';
+            if(!is_numeric($tmp_keys[0])){# 键为字符串类型，则表示传进来的数组下标代表字段名，值为数据值
+                $this->fields = $this->wrapFuhao(implode(',', $tmp_keys), 'XIAOKUO');
             }
 
-            $tmp = array_map(function ($val){
-                return '"' . str_replace('"', '\'', $val) . '"';//为数据两边加上双引号包裹
+            $tmp = array_map(function ($val) use ($that){
+                return $that->wrapFuhao($that->tihuanStr($val, 'S2D'), 'SHUANGYIN');# 为数据两边加上双引号包裹
             }, $insert);
-            $this->insert[] = '(' . implode(',', $tmp) . ')';
+            $this->insert[] = $this->wrapFuhao(implode(',', $tmp), 'XIAOKUO');
         
-        }elseif ($this->is2arr($insert)==2) {//二维数组  $insert=[['zhangsan', 12],['lisi', 13]]
+        }elseif ($this->is2arr($insert)==2) {/// 二维数组  $insert=[['zhangsan', 12],['lisi', 13]]
             
             foreach( $insert as $insert_val){
             
-                $tmp = array_map(function ($val){
-                    return '"' . str_replace('"', '\'', $val) . '"';//为数据两边加上双引号包裹
+                $tmp = array_map(function ($val) use ($that){
+                    return $that->wrapFuhao($this->tihuanStr($val, 'S2D'), 'SHUANGYIN');# 为数据两边加上双引号包裹
                 }, $insert_val);
 
-                $this->insert[] = '(' . implode(',', $tmp) . ')';
+                $this->insert[] = $this->wrapFuhao(implode(',', $tmp), 'XIAOKUO');
             }
-        }else {//字符串    $insert = '"zhangsan", 12'
+        }else {/// 字符串    $insert = '"zhangsan", 12'
 
             $insert_fields_val_arr = explode(',', $insert);
             $insert_fields_val_arr = array_map(function ($elem){
@@ -663,9 +699,8 @@ class TB{
                 return $elem;
             }, $insert_fields_val_arr);
 
-            $insert = '"' . implode('","', $insert_fields_val_arr) . '"';
-
-            $this->insert[] = '(' . $insert . ')';
+            $insert         = $this->wrapFuhao(implode('","', $insert_fields_val_arr), 'SHUANGYIN');
+            $this->insert[] = $this->wrapFuhao($insert, 'XIAOKUO');
         }
 
         $this->flag = 'insert';//操作标识， insert代表接下来如果调用exec方法则将执行insert操作
