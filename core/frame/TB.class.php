@@ -703,7 +703,7 @@ class TB{
             $this->insert[] = $this->wrapFuhao($insert, 'XIAOKUO');
         }
 
-        $this->flag = 'insert';//操作标识， insert代表接下来如果调用exec方法则将执行insert操作
+        $this->flag = 'insert';# 操作标识， insert代表接下来如果调用exec方法则将执行insert操作
         return $this;
     }
 
