@@ -6,15 +6,20 @@ use \model\UserModel;
 use \controller;
 use \Json;
 use \Err;
-use \Fun;
 use \TB;
 class UserController extends Controller {
 
     public function index(){
     
+        /// 初始化参数
         $user_service = new UserService;
-        /// 接收数据
+        # 接收数据
         $request = Fun::request()->all();
+
+        /// 获取用户列表数据
+        $user_list = $user_service->getIndexList($request);
+
+
 
         /* //查询条件(融合搜索条件)
         $con_arr = [['is_del', 0], ['level', 1]];
