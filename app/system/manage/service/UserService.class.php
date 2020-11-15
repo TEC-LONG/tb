@@ -1,7 +1,9 @@
 <?php
 
 namespace system\manage\service;
+use \model\UserModel;
 use \Fun;
+use \TB;
 
 class UserService {
     
@@ -9,6 +11,9 @@ class UserService {
      * 获取用户列表数据
      */
     public function getIndexList($request){
+
+        /// 初始化参数
+        $user_model = new UserModel;
 
         /// 构建查询条件
         $_condi = Fun::tb_condition($request, [
@@ -18,30 +23,22 @@ class UserService {
             ['is_del', 0],
             ['level', 1]
         ]);
+
+        /// 构建查询对象
+        $user_model = $user_model->leftjoin('user_group as ug', 'ug.id=u.user_group__id')->where($_condi);
+
+        # 分页参数
+        $nowPage    = isset($request['pageNum']) ? intval($request['pageNum']) : 1;
+        $page       = $user_model->pagination($nowPage)->pagination;
+
+        $page['numPerPageList'] = [20, 30, 40, 60, 80, 100, 120, 160, 200];
+
+        # 查询数据  'u.*, ug.name as gname'
+        $rows = $user_model->select([
+            
+        ])->limit($page['limitM'], $page['numPerPage'])->get();
+        
     
-        //查询条件(融合搜索条件)
-        $con_arr = [['is_del', 0], ['level', 1]];
-
-        #需要搜索的字段
-        $form_elems = [
-            ['acc', 'like'],
-            ['nickname', 'like']
-        ];
-
-        $con = $this->_condition_string($request, $form_elems, $con_arr);//将条件数组数据转换为条件字符串
-
-        //将搜索的原始数据扔进模板
-        $this->_datas['search'] = $this->_get_ori_search_datas($request, $form_elems);
-
-        //分页参数
-        $this->_datas['page'] = $page = $this->_page('user', $con, $request);
-
-        //查询数据
-        $this->_datas['rows'] = M()->table('user as u')->select('u.*, ug.name as gname')
-        ->leftjoin('user_group as ug', 'ug.id=u.user_group__id')
-        ->where($con)
-        ->limit($page['limitM'] . ',' . $page['numPerPage'])
-        ->get();
     }
 
     /**
