@@ -2,13 +2,13 @@
 
 namespace cmd;
 use \cmd\service\GupiaoService;
-use \baseCmd;
+use \BaseCmd;
 use \Json;
 use \Err;
 use \Fun;
 use \TB;
 
-class GupiaoCmd extends baseCmd{
+class GupiaoCmd extends BaseCmd{
 
     /**
      * 参数名列表

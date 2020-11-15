@@ -5,6 +5,7 @@ class TB{
     protected static $TB;
 
     protected $table;
+    protected $alias;
     protected $select;
     protected $orderby;
     protected $groupby;
@@ -23,7 +24,7 @@ class TB{
     protected $update=[];
     protected $update_fields=[];
 
-    public $pagination=[];
+    // public $pagination=[];
 
     public function __construct($host='',$port='',$char='',$db='',$user='',$pwd=''){
 
@@ -78,9 +79,10 @@ class TB{
 
             $allow_method = [
                 'leftjoin',
-                'pagination',
+                // 'pagination',
                 'dbug',
                 'table',
+                'alias',
                 'select',
                 'where',
                 'orderby',
@@ -127,6 +129,11 @@ class TB{
         return $this;
     }
 
+    protected function goalias($alias){
+        $this->alias = $alias;
+        return $this;
+    }
+
     protected function init(){
     
         $this->e = '';
@@ -145,11 +152,71 @@ class TB{
     /**
      * method:指定查询字段列表
      * @param $select string 字段列表，仅支持字符串类型
-                如：$select='name, age, user.id'
+             1. $select='name, age, user.id'
+             2. $select=[
+                    '字段名'    => '别名',
+                    'cell'     => 'mobile',
+
+                    '字段名'    => [
+                        '别名1',
+                        '别名2',
+                    ],
+                    'name'     => [
+                        'nickname',
+                        'account'
+                    ],
+
+                    '非字段名'      => '别名',
+                    'sum(price)'   => 'total_price',
+
+                    '非字段名'  => [
+                        '别名1',
+                        '别名2‘
+                    ],
+                    ’sum(profit_price)' => [
+                        'profit',
+                        'award_price'
+                    ],
+                    '字段名',
+                    '@值' => '别名',
+                    '@值' => [
+                        '别名1',
+                        '别名2'
+                    ]
+                ]
      * @return object
      */
     protected function goselect($select){
-        $this->select = $select;
+
+        if( is_array($select) ){
+
+            $_sel = [];
+            foreach( $select as $field=>$alias){
+            
+                if( substr($field, 0, 1)=='@' ){# 包含@的字段表示 值 类型
+                    
+                    $field = substr($field, 1);
+                }
+
+                if( is_array($alias) ){# 有多个别名
+                
+                    foreach( $alias as $alias_n){
+                    
+                        $_sel[] = $field . ' as ' . $alias_n;
+                    }
+
+                }else {# 仅有一个别名
+
+                    $_sel[] = $field . ' as ' . $alias;
+                }
+            }
+
+            $this->select = implode(',', $_sel);
+
+        }else{
+
+            $this->select = $select;
+        }
         return $this;
     }
 
@@ -300,8 +367,13 @@ class TB{
                 如：$limit=1 或 $limit='0, 20'
      * @return object
      */
-    protected function golimit($limit){
+    protected function golimit($m, $d=''){
     
+        if( $d==='' ){
+            $limit = $d;
+        }else {
+            $limit = $m . ',' . $d;
+        }
         $this->limit = ' limit ' . $limit;
         return $this;
     }
@@ -386,7 +458,7 @@ class TB{
         endif;
     }
 
-    protected function gopagination($nowPage=1, $numPerPage=32){
+    /* protected function gopagination($nowPage=1, $numPerPage=32){
 
         ///得到当前的查询语句
         $sql = $this->get_sql();
@@ -424,10 +496,7 @@ class TB{
         // $page['limitM'] = ($pageNum-1)*$numPerPage;
 
         // return $page;
-
-        
-
-    }
+    } */
 
     protected function get_sql($type=1){
         $sql = '';
@@ -436,6 +505,8 @@ class TB{
             $sql = 'SELECT %s FROM %s%s WHERE %s';
             if( empty($this->select) ) $this->select='*';
             if( empty($this->where) ) $this->where='1';
+            if( !empty($this->alias) ) $this->table.=' as '.$this->alias;
+
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
 
             if(!empty($this->groupby)) $sql .= ' ' . $this->groupby;

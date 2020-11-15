@@ -1,6 +1,6 @@
 <?php
 
-class baseCmd{
+class BaseCmd{
 
     protected $_datas=[];
 

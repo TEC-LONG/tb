@@ -4,9 +4,9 @@ namespace system\manage\controller;
 use \system\manage\service\UserService;
 use \model\UserModel;
 use \controller;
+use \Fun;
 use \Json;
 use \Err;
-use \TB;
 class UserController extends Controller {
 
     public function index(){
