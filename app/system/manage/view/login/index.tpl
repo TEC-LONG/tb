@@ -51,7 +51,7 @@
                         </div>
                         <div class="form-group">
                             <label for="signin-verify" class="control-label sr-only">YanZheng</label>
-                            <input name="pwd" type="text" class="form-control round" id="signin-text" value="" placeholder="YanZheng">
+                            <input name="ckcode" type="text" class="form-control round" id="signin-text" value="" placeholder="YanZheng">
                         </div>
                         <div class="form-group clearfix">
                             <label class="fancy-checkbox element-left">

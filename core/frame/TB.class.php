@@ -376,7 +376,7 @@ class TB{
     protected function golimit($m, $d=''){
     
         if( $d==='' ){
-            $limit = $d;
+            $limit = $m;
         }else {
             $limit = $m . ',' . $d;
         }

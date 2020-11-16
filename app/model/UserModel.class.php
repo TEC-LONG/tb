@@ -16,7 +16,6 @@ class UserModel extends BaseModel{
 
     public function make_pwd($pwd, $salt=''){
     
-        if($salt==='') $salt = $this->make_salt();
         return md5($salt . md5($pwd) . $salt);
     }
 

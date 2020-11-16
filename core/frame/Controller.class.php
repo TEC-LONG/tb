@@ -27,6 +27,9 @@ class Controller extends \Smarty{
 
         $this->setTemplateDir($path . Config::C('SMARTY.TEMPLATE_DIR_NAME'));
         $this->setCompileDir($path . Config::C('SMARTY.TEMPLATE_CACHE_DIR_NAME'));
+
+        /// 启动session
+        @session_start();
     }
 
 }
