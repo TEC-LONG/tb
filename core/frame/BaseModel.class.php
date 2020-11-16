@@ -6,13 +6,16 @@ class BaseModel extends TB{
 
     public $pagination=[];
     
+    /**
+     * method: 获得适用于jui分页的参数
+     */
     public function pagination($nowPage=1, $numPerPage=32){
 
-        ///得到当前的查询语句
+        /// 得到当前的查询语句
         $sql = $this->get_sql();
 
-        ///将select与from之间的内容替换成统计聚合函数
-        $pattern = '/^select.*from/';
+        /// 将select与from之间的内容替换成统计聚合函数
+        $pattern = '/^select.*from/i';# 忽略大小写
         preg_match($pattern, $sql, $matches);
 
         if( isset($matches[0]) ){

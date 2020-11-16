@@ -5,6 +5,7 @@ use \TB;
 class PermissionModel extends TB{
 
     protected $table = 'permission';
+    protected $alias = 'p';
 
     /**
      * 说明：

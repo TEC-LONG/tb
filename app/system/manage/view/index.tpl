@@ -55,7 +55,7 @@
 								{foreach $menu3 as $k3=>$v3}
 								{if in_array($v3.id, $mp_ids)}
 								{if $v2.id==$v3.parent_id}
-									<li><a href="{if $v3.level3_type==1}{$v3.level3_href}{else}{L($v3.route)}{/if}" target="navtab" rel="{$v3['navtab']}">{$v3.display_name}</a></li>
+									<li><a href="{if $v3.level3_type==1}{$v3.level3_href}{else}{Fun::L($v3.route)}{/if}" target="navtab" rel="{$v3['navtab']}">{$v3.display_name}</a></li>
 								{/if}
 								{/if}
 								{/foreach}

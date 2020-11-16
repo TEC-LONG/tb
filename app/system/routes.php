@@ -10,7 +10,8 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/check', 'LoginController@check');# 后台登录验证
         });
 
-        Route::get('/index', 'IndexController@index')->midware('auth:check');# 后台首页
+        // Route::get('/index', 'IndexController@index')->midware('auth:check');# 后台首页
+        Route::get('/index', 'IndexController@index');# 后台首页
 
         Route::team(['prefix'=>'user'], function (){
         

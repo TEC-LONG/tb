@@ -1,6 +1,7 @@
 <?php
 namespace model;
 use \BaseModel;
+use \Fun;
 
 class UserModel extends BaseModel{
 
@@ -22,7 +23,7 @@ class UserModel extends BaseModel{
     public function make_salt(){
 
         if( $this->_salt==='' ){
-            // $this->_salt = F()->randStr();
+            $this->_salt = Fun::str__rand();
         }
 
         return $this->_salt;
