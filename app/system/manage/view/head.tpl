@@ -65,10 +65,10 @@
     
     
     <script type="text/javascript">
-    // var twice_login_url = "L('/tools/login/check')";
+    var twice_login_url = "{Fun::L('/tools/login/check')}";
     {literal}
-    /* $(function(){
-        DWZ.init(init.url.main+"/public/tools/jui/new/dwz.frag.xml", {
+    $(function(){
+        DWZ.init(init.url.main+"/system/manage/jui/dwz.frag.xml", {
             loginUrl:twice_login_url, loginTitle:"登录",	// 弹出登录对话框
     //		loginUrl:"login.html",	// 跳到登录页面
             statusCode:{ok:200, error:300, timeout:301}, //【可选】
@@ -81,7 +81,7 @@
                 $("#themeList").theme({themeBase:"themes"}); // themeBase 相对于index页面的主题base路径
             }
         });
-    }); */
+    });
     {/literal}
     </script>
     
