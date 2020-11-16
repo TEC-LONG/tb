@@ -20,6 +20,10 @@ class IndexController extends Controller {
         ->leftjoin('permission as p', 'mp.permission__id=p.id')
         ->where(['p.flag', array_search('PLAT', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
 
+        echo '<pre>';
+        print_r($this->_data['menu1']);
+        
+
         $this->_data['menu2'] = TB::table('menu_permission as mp')->select('mp.display_name, mp.id, mp.parent_id')
         ->leftjoin('permission as p', 'mp.permission__id=p.id')
         ->where(['p.flag', array_search('M-LV2', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
@@ -32,13 +36,17 @@ class IndexController extends Controller {
         /// 查询当前用户所具有的权限菜单
         $user_group__id = $_SESSION['admin']['user_group__id'];
         $user_menu = TB::table('user_group_permission')->select('menu_permission__id')->where(['user_group__id', $user_group__id])->get();
-        $this->_datas['mp_ids'] = [];
+        $this->_data['mp_ids'] = [];
         foreach( $user_menu as $v){
-            $this->_datas['mp_ids'][] = $v['menu_permission__id'];
+            $this->_data['mp_ids'][] = $v['menu_permission__id'];
         }
 
+        print_r($this->_data['mp_ids']);
+        exit;
+        
+
         /// 收藏网站
-        $this->_datas['nav_link'] = [# 最多八个大数组，每个大数组中最多12个元素
+        $this->_data['nav_link'] = [# 最多八个大数组，每个大数组中最多12个元素
             [
                 '百度统计' => 'http://tongji.baidu.com/web/welcome/login',
                 '百度站长平台' => 'http://zhanzhang.baidu.com',
@@ -73,8 +81,8 @@ class IndexController extends Controller {
         ];
 
         /// 分配模板变量  &  渲染模板
-        $this->_datas['manager'] = self::$manager;
-        $this->assign($this->_datas);
+        $this->_data['manager'] = self::$manager;
+        $this->assign($this->_data);
         $this->display('index.tpl');
     }
 

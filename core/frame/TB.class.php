@@ -207,7 +207,13 @@ class TB{
 
                 }else {# 仅有一个别名
 
-                    $_sel[] = $field . ' as ' . $alias;
+                    if( is_int($field) ){## 无别名
+                    
+                        $_sel[] = $alias;
+                    }else {
+                        
+                        $_sel[] = $field . ' as ' . $alias;
+                    }
                 }
             }
 
@@ -505,7 +511,7 @@ class TB{
             $sql = 'SELECT %s FROM %s%s WHERE %s';
             if( empty($this->select) ) $this->select='*';
             if( empty($this->where) ) $this->where='1';
-            if( !empty($this->alias) ) $this->table.=' as '.$this->alias;
+            if( strpos($this->table, 'as')===false && !empty($this->alias) ) $this->table.=' as '.$this->alias;
 
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
 

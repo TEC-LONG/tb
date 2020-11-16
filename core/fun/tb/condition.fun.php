@@ -6,7 +6,6 @@
 function condition($request, $search_form_elems, $default_condition=[]){
 
     $_condition = [];
-
     /// 构建默认条件
     if( !empty($default_condition) ){
     
@@ -52,11 +51,15 @@ function mkc_c_search($request, $search_form_elems){
             
                 $form_elem1         = $form_elem[0];
                 $form_elem2         = $form_elem[1];
-                $_condi_son_val     = $request[$form_elem1] . ' and ' . $request[$form_elem2];
 
+                if( !isset($request[$form_elem1]) || !isset($request[$form_elem2]) ) continue;
+
+                $_condi_son_val     = $request[$form_elem1] . ' and ' . $request[$form_elem2];
                 $_condi[$_condi_k]  = [$field_name, $rule, $_condi_son_val];
 
             }elseif( is_string($form_elem) ){# '表单元素名'
+
+                if( !isset($request[$form_elem]) ) continue;
 
                 $_condi_son_val     = $request[$form_elem];
                 $_condi[$_condi_k]  = [$field_name, $rule, $_condi_son_val];
@@ -65,10 +68,12 @@ function mkc_c_search($request, $search_form_elems){
             }
 
         }elseif( is_string($elem[0]) ){# ['表单元素名(数据表字段名与表单元素名一致)', '匹配规则']
-        
-            $form_elem = $field_name    = $elem[0];
-            $_condi_son_val             = $request[$form_elem];
 
+            $form_elem = $field_name    = $elem[0];
+
+            if( !isset($request[$form_elem]) ) continue;
+
+            $_condi_son_val             = $request[$form_elem];
             $_condi[$_condi_k]          = [$field_name, $rule, $_condi_son_val];
         }else{
             continue;
@@ -88,4 +93,6 @@ function mkc_c_search($request, $search_form_elems){
             $con[$elem[0]] = ' REGEXP "' . implode('|', $str_arr) . '"';
         } */
     }
+
+    return $_condi;
 }
