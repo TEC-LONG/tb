@@ -68,6 +68,7 @@
     var twice_login_url = "{Fun::L('/tools/login/check')}";
     {literal}
     $(function(){
+        console.log(init.url.main);
         DWZ.init(init.url.main+"/system/manage/jui/dwz.frag.xml", {
             loginUrl:twice_login_url, loginTitle:"登录",	// 弹出登录对话框
     //		loginUrl:"login.html",	// 跳到登录页面

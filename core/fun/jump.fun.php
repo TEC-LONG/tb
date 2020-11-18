@@ -5,7 +5,7 @@
  * @param   $route
  * @param   $type   1)$type=='echo'为输出并根据指定时间跳转型 2)$type=='page'为中间页面提示后跳转型 3) 直接终止
  */
-function jump($route, $msg='操作成功！', $type='echo', $time=2){
+function jump($route, $msg='操作成功！', $time=2, $type='echo'){
     
     if( $type=='echo' ){
     
