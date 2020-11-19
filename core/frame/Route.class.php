@@ -181,7 +181,16 @@ class Route{
     public static function getPlatAndWay(){
         
         /// 当前URI
-        self::$uri = $URI = $_SERVER['REQUEST_URI'];
+        $URI        = $_SERVER['REQUEST_URI'];
+        preg_match('/^.*\?/U', $URI, $matches);
+
+        if( empty($matches) ){
+        
+            self::$uri = $URI;
+        }else {
+            self::$uri = substr($matches[0], 0, -1);
+        }
+
         if(empty($URI)||$URI==='/') self::$uri=$URI=Config::C('WEB');
 
         /// 拆分
@@ -242,6 +251,14 @@ class Route{
             $routes_gather  = isset(self::$$var_name['routes']) ? self::$$var_name['routes'] : [];
             
             if(!in_array($URI, $routes_gather)){
+                var_dump($URI);
+                var_dump($routes_gather);
+                exit;
+                
+                var_dump(strtolower($_SERVER['REQUEST_METHOD']));
+                var_dump($var_name);
+                var_dump($routes);
+                exit;
                 Log::msg('匹配不到routes对应的规则: '.$URI);
                 header('Location:'.$web_404);
                 exit;
