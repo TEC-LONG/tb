@@ -11,26 +11,26 @@ class UserController extends Controller
     public function userList(){
 
         /// 3)
-        $re = TB::table('plate_prosperity_index_statistics_day')->fields([
-            'plate__id',
-            'numb',
-            'active_date'
-        ])->insert("
-            10,
-            '30.6',
-            '2020-10-01 12:01:02'
-        ")->insert("
-            11,
-            '30.6',
-            '2020-10-01 12:01:02'
-        ")->exec();
+        // $re = TB::table('plate_prosperity_index_statistics_day')->fields([
+        //     'plate__id',
+        //     'numb',
+        //     'active_date'
+        // ])->insert("
+        //     10,
+        //     '30.6',
+        //     '2020-10-01 12:01:02'
+        // ")->insert("
+        //     11,
+        //     '30.6',
+        //     '2020-10-01 12:01:02'
+        // ")->exec();
 
-        var_dump($re); echo '<br/>';
-        $last_insert_id = TB::last_insert_id();
-        var_dump($last_insert_id);
+        // var_dump($re); echo '<br/>';
+        // $last_insert_id = TB::last_insert_id();
+        // var_dump($last_insert_id);
 
 
-
+var_dump(123);
         exit;
         
 
