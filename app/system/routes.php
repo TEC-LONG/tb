@@ -3,6 +3,9 @@
 Route::team(['prefix'=>'system'], function (){
     
     Route::team(['prefix'=>'manage'], function (){
+
+        // Route::get('/index', 'IndexController@index')->midware('auth:check');# 后台首页
+        Route::get('/index', 'IndexController@index');# 后台首页
     
         Route::team(['prefix'=>'login'], function (){
         
@@ -10,13 +13,22 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/check', 'LoginController@check');# 后台登录验证
         });
 
-        // Route::get('/index', 'IndexController@index')->midware('auth:check');# 后台首页
-        Route::get('/index', 'IndexController@index');# 后台首页
-
         Route::team(['prefix'=>'user'], function (){
         
             Route::get('/list', 'UserController@index');# 用户列表
-            Route::post('/edit', 'UserController@edit')->midware('auth:check');# 添加/编辑用户
+            Route::post('/edit', 'UserController@edit');# 添加/编辑用户
+            Route::get('/group', 'UserController@group');# 用户组管理列表
+        });
+
+        Route::team(['prefix'=>'permission'], function (){
+        
+            Route::post('/list', 'PermissionController@list');# 
+            Route::post('/menu', 'PermissionController@menu');# 
+        });
+
+        Route::team(['prefix'=>'menu'], function (){
+        
+            Route::post('/list', 'MenuController@list');# 
         });
     });
 });
