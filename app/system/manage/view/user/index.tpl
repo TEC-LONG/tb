@@ -73,7 +73,7 @@
 		</tbody>
 	</table>
 
-	<form id="pagerForm" method="get" action="{$url.index}">
+	<form id="pagerForm" method="get" action="{Fun::L('/system/manage/user/list')}">
 		<input type="hidden" name="pageNum" value="1" />
 		<input type="hidden" name="numPerPage" value="{$page.numPerPage}" />
 	</form>

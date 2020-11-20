@@ -320,22 +320,27 @@ class TB{
      */
     protected function gowhere($where){
 
-        $tmp_no_need_quote  = ['in', 'not in', 'between'];# 不需要在值两侧包裹引号的
-        $tmp_need_space     = ['in', 'not in', 'like', 'between'];# 需要在0,1,2元素之间加上空格的
-
-        if( $this->is2arr($where)==1 ){/// 一维数组  $where=['name', '=', 'xxx']
-
-            $where = $this->gowhere2($where, $tmp_no_need_quote, $tmp_need_space);
+        if( empty($where) ){
             
-        }elseif( $this->is2arr($where)==2 ){/// 二维数组    $where=[['name', '=', 'xxx'], ['age', '>=', 10]]
+            $where = 1;
+        }else{
+            $tmp_no_need_quote  = ['in', 'not in', 'between'];# 不需要在值两侧包裹引号的
+            $tmp_need_space     = ['in', 'not in', 'like', 'between'];# 需要在0,1,2元素之间加上空格的
 
-            $tmp = [];
-            foreach( $where as $one){
+            if( $this->is2arr($where)==1 ){/// 一维数组  $where=['name', '=', 'xxx']
+
+                $where = $this->gowhere2($where, $tmp_no_need_quote, $tmp_need_space);
                 
-                $tmp[] = $this->gowhere2($one, $tmp_no_need_quote, $tmp_need_space);
-            }
+            }elseif( $this->is2arr($where)==2 ){/// 二维数组    $where=[['name', '=', 'xxx'], ['age', '>=', 10]]
 
-            $where = implode(' and ', $tmp);#    name="xxx" and age="10"
+                $tmp = [];
+                foreach( $where as $one){
+                    
+                    $tmp[] = $this->gowhere2($one, $tmp_no_need_quote, $tmp_need_space);
+                }
+
+                $where = implode(' and ', $tmp);#    name="xxx" and age="10"
+            }
         }
 
         // $this->where[] = str_replace('\'', '"', $where);//统一数据包裹符号为双引号（这么做是不对的，没有考虑数据内的引号问题）

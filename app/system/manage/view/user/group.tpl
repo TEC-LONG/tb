@@ -1,11 +1,11 @@
 
 <div class="pageHeader">
-	<form onsubmit="return navTabSearch(this);" action="{$url.group.url}" method="post">
+	<form onsubmit="return navTabSearch(this);" action="" method="post">
 	<div class="searchBar">
 		<table class="searchContent">
 			<tr>
 				<td>
-					组名：<input type="text" name="s_name" value="{$search.s_name}" />
+					组名：<input type="text" name="s_name" value="" />
 				</td>
 				<td>
 					<div class="buttonActive"><div class="buttonContent"><button type="submit">检索</button></div></div>
@@ -23,7 +23,7 @@
 <div class="pageContent">
 	<div class="panelBar">
 		<ul class="toolBar">
-			<li><a class="add" href="{$url.gAdUpd.url}" target="dialog" rel="{$url.gAdUpd.rel}" minable="false" width="750" height="240"><span>新增用户组</span></a></li>
+			<li><a class="add" href="" target="dialog" rel="" minable="false" width="750" height="240"><span>新增用户组</span></a></li>
 		</ul>
 	</div>
 	<table class="table" width="100%" layoutH="138">
@@ -33,6 +33,9 @@
 				{foreach $thead as $col}
 				<th {if !empty($col.width)}width="{$col.width}"{/if}>{$col.ch}</th>
 				{/foreach}
+				<th width="160">组名</th>
+				<th width="120">排序</th>
+				<th width="30">ID</th>
 				<th width="120">操作</th>
 			</tr>
 		</thead>
@@ -44,16 +47,16 @@
 				<td>{$row.sort}</td>
 				<td>{$row.id}</td>
 				<td>
-					<a title="确实要删除？" target="ajaxTodo" href="{$url.del.url}?tb=usergroup&id={$row['id']}" class="btnDel">删除</a>
-					<a title="编辑用户组" target="dialog" href="{$url.gAdUpd.url}?id={$row['id']}" class="btnEdit" rel="{$url.gAdUpd.rel}"  minable="false" width="650" height="440">编辑用户组</a>
-					<a title="设置用户组权限" target="dialog" href="{$url.gpermission.url}?id={$row['id']}" class="btnAssign" rel="{$url.gpermission.rel}"  minable="false" width="950" height="740">设置用户组权限</a>
+					<a title="确实要删除？" target="ajaxTodo" href="" class="btnDel">删除</a>
+					<a title="编辑用户组" target="dialog" href="" class="btnEdit" rel=""  minable="false" width="650" height="440">编辑用户组</a>
+					<a title="设置用户组权限" target="dialog" href="" class="btnAssign" rel=""  minable="false" width="950" height="740">设置用户组权限</a>
 				</td>
 			</tr>
 			{/foreach}
 		</tbody>
 	</table>
 
-	<form id="pagerForm" method="get" action="{$url.group.url}">
+	<form id="pagerForm" method="get" action="{Fun::L('/system/manage/user/group')}">
 		<input type="hidden" name="pageNum" value="1" />
 		<input type="hidden" name="numPerPage" value="{$page.numPerPage}" />
 		<input type="hidden" name="s_name" value="{$search.s_name}" />
