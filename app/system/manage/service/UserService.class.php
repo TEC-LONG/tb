@@ -14,7 +14,7 @@ class UserService {
     public function getUserList($request){
 
         /// 初始化参数
-        $user_model = new UserModel;
+        $user_model = new UserModel('u');
 
         /// 构建查询条件
         $_condi = Fun::tb__condition($request, [

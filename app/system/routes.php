@@ -22,13 +22,13 @@ Route::team(['prefix'=>'system'], function (){
 
         Route::team(['prefix'=>'permission'], function (){
         
-            Route::post('/list', 'PermissionController@list');# 
-            Route::post('/menu', 'PermissionController@menu');# 
+            Route::get('/list', 'PermissionController@list');# 
+            Route::get('/menu', 'PermissionController@menu');# 
         });
 
         Route::team(['prefix'=>'menu'], function (){
         
-            Route::post('/list', 'MenuController@list');# 
+            Route::get('/list', 'MenuController@list');# 
         });
     });
 });

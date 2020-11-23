@@ -5,7 +5,21 @@ use \TB;
 class BaseModel extends TB{
 
     public $pagination=[];
+
+    /**
+     * 构造方法
+     */
+    public function __construct($tb_new_alias=''){
     
+        parent::__construct();
+
+        /// 重置表名别名
+        if( !empty($tb_new_alias) ){
+        
+            $this->alias = $tb_new_alias;
+        }
+    }
+
     /**
      * method: 获得适用于jui分页的参数
      */

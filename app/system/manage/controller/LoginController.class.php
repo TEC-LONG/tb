@@ -40,7 +40,7 @@ class LoginController extends Controller {
             # 如果勾选了七天免登录
 
             # 跳转后台首页
-            Fun::jump('/system/manage/index', '登录成功', 2);
+            Fun::jump('/system/manage/index', '登录成功', 0);
             
         }else{/// 账号或密码不正确，登陆失败
             Fun::jump('/system/manage/login/index', '密码错误');
