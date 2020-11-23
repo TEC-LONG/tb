@@ -28,6 +28,9 @@ class MenuController extends Controller {
         $this->display('menu/index.tpl');
     }
 
+    /**
+     * 获取子菜单
+     */
     public function menuChild(){ 
 
         /// 初始化参数
