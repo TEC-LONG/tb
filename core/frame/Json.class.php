@@ -6,7 +6,8 @@ class Json{
 
     public function __construct(){
         
-        $this->goobj()->gostat()->gomsg();
+        // $this->goobj()->gostat()->gomsg();
+        $this->goobj();
 
         return $this;
     }
@@ -34,7 +35,7 @@ class Json{
      */
     private static function magicCommon($name, $arguments){
     
-        Err::try(function () use ($name, $arguments){
+        $re = Err::try(function () use ($name, $arguments){
         
             if( in_array($name, ['obj', 'stat', 'msg', 'navtab', 'vars', 'exec', 'decode']) ){
             
@@ -46,6 +47,12 @@ class Json{
 
         }, 'exit');
 
+        /// 需要返回try结果的
+        if( in_array($name, ['exec']) ){
+            return $re;
+        }
+
+        /// 需要返回Json对象的
         return self::$Json;
     }
 
@@ -74,7 +81,7 @@ class Json{
      */
     private function goobj($str='{}'){
         
-        $this->_re = json_decode($str);
+        $this->_re = json_decode($str, true);
 
         return $this;
     }

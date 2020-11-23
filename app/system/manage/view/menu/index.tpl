@@ -38,37 +38,37 @@
 	/*初始化参数*/
 	var one = {json_encode($one)};
 	var url = init.url.main+'/system/manage/menu/child';
+	var navtab = "{$navatab}";
 	</script>
 	
 	
 		<div class="wareSort clearfix">
-			<ul id="sort1"></ul>
-			<ul id="sort2" style="display: none;"></ul>
-			<ul id="sort3" style="display: none;"></ul>
+			<ul id="{$navatab}_sort1"></ul>
+			<ul id="{$navatab}_sort2" style="display: none;"></ul>
+			<ul id="{$navatab}_sort3" style="display: none;"></ul>
 		</div>
-		<div class="selectedSort"><b>您当前选择的商品类别是：</b><i id="selectedSort"></i></div>
+		<div class="selectedSort"><b>您当前选择的商品类别是：</b><i id="{$navatab}_selectedSort"></i></div>
 	
 		<div class="pageFormContent" layoutH="60">
 		<!-- 添加 -->
 			<form method="post" action="{$url.adh}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
 			<fieldset>
-				<legend>添加EXP分类</legend>
+				<legend>添加菜单</legend>
 				<dl>
-					<dt><div class="button"><div class="buttonContent"><button  id="FIRE_resetCatPid">重置父分类到顶级</button></div></div></dt>
+					<dt><div class="button"><div class="buttonContent"><button  id="{$navatab}_resetCatPid">重置父级菜单到顶级</button></div></div></dt>
 					<dd>
-						<input type="hidden" id="FIRE_parent_id" name="pid" value="0">
-						<input type="hidden" id="FIRE_parent_level" name="plevel" value="0">
-						<!-- <input type="hidden" id="FIRE_parent_child_num" name="pchild_num" value="0"> -->
+						<input type="hidden" id="{$navatab}_parent_id" name="pid" value="0">
+						<input type="hidden" id="{$navatab}_parent_level" name="plevel" value="0">
 					</dd>
 				</dl>
 				<dl>
-					<dt>EXP分类名称：</dt>
+					<dt>菜单名称：</dt>
 					<dd><input class="required" name="name" type="text" /></dd>
 				</dl>
 				<dl class="nowrap"></dl>
 				<dl></dl>
 				<dl>
-					<dt><div class="buttonActive"><div class="buttonContent"><button type="submit">执行新增EXP分类</button></div></div></dt>
+					<dt><div class="buttonActive"><div class="buttonContent"><button type="submit">执行新增分类</button></div></div></dt>
 					<dd></dd>
 				</dl>
 			</fieldset>
@@ -78,18 +78,18 @@
 			<!-- 编辑 -->
 			<form method="post" action="{$url.edith}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
 				<fieldset>
-					<legend>编辑【<strong class="FIRE_show_cat_name">EXP分类</strong>】</legend>
+					<legend>编辑【<strong class="{$navatab}_show_cat_name">菜单</strong>】</legend>
 					<dl class="nowrap">
-						<dt>新分类名称：</dt>
+						<dt>新菜单名称：</dt>
 						<dd>
-							<input type="hidden" class="FIRE_this_cat_id" name="id">
-							<input type="hidden" class="FIRE_this_cat_name" name="ori_name">
-							<input class="required FIRE_this_cat_name" id="FIRE_this_cat_name" name="name" type="text" />
+							<input type="hidden" class="{$navatab}_this_cat_id" name="id">
+							<input type="hidden" class="{$navatab}_this_cat_name" name="ori_name">
+							<input class="required {$navatab}_this_cat_name" id="{$navatab}_this_cat_name" name="name" type="text" />
 						</dd>
 					</dl>
 					<dl></dl>
 					<dl>
-						<dt><div class="buttonActive"><div class="buttonContent"><button type="submit">执行修改EXP分类</button></div></div></dt>
+						<dt><div class="buttonActive"><div class="buttonContent"><button type="submit">执行修改菜单</button></div></div></dt>
 						<dd></dd>
 					</dl>
 				</fieldset>
@@ -104,49 +104,49 @@
 	var cascade_beauty = new CascadeBeauty({
 		"one": one,
 		"url": url,
-		"sort1": "sort1",
-		"sort2": "sort2",
-		"sort3": "sort3",
-		"crumb_id": "selectedSort",
+		"sort1": navtab+"_sort1",
+		"sort2": navtab+"_sort2",
+		"sort3": navtab+"_sort3",
+		"crumb_id": navtab+"_selectedSort",
 		"showLv1Call": function (obj){
 	
-			$("#FIRE_parent_id").val("0");
-			$("#FIRE_parent_level").val("0");
-			// $("#FIRE_parent_child_num").val("0");
-			$(".FIRE_this_cat_name").val("");
-			$(".FIRE_show_cat_name").html("EXP分类");
+			$("#"+navtab+"_parent_id").val("0");
+			$("#"+navtab+"_parent_level").val("0");
+			// $("#"+navtab+"_parent_child_num").val("0");
+			$("."+navtab+"_this_cat_name").val("");
+			$("."+navtab+"_show_cat_name").html("EXP分类");
 		},
 		"showLv2Call": function (now_select_one, obj){
 	
-			$("#FIRE_parent_id").val(now_select_one.id);
-			$("#FIRE_parent_level").val(now_select_one.level);
-			// $("#FIRE_parent_child_num").val(now_select_one.child_num);
+			$("#"+navtab+"_parent_id").val(now_select_one.id);
+			$("#"+navtab+"_parent_level").val(now_select_one.level);
+			// $("#"+navtab+"_parent_child_num").val(now_select_one.child_num);
 	
-			$(".FIRE_this_cat_id").val(now_select_one.id);
-			$(".FIRE_this_cat_name").val(now_select_one.name);
-			$(".FIRE_show_cat_name").html(now_select_one.name);
+			$("."+navtab+"_this_cat_id").val(now_select_one.id);
+			$("."+navtab+"_this_cat_name").val(now_select_one.name);
+			$("."+navtab+"_show_cat_name").html(now_select_one.name);
 		},
 		"showLv3Call": function (now_select_two, obj) {
 			
-			$("#FIRE_parent_id").val(now_select_two.id);
-			$("#FIRE_parent_level").val(now_select_two.level);
-			// $("#FIRE_parent_child_num").val(now_select_two.child_num);
+			$("#"+navtab+"_parent_id").val(now_select_two.id);
+			$("#"+navtab+"_parent_level").val(now_select_two.level);
+			// $("#"+navtab+"_parent_child_num").val(now_select_two.child_num);
 	
-			$(".FIRE_this_cat_id").val(now_select_two.id);
-			$(".FIRE_this_cat_name").val(now_select_two.name);
-			$(".FIRE_show_cat_name").html(now_select_two.name);
+			$("."+navtab+"_this_cat_id").val(now_select_two.id);
+			$("."+navtab+"_this_cat_name").val(now_select_two.name);
+			$("."+navtab+"_show_cat_name").html(now_select_two.name);
 		},
 		"selectLv3Call": function (now_select_three, obj) {
-			$(".FIRE_this_cat_id").val(now_select_three.id);
-			$(".FIRE_this_cat_name").val(now_select_three.name);
-			$(".FIRE_show_cat_name").html(now_select_three.name);
+			$("."+navtab+"_this_cat_id").val(now_select_three.id);
+			$("."+navtab+"_this_cat_name").val(now_select_three.name);
+			$("."+navtab+"_show_cat_name").html(now_select_three.name);
 		}
 	});
 	
 	/// 加载页面时显示所有一级分类
 	cascade_beauty.showLv1();
 	/// 点击重置时初始化到仅展示一级分类
-	$('#FIRE_resetCatPid').click(function (){
+	$('#'+navtab+'_resetCatPid').click(function (){
 		cascade_beauty.showLv1();
 		return false;
 	});
