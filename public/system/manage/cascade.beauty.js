@@ -91,7 +91,7 @@ three = [
 	this.arrow = ' <font>&gt;</font> ';
 
 	this.showLv1 = function () { // show level 1
-		
+
 		var one_area = "";
 		for (var one_k=0; one_k<this.one.length; one_k++) {
 			
@@ -151,7 +151,6 @@ three = [
 		for (var two_key=0; two_key<this.two[one_key].length; two_key++) {
 			two_area += '<li onClick="selectLv2(' + one_key + ',' + two_key + ');"><a href="javascript:void(0)">' + this.two[one_key][two_key].name + '</a></li>';
 		}
-
 		$(this.sort2Id).html(two_area).show();
 		$(this.sort3Id).hide();
 		$(this.sort1Id+" li").eq(one_key).addClass("active").siblings("li").removeClass("active");
