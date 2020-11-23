@@ -1,11 +1,10 @@
 <?php
 namespace model;
-use \TB;
+use \BaseModel;
 
-class PermissionModel extends TB{
+class PermissionModel extends BaseModel{
 
     protected $table = 'permission';
-    protected $alias = 'p';
 
     /**
      * 说明：

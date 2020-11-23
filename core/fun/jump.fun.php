@@ -19,7 +19,13 @@ function jump($route, $msg='操作成功！', $time=2, $type='echo'){
             $url = Config::C('URL') . $route;
         }
     
-        header("Refresh:{$time}; url={$url}");
+        if( $time==0 ){
+        
+            header('Location:'.$url);
+        }else{
+        
+            header("Refresh:{$time}; url={$url}");
+        }
 
     }elseif( $type=='page' ){
     
