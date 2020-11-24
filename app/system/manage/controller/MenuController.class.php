@@ -46,4 +46,65 @@ class MenuController extends Controller {
         echo Json::vars($child_info)->exec('return');
     }
 
+    /**
+     * 新增菜单
+     */
+    public function add(){
+
+        try{
+            /// 初始化参数
+            $menu_permission_service = new MenuPermissionService;
+            # 接收数据
+            $request = Fun::request()->all();
+
+            /// 新增菜单
+            $menu_permission_service->createMenu($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => '操作失败！'
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'navTabId'      => Route::$navtab,
+            'message'       => '添加成功！'
+        ])->exec('return');
+
+    }
+
+    /**
+     * 修改菜单
+     */
+    public function upd(){
+
+        try{
+            /// 初始化参数
+            $menu_permission_service = new MenuPermissionService;
+            # 接收数据
+            $request = Fun::request()->all();
+
+            /// 修改菜单
+            $menu_permission_service->editMenu($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => '操作失败！'
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'navTabId'      => Route::$navtab,
+            'message'       => '修改EXP分类成功！'
+        ])->exec('return');
+    }
+
 }
