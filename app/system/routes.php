@@ -30,6 +30,8 @@ Route::team(['prefix'=>'system'], function (){
         
             Route::get('/list', 'MenuController@list')->navtab('system_manage_menuList');# （左侧）菜单管理
             Route::post('/child', 'MenuController@menuChild');# 获取指定菜单的子菜单
+            Route::post('/add', 'MenuController@add');# 
+            Route::post('/upd', 'MenuController@upd');# 
         });
     });
 });

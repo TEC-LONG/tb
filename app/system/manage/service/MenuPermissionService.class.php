@@ -4,6 +4,7 @@ namespace system\manage\service;
 use \model\MenuPermissionModel;
 use \Fun;
 use \TB;
+use \Err;
 
 class MenuPermissionService {
     
@@ -55,6 +56,54 @@ class MenuPermissionService {
         }
 
         return $child;
+    }
+
+    /**
+     * 新增菜单
+     */
+    public function createMenu($request){
+
+        /// 初始化参数
+        $menu_permission_model = new MenuPermissionModel;
+
+        /// 组装数据
+        $data = [
+            'display_name'  => $request['name'],
+            'parent_id'     => $request['pid'],
+            'post_date'     => time(),
+            'level'         => $request['plevel']+1
+        ];
+
+        /// 执行新增
+        if( !$re = $menu_permission_model->insert($data)->exec() ){
+        
+            Err::throw('添加失败!');
+        }
+    }
+
+    /**
+     * 修改菜单
+     */
+    public function editMenu($request){
+
+        /// 初始化参数
+        $data                   = [];
+        $menu_permission_id     = $request['id'];
+        $menu_permission_model  = new MenuPermissionModel;
+
+        /// 组装数据
+        if( $request['name']!==$request['ori_name'] ){
+
+            $data['display_name'] = $request['name'];
+        }
+
+        if(empty($data)) Err::throw('数据没有变化，请先修改数据！');
+
+        /// 执行修改
+        if( !$re = $menu_permission_model->update($data)->where(['id', $menu_permission_id])->exec() ){
+            
+            Err::throw('修改操作失败！');
+        }
     }
 
     

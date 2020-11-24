@@ -51,7 +51,7 @@
 	
 		<div class="pageFormContent" layoutH="60">
 		<!-- 添加 -->
-			<form method="post" action="{$url.adh}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
+			<form method="post" action="{Fun::L('/system/manage/menu/add')}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
 			<fieldset>
 				<legend>添加菜单</legend>
 				<dl>
@@ -76,7 +76,7 @@
 	
 	
 			<!-- 编辑 -->
-			<form method="post" action="{$url.edith}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
+			<form method="post" action="{Fun::L('/system/manage/menu/upd')}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
 				<fieldset>
 					<legend>编辑【<strong class="{$navatab}_show_cat_name">菜单</strong>】</legend>
 					<dl class="nowrap">
