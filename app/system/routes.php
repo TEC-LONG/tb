@@ -22,7 +22,9 @@ Route::team(['prefix'=>'system'], function (){
 
         Route::team(['prefix'=>'permission'], function (){
         
-            Route::get('/list', 'PermissionController@list');# 
+            Route::get('/list', 'PermissionController@list')->navtab('system_manage_permissionList');# 权限管理列表
+            Route::get('/edit', 'PermissionController@edit')->navtab('system_manage_permissionEdit');# 新增/编辑 权限页面
+            Route::get('/post', 'PermissionController@post')->navtab('system_manage_permissionEdit');# 新增/编辑 权限功能
             Route::get('/menu', 'PermissionController@menu');# 
         });
 
@@ -30,8 +32,8 @@ Route::team(['prefix'=>'system'], function (){
         
             Route::get('/list', 'MenuController@list')->navtab('system_manage_menuList');# （左侧）菜单管理
             Route::post('/child', 'MenuController@menuChild');# 获取指定菜单的子菜单
-            Route::post('/add', 'MenuController@add');# 
-            Route::post('/upd', 'MenuController@upd');# 
+            Route::post('/add', 'MenuController@add')->navtab('system_manage_menuList');# 新增菜单功能
+            Route::post('/upd', 'MenuController@upd')->navtab('system_manage_menuList');# 编辑菜单功能
         });
     });
 });
