@@ -24,7 +24,8 @@ Route::team(['prefix'=>'system'], function (){
         
             Route::get('/list', 'PermissionController@list')->navtab('system_manage_permissionList');# 权限管理列表
             Route::get('/edit', 'PermissionController@edit')->navtab('system_manage_permissionEdit');# 新增/编辑 权限页面
-            Route::get('/post', 'PermissionController@post')->navtab('system_manage_permissionEdit');# 新增/编辑 权限功能
+            Route::post('/post', 'PermissionController@post')->navtab('system_manage_permissionList');# 新增/编辑 权限功能
+            Route::post('/del', 'PermissionController@del')->navtab('system_manage_permissionList');# 删除 权限功能
             Route::get('/menu', 'PermissionController@menu');# 
         });
 

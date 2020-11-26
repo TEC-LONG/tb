@@ -64,7 +64,7 @@ class MenuController extends Controller {
 
             echo Json::vars([
                 'statusCode'    => 300,
-                'message'       => '操作失败！'
+                'message'       => $err->getMessage(),
             ])->exec('return');
             exit;
         }
@@ -95,7 +95,7 @@ class MenuController extends Controller {
 
             echo Json::vars([
                 'statusCode'    => 300,
-                'message'       => '操作失败！'
+                'message'       => $err->getMessage(),
             ])->exec('return');
             exit;
         }
