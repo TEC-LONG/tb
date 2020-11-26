@@ -68,7 +68,7 @@ class MenuController extends Controller {
             ])->exec('return');
             exit;
         }
-
+        
         echo Json::vars([
             'statusCode'    => 200,
             'navTabId'      => Route::$navtab,

@@ -114,7 +114,7 @@ $('.gp_contro').bind('click', function () {
 		checkboxes.prop("checked",true);
 		all_checkboxes.prop("checked",true);
 		var gp_lv = $(this).attr('lv');
-		console.log(gp_lv);
+		// console.log(gp_lv);
 		parentCheck(gp_lv);
 	}
 });
