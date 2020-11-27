@@ -75,7 +75,41 @@ class PermissionController extends Controller {
 
             echo Json::vars([
                 'statusCode'    => 300,
-                'message'       => '操作失败！'
+                'message'       => $err->getMessage(),
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'message'       => '操作成功！',
+            'navTabId'      => Route::$navtab
+        ])->exec('return');
+    }
+
+    /**
+     * 删除 权限功能处理
+     */
+    public function del(){
+
+        try{
+             /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 检查数据
+            //check($request,  $this->_extra['form-elems'])
+
+            /// 初始化参数
+            $permission_service = new PermissionService;
+
+            /// 执行处理
+            $permission_service->permissionDel($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => $err->getMessage(),
             ])->exec('return');
             exit;
         }
