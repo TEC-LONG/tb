@@ -3,12 +3,11 @@
 namespace system\manage\controller;
 use \system\manage\service\MenuPermissionService;
 use \controller;
+use \Validator;
 use \Route;
 use \Json;
 use \Err;
 use \Fun;
-use \TB;
-
 class MenuController extends Controller {
 
     /**
@@ -47,15 +46,36 @@ class MenuController extends Controller {
     }
 
     /**
+     * 校验 add方法 参数
+     */
+    private function addValidate($request){
+    
+        $validator = Validator::make($request, [
+            'level'         => 'required$||int',
+            'parent_id'     => 'required$||int',
+            'display_name'  => 'required'
+        ]);
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
      * 新增菜单
      */
     public function add(){
 
         try{
+            /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 校验参数
+            $this->addValidate($request);
+
             /// 初始化参数
             $menu_permission_service = new MenuPermissionService;
-            # 接收数据
-            $request = Fun::request()->all();
 
             /// 新增菜单
             $menu_permission_service->createMenu($request);
@@ -74,7 +94,21 @@ class MenuController extends Controller {
             'navTabId'      => Route::$navtab,
             'message'       => '添加成功！'
         ])->exec('return');
+    }
 
+    /**
+     * 校验 add方法 参数
+     */
+    private function updValidate($request){
+    
+        $validator = Validator::make($request, [
+            'id' => 'required$||int'
+        ]);
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
     }
 
     /**
@@ -83,10 +117,14 @@ class MenuController extends Controller {
     public function upd(){
 
         try{
+            /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 校验参数
+            $this->updValidate($request);
+
             /// 初始化参数
             $menu_permission_service = new MenuPermissionService;
-            # 接收数据
-            $request = Fun::request()->all();
 
             /// 修改菜单
             $menu_permission_service->editMenu($request);

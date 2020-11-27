@@ -90,7 +90,15 @@ if( !function_exists('condition') ){
 
             }elseif( is_string($elem[0]) ){# ['表单元素名(数据表字段名与表单元素名一致)', '匹配规则']
 
-                $form_elem = $field_name = $elem[0];
+                if( strpos($elem[0], '.') ){
+                
+                    $_str       = explode('.', $elem[0]);## u.nickname
+                    $form_elem  = $_str[1];
+                    $field_name = $elem[0];
+                }else{
+                    $form_elem = $field_name = $elem[0];
+                }
+                
                 if( !isset($request[$form_elem]) ) continue;
 
                 $_condi_son_val             = $request[$form_elem];

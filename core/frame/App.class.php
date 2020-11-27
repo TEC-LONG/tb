@@ -69,7 +69,7 @@ class App{
 
         $file = '';
     
-        if( in_array($single_class_name, ['TB', 'Json', 'Fun', 'Request', 'BaseCmd', 'BaseModel']) ){
+        if( in_array($single_class_name, ['TB', 'Json', 'Fun', 'Request', 'BaseCmd', 'BaseModel', 'Validator']) ){
             
             $file = CORE_FRAME . '/' . $single_class_name . '.class.php';
         }elseif ( substr($single_class_name, -5)==='Model' ) {

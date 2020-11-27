@@ -2,9 +2,8 @@
 
 namespace system\manage\service;
 use \model\MenuPermissionModel;
-use \Fun;
-use \TB;
 use \Err;
+use \Fun;
 
 class MenuPermissionService {
     
