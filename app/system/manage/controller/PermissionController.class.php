@@ -6,9 +6,7 @@ use \model\PermissionModel;
 use \controller;
 use \Route;
 use \Json;
-use \Err;
 use \Fun;
-use \TB;
 
 class PermissionController extends Controller {
 
