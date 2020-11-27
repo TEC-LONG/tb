@@ -1,5 +1,5 @@
 <div class="pageContent">
-	<form method="post" action="" class="pageForm required-validate" onsubmit="return validateCallback(this, permissionAjaxDone);">
+	<form method="post" action="{Fun::L('/system/manage/permission/post')}" class="pageForm required-validate" onsubmit="return validateCallback(this, permissionAjaxDone);">
 		{if isset($row.id)}
 		<input type="hidden" name="id" value="{$row.id}">
 		{/if}
@@ -35,6 +35,7 @@ var permissionAjaxDone = function (re) {
 	/// re = {statusCode: 200, message: "操作成功", navTabId: "tools_prorecord_detad"}
 	if (re.statusCode==200) {
 		alertMsg.correct(re.message);
+		console.log(re);
 		if (re.navTabId){
 			navTab.reloadFlag(re.navTabId);
 		}

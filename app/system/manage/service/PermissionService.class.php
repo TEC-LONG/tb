@@ -19,7 +19,7 @@ class PermissionService {
         /// 构建查询条件
         $_condi = Fun::tb__condition($request, [
             ['name', 'like'],
-            ['s_flag', 'like']
+            ['flag', 'like']
         ]);
 
         /// 构建查询对象
@@ -77,6 +77,23 @@ class PermissionService {
             $re = $permission_model->insert($insert)->exec();
             if( !$re ) Err::throw('新增权限操作失败！');
         }
+    }
+
+    /**
+     * 删除 权限处理
+     */
+    public function permissionDel($request){
+
+        /// 初始化参数
+        $permission_id      = $request['id'];
+        $permission_model   = new PermissionModel;
+
+        /// 检查该权限是否有被关联使用
+
+        
+        /// 执行删除
+        $re = $permission_model->where(['id', $permission_id])->delete();
+        if( !$re ) Err::throw('删除失败');
     }
 
 
