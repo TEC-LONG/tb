@@ -26,7 +26,10 @@ Route::team(['prefix'=>'system'], function (){
             Route::get('/edit', 'PermissionController@edit')->navtab('system_manage_permissionEdit');# 新增/编辑 权限页面
             Route::post('/post', 'PermissionController@post')->navtab('system_manage_permissionList');# 新增/编辑 权限功能
             Route::post('/del', 'PermissionController@del')->navtab('system_manage_permissionList');# 删除 权限功能
-            Route::get('/menu', 'PermissionController@menu');# 
+
+            Route::post('/group', 'PermissionController@group')->navtab('system_manage_permissionGroup');#
+
+            Route::get('/menu', 'PermissionController@menu')->navtab('system_manage_permissionMenu');# 菜单权限管理列表
         });
 
         Route::team(['prefix'=>'menu'], function (){

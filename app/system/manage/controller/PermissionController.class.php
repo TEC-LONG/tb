@@ -2,11 +2,14 @@
 
 namespace system\manage\controller;
 use \system\manage\service\PermissionService;
+use \model\MenuPermissionModel;
 use \model\PermissionModel;
 use \controller;
+use \Validator;
 use \Route;
 use \Json;
 use \Fun;
+use \Err;
 
 class PermissionController extends Controller {
 
@@ -20,7 +23,6 @@ class PermissionController extends Controller {
 
         /// 初始化参数
         $permission_service = new PermissionService;
-
 
         /// 获取权限列表数据
         $info = $permission_service->getPermissionList($request);
@@ -54,6 +56,35 @@ class PermissionController extends Controller {
     }
 
     /**
+     * 校验 post方法 参数
+     */
+    private function postValidate($request){
+    
+        if( isset($request['id']) ){/// 编辑
+        
+            $validator = Validator::make($request, [
+                'id'   => 'int'
+            ],[
+                'id.int' => '非法的id参数'
+            ]);
+        }else {/// 新增
+            $validator = Validator::make($request, [
+                'name'  => 'required',
+                'flag'  => 'int'
+
+            ],[
+                'name.required' => 'name为必填项',
+                'flag.int'      => '非法的flag参数'
+            ]);
+        }
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
      * 新增/编辑 权限功能处理
      */
     public function post(){
@@ -63,7 +94,7 @@ class PermissionController extends Controller {
             $request = Fun::request()->all();
 
             /// 检查数据
-            //check($request,  $this->_extra['form-elems'])
+            $this->postValidate($request);
 
             /// 初始化参数
             $permission_service = new PermissionService;
@@ -88,6 +119,24 @@ class PermissionController extends Controller {
     }
 
     /**
+     * 校验 del方法 参数
+     */
+    private function delValidate($request){
+    
+        $validator = Validator::make($request, [
+            'id'   => 'required$||int'
+        ],[
+            'id.int'        => '非法的id参数',
+            'id.required'   => '缺少id参数',
+        ]);
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
      * 删除 权限功能处理
      */
     public function del(){
@@ -97,7 +146,7 @@ class PermissionController extends Controller {
             $request = Fun::request()->all();
 
             /// 检查数据
-            //check($request,  $this->_extra['form-elems'])
+            $this->delValidate($request);
 
             /// 初始化参数
             $permission_service = new PermissionService;
@@ -125,7 +174,21 @@ class PermissionController extends Controller {
      * 菜单权限管理列表
      */
     public function menu(){
-    
-    }
 
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        /// 初始化参数
+        $permission_service = new PermissionService;
+
+        /// 获取权限列表数据
+        $info = $permission_service->getMenuPermissionList($request);
+
+        /// 分配模板变量&渲染模板
+        $this->assign($info);
+        $this->assign('navatab', Route::$navtab);
+        $this->assign('mp_request', MenuPermissionModel::C_REQUEST);
+        $this->assign('mp_lv3_type', MenuPermissionModel::C_LEVEL3_TYPE);
+        $this->display('menu_permission/index.tpl');
+    }
 }

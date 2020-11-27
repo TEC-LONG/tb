@@ -517,6 +517,10 @@ class TB{
             if( empty($this->select) ) $this->select='*';
             if( empty($this->where) ) $this->where='1';
             if( strpos($this->table, 'as')===false && !empty($this->alias) ) $this->table.=' as '.$this->alias;
+            // var_dump($this->alias);
+            var_dump($this->table);
+            exit;
+            
 
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
 

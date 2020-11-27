@@ -5,10 +5,10 @@
 		<table class="searchContent">
 			<tr>
 				<td>
-					显示名称：<input type="text" name="s_name" value="" />
+					显示名称：<input type="text" name="name" value="" />
 				</td>
 				<td>
-					权限标识：<input type="text" name="s_flag" value="" />
+					权限标识：<input type="text" name="flag" value="" />
 				</td>
 				<td>
 					<div class="buttonActive"><div class="buttonContent"><button type="submit">检索</button></div></div>
