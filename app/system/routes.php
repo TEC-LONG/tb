@@ -30,6 +30,9 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/group', 'PermissionController@group')->navtab('system_manage_permissionGroup');#
 
             Route::get('/menu', 'PermissionController@menu')->navtab('system_manage_permissionMenu');# 菜单权限管理列表
+            Route::get('/menu/edit', 'PermissionController@menuEdit')->navtab('system_manage_permissionMenuEdit');# 新增/编辑 权限菜单页面
+            Route::get('/menu/post', 'PermissionController@menuPost')->navtab('system_manage_permissionMenu');# 新增/编辑 权限菜单功能
+            Route::get('/menu/del', 'PermissionController@menuDel')->navtab('system_manage_permissionMenu');# 删除 权限菜单功能
         });
 
         Route::team(['prefix'=>'menu'], function (){

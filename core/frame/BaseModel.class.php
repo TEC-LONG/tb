@@ -24,10 +24,6 @@ class BaseModel extends TB{
      * method: 获得适用于jui分页的参数
      */
     public function pagination($nowPage=1, $numPerPage=32){
-        echo '<hr/>';
-        
-var_dump($this);
-exit;
 
         /// 得到当前的查询语句
         $sql = $this->get_sql();

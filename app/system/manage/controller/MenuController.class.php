@@ -15,6 +15,9 @@ class MenuController extends Controller {
      */
     public function list(){
 
+        /// 接收数据
+        $request = Fun::request()->all();
+
         /// 初始化参数
         $menu_permission_service = new MenuPermissionService;
 
@@ -23,6 +26,7 @@ class MenuController extends Controller {
 
         /// 分配模板变量&渲染模板
         $this->assign($info);
+        $this->assign('search', $request);
         $this->assign('navatab', Route::$navtab);
         $this->display('menu/index.tpl');
     }
