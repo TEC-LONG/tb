@@ -149,69 +149,68 @@ class MenuPermissionService {
      */
     public function menuPermissionPost($request){
 
+        /// 初始化参数
+        $now    = time();
+        $flag   = ['PLAT'=>1, 'M-LV2'=>2, 'M-LV3'=>3];
 
+        /// 模型对象
+        $menu_permission_model = new MenuPermissionModel;
 
+        if( isset($request['id']) ){/// 编辑
+            # 查询已有数据
+            $row = $menu_permission_model->where(['id', $request['id']])->find();
 
+            # 新老数据对比，取得需要编辑的数据
+            $request['level'] = isset($flag[$request['permission_flag']]) ? $flag[$request['permission_flag']] : 4;
 
+            $_upd = Fun::data__need_update($request, $row, [
+                'display_name',
+                'permission__id',
+                'route',
+                'request',
+                'parent_id',
+                'level3_type',
+                'level3_href',
+                'level',
+                'sort'
+            ]);
+            if( empty($_upd) ) Err::throw('您还没有修改任何数据！请先修改数据。');
 
-        
-    
-        ///接收数据
-        $request = REQUEST()->all();
+            $_upd['update_time'] = $now;
 
-        ///检查数据
-        //check($request,  $this->_extra['form-elems'])
+            # 执行更新
+            $re = $menu_permission_model->update($_upd)->where(['id', $request['id']])->exec();
+            if( !$re ) Err::throw('编辑操作失败！');
 
-        ///模型对象
-        $obj = M()->table('menu_permission');
+        }else{/// 新增
 
-        if( isset($request['id']) ){///编辑
-            #查询已有数据
-            $ori = $obj->select('*')->where(['id', $request['id']])->find();
-
-            #新老数据对比，构建编辑数据
-            $request['level'] = isset($this->flag[$request['permission_flag']]) ? $this->flag[$request['permission_flag']] : 4;
-            $update = F()->compare($request, $ori, ['display_name', 'permission__id', 'route', 'request', 'navtab', 'parent_id', 'level3_type', 'level3_href', 'level', 'sort']);
-            if( empty($update) ) JSON()->stat(300)->msg('您还没有修改任何数据！请先修改数据。')->exec();
-            
-            $update['update_time'] = time();
-            $re = $obj->update($update)->where(['id', $request['id']])->exec();
-
-        }else{///新增
-
-            #数据是否重复，重复了没必要新增
-            $duplicate = $obj->select('id')->where([
+            # 数据是否重复，重复了没必要新增
+            $duplicate = $menu_permission_model->select('id')->where([
                 ['display_name', $request['display_name']],
                 ['permission__id', $request['permission__id']],
                 ['menu__id', $request['menu__id']]
-            ])->limit(1)->find();
-            if(!empty($duplicate)) JSON()->stat(300)->msg('权限菜单已经存在！无需重复添加。')->exec();
+            ])->find();
+            if( !empty($duplicate) ) Err::throw('权限菜单已经存在！无需重复添加。');
 
+            # 组装数据
             $insert = [
-                'permission__id' => $request['permission__id'],
-                'route' => $request['route'],
-                'display_name' => $request['display_name'],
-                'parent_id' => $request['parent_id'],
-                'request' => $request['request'],
-                'navtab' => $request['navtab'],
-                'level3_type' => $request['level3_type'],
-                'level3_href' => $request['level3_href'],
-                'level' => isset($this->flag[$request['permission_flag']]) ? $this->flag[$request['permission_flag']] : 4,
-                'navtab' => $request['navtab'],
-                'sort' => $request['sort'],
-                'post_date' => time()
+                'permission__id'    => $request['permission__id'],
+                'route'             => $request['route'],
+                'display_name'      => $request['display_name'],
+                'parent_id'         => $request['parent_id'],
+                'request'           => $request['request'],
+                'navtab'            => $request['navtab'],
+                'level3_type'       => $request['level3_type'],
+                'level3_href'       => $request['level3_href'],
+                'level'             => isset($flag[$request['permission_flag']]) ? $flag[$request['permission_flag']] : 4,
+                'navtab'            => $request['navtab'],
+                'sort'              => $request['sort']==='' ? 0 : $request['sort'],
+                'post_date'         => $now
             ];
 
-            $re = $obj->insert($insert)->exec();
-        }
-        
-        ///返回结果
-        if( $re ){
-            JSON()->navtab($this->_navTab.'_mpindex')->exec();
-        }else{
-            JSON()->stat(300)->msg('操作失败')->exec();
+            # 执行新增
+            $re = $menu_permission_model->insert($insert)->exec();
+            if( !$re ) Err::throw('新增操作失败！');
         }
     }
-
-    
 }

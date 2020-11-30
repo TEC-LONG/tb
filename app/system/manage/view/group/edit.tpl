@@ -1,5 +1,5 @@
 <div class="pageContent">
-	<form method="post" action="{$url.gPost.url}" class="pageForm required-validate" onsubmit="return validateCallback(this, userGroupAjaxDone);">
+	<form method="post" action="{Fun::L('/system/manage/user/group/post')}" class="pageForm required-validate" onsubmit="return validateCallback(this, userGroupAjaxDone);">
 		{if isset($row.id)}
 		<input type="hidden" name="id" value="{$row.id}">
 		{/if}
@@ -10,12 +10,11 @@
 			</p>
             <p>
 				<label>排序：</label>
-				<input class="digits" 
-				min="0" max="100" name="sort" type="text" value="{if isset($row)}{$row.sort}{/if}"/>
+				<input class="digits" min="0" max="100" name="sort" type="text" value="{if isset($row)}{$row.sort}{/if}"/>
 			</p>
             <p>
 				<label>备注说明：</label>
-				<textarea name="comm" cols="34" rows="4">{if isset($row)&&!empty($row.comm)}{$row.comm}{/if}</textarea>
+				<textarea name="comm" cols="32" rows="4">{if isset($row)&&!empty($row.comm)}{$row.comm}{/if}</textarea>
 			</p>
 		</div>
 		<div class="formBar">
@@ -31,7 +30,6 @@
 <script>
 var userGroupAjaxDone = function (re) {
 	
-	var tmp_url = '{$url.group.url}';
 	{literal}
 	/// re = {statusCode: 200, message: "操作成功", navTabId: "tools_prorecord_detad"}
 	if (re.statusCode==200) {

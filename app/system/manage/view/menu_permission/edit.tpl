@@ -1,5 +1,5 @@
 <div class="pageContent">
-	<form method="post" action="" class="pageForm required-validate" onsubmit="return validateCallback(this, menuPermissionAjaxDone);">
+	<form method="post" action="{Fun::L('/system/manage/permission/menu/post')}" class="pageForm required-validate" onsubmit="return validateCallback(this, menuPermissionAjaxDone);">
 		{if isset($row.id)}
 		<input type="hidden" name="id" value="{$row.id}">
 		{/if}

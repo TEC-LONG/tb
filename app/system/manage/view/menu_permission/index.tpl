@@ -75,7 +75,7 @@
 				<td>{$row.id}</td>
 				<td>
 					<a title="确实要删除？" target="ajaxTodo" href="" class="btnDel">删除</a>
-					<a title="编辑权限菜单" target="dialog" href="" class="btnEdit" rel=""  minable="false" width="450" height="400">编辑</a>
+					<a title="编辑权限菜单" target="dialog" href="{Fun::L('/system/manage/permission/menu/edit')}?id={$row.id}" class="btnEdit" rel="system_manage_permissionMenuEdit"  minable="false" width="450" height="400">编辑</a>
 				</td>
 			</tr>
 			{/foreach}

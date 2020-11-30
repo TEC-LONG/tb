@@ -17,7 +17,12 @@ Route::team(['prefix'=>'system'], function (){
         
             Route::get('/list', 'UserController@index');# 用户列表
             Route::post('/edit', 'UserController@edit');# 添加/编辑用户
-            Route::get('/group', 'UserController@group');# 用户组管理列表
+
+            Route::get('/group', 'UserController@group')->navtab('system_manage_userGroup');# 用户组管理列表
+            Route::get('/group/edit', 'UserController@groupEdit')->navtab('system_manage_userGroupEdit');# 新增/编辑 用户组
+            Route::get('/group/post', 'UserController@groupPost')->navtab('system_manage_userGroup');# 新增/编辑 用户组功能
+            Route::get('/group/permission', 'PermissionController@groupPermission');# 
+            
         });
 
         Route::team(['prefix'=>'permission'], function (){
@@ -25,13 +30,11 @@ Route::team(['prefix'=>'system'], function (){
             Route::get('/list', 'PermissionController@list')->navtab('system_manage_permissionList');# 权限管理列表
             Route::get('/edit', 'PermissionController@edit')->navtab('system_manage_permissionEdit');# 新增/编辑 权限页面
             Route::post('/post', 'PermissionController@post')->navtab('system_manage_permissionList');# 新增/编辑 权限功能
-            Route::post('/del', 'PermissionController@del')->navtab('system_manage_permissionList');# 删除 权限功能
-
-            Route::post('/group', 'PermissionController@group')->navtab('system_manage_permissionGroup');#
+            Route::get('/del', 'PermissionController@del')->navtab('system_manage_permissionList');# 删除 权限功能
 
             Route::get('/menu', 'PermissionController@menu')->navtab('system_manage_permissionMenu');# 菜单权限管理列表
             Route::get('/menu/edit', 'PermissionController@menuEdit')->navtab('system_manage_permissionMenuEdit');# 新增/编辑 权限菜单页面
-            Route::get('/menu/post', 'PermissionController@menuPost')->navtab('system_manage_permissionMenu');# 新增/编辑 权限菜单功能
+            Route::post('/menu/post', 'PermissionController@menuPost')->navtab('system_manage_permissionMenu');# 新增/编辑 权限菜单功能
             Route::get('/menu/del', 'PermissionController@menuDel')->navtab('system_manage_permissionMenu');# 删除 权限菜单功能
         });
 
