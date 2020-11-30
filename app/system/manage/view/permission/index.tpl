@@ -44,11 +44,11 @@
 			<tr target="sid_{$navTab}" rel="{$row.id}">
 				<td>{$k+1}</td>
 				<td>
-					{if isset($search.lookup)&&$search.lookup==1}
+				{if isset($search.lookup)&&$search.lookup==1}
 					<a href="javascript:" onclick="$.bringBack({ldelim}_id:{$row.id},name:'{$row.name}',flag:'{$flag[$row.flag]}'{rdelim})">{$row.name}</a>
-					{else}
+				{else}
 					{$row.name}
-					{/if}
+				{/if}
 				</td>
 				<td>{$flag[$row.flag]}</td>
 				<td>{$row.id}</td>
@@ -64,8 +64,8 @@
 	<form id="pagerForm" method="get" action="{$url.index.url}">
 		<input type="hidden" name="pageNum" value="1" />
 		<input type="hidden" name="numPerPage" value="{$page.numPerPage}" />
-		<input type="hidden" name="s_name" value="{$search.s_name}" />
-		<input type="hidden" name="s_flag" value="{$search.s_flag}" />
+		<input type="hidden" name="name" value="{$search.name}" />
+		<input type="hidden" name="flag" value="{$search.flag}" />
 	</form>
 	<div class="panelBar">
 		<div class="pages">

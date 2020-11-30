@@ -62,9 +62,9 @@ class TB{
     }
 
     public function __call($name, $arguments){
-    
+
         if( empty(self::$TB) ){
-            self::$TB = new static;
+            self::$TB = $this;
         }
 
         return self::magicCommon($name, $arguments);
@@ -515,12 +515,8 @@ class TB{
 
             $sql = 'SELECT %s FROM %s%s WHERE %s';
             if( empty($this->select) ) $this->select='*';
-            if( empty($this->where) ) $this->where='1';
+            if( empty($this->where) ) $this->where=[1];
             if( strpos($this->table, 'as')===false && !empty($this->alias) ) $this->table.=' as '.$this->alias;
-            // var_dump($this->alias);
-            var_dump($this->table);
-            exit;
-            
 
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
 

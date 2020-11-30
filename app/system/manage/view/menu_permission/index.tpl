@@ -37,22 +37,21 @@
 <div class="pageContent">
 	<div class="panelBar">
 		<ul class="toolBar">
-			<li><a class="add" href="" target="dialog" rel="" minable="false" width="450" height="400"><span>新增权限菜单</span></a></li>
+			<li><a class="add" href="{Fun::L('/system/manage/permission/menu/edit')}" target="dialog" rel="system_manage_permissionMenuEdit" minable="false" width="450" height="400"><span>新增权限菜单</span></a></li>
 		</ul>
 	</div>
 	<table class="table" width="100%" layoutH="138">
 		<thead>
 			<tr>
 				<th width="30">序号</th>
-				<th width="160">页面名称</th>
+				<th width="80">页面名称</th>
 				<th width="80">所属主菜单</th>
 				<th width="120">路由</th>
-				<th width="60">请求方式</th>
+				<th width="30">请求方式</th>
 				<th width="120">navtab</th>
-				<th width="140">权限名称</th>
+				<th width="100">权限名称</th>
 				<th width="60">权限标识</th>
 				<th width="60">三级跳转类型</th>
-				<th width="140">外部跳转链接</th>
 				<th width="30">ID</th>
 				<th width="70">操作</th>
 			</tr>
@@ -64,12 +63,15 @@
 				<td>{$row.display_name}</td>
 				<td>{$row.parent_name}</td>
 				<td>{if empty($row.route)}无{else}{$row.route}{/if}</td>
-				<td>{$request[$row.request]}</td>
+				<td>{$mp_request[$row.request]}</td>
 				<td>{$row.navtab}</td>
 				<td>{$row.name}</td>
 				<td>{$flag[$row.flag]}</td>
-				<td>{$level3_type[$row.level3_type]}</td>
-				<td>{$row.level3_href}</td>
+				<td>
+				{if $row.level3_type==1}
+					<abbr title="{$row.level3_href}">{$mp_lv3_type[$row.level3_type]}</abbr>
+				{/if}
+				</td>
 				<td>{$row.id}</td>
 				<td>
 					<a title="确实要删除？" target="ajaxTodo" href="" class="btnDel">删除</a>
