@@ -64,7 +64,7 @@ class PermissionService {
         }else{/// 新增
 
             # 数据是否重复，重复了没必要新增
-            $duplicate = $permission_model->select('id')->where(['name', $request['name']])->limit(1)->find();
+            $duplicate = $permission_model->select('id')->where(['name', $request['name']])->find();
             if( !empty($duplicate) ) Err::throw('权限"'.$request['name'].'"已经存在！无需重复添加。');
 
             # 组装数据

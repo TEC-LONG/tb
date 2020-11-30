@@ -7,6 +7,8 @@ use \controller;
 use \Fun;
 use \Json;
 use \Err;
+use model\UserGroupModel;
+
 class UserController extends Controller {
 
     /**
@@ -36,20 +38,42 @@ class UserController extends Controller {
      */
     public function group(){
     
+        /// 接收数据
+        $request = Fun::request()->all();
+
         /// 初始化参数
         $user_service = new UserService;
-
-        # 接收数据
-        $request = Fun::request()->all();
 
         /// 获取用户组列表数据
         $info = $user_service->getGroupList($request);
 
         ///分配模板变量&渲染模板
         $this->assign($info);
-        $this->display('user/group.tpl');
+        $this->display('group/index.tpl');
     }
 
+    /**
+     * 新增/编辑 用户组
+     */
+    public function groupEdit(){
+
+        /// 接收数据
+        $request = Fun::request()->all();
+    
+        ///编辑部分
+        $info = [];
+        if( isset($request['id']) ){
+            $info['row'] = (new UserGroupModel)->where(['id', $request['id']])->find();
+        }
+
+        ///分配模板变量&渲染模板
+        $this->assign($info);   
+        $this->display('group/edit.tpl');
+    }
+
+    /**
+     * 
+     */
 
     
 

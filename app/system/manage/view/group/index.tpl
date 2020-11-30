@@ -23,7 +23,7 @@
 <div class="pageContent">
 	<div class="panelBar">
 		<ul class="toolBar">
-			<li><a class="add" href="" target="dialog" rel="" minable="false" width="750" height="240"><span>新增用户组</span></a></li>
+			<li><a class="add" href="{Fun::L('/system/manage/user/group/edit')}" target="dialog" rel="system_manage_userGroupEdit" minable="false" width="750" height="240"><span>新增用户组</span></a></li>
 		</ul>
 	</div>
 	<table class="table" width="100%" layoutH="138">
@@ -48,7 +48,7 @@
 				<td>{$row.id}</td>
 				<td>
 					<a title="确实要删除？" target="ajaxTodo" href="" class="btnDel">删除</a>
-					<a title="编辑用户组" target="dialog" href="" class="btnEdit" rel=""  minable="false" width="650" height="440">编辑用户组</a>
+					<a title="编辑用户组" target="dialog" href="{Fun::L('/system/manage/user/group/edit')}?id={$row.id}" class="btnEdit" rel="system_manage_userGroupEdit"  minable="false" width="650" height="440">编辑用户组</a>
 					<a title="设置用户组权限" target="dialog" href="" class="btnAssign" rel=""  minable="false" width="950" height="740">设置用户组权限</a>
 				</td>
 			</tr>

@@ -381,7 +381,6 @@ class Validator{
             ## 数据不存在，且规则又不是required时，则没必要继续检查（仅required规则负责检查存在与空字符串的问题）
             $can_pass = ($this->data[$this->field]=='')&&($rule!='required');
         }
-
         return $can_pass;
     }
 
@@ -660,7 +659,9 @@ class Validator{
 
         if( empty($viceArr) ){///无副规则
         
-            if(!is_int($this->data[$this->field])) return $this->mkErr('2002', $rule);
+            preg_match('/^[1-9]{1}\d*$/', $this->data[$this->field], $matches);
+            if( empty($matches) ) return $this->mkErr('2002', $rule);
+            // if(!is_int($this->data[$this->field])) return $this->mkErr('2002', $rule); # 这种方式无法检查 '64' 这种值，表单传值都是字符串形态
 
         }else{///有副规则
 

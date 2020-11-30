@@ -226,22 +226,25 @@ class PermissionController extends Controller {
      */
     private function menuPostValidate($request){
     
+        $_rule = [
+            'display_name'      => 'required',
+            'permission_flag'   => 'required',
+            'permission__id'    => 'required$||int'
+        ];
+        $_rule_msg = [
+            'display_name.required'     => '缺少【页面名称】',
+            'permission_flag.required'  => '缺少【权限名称】@01',
+            'permission__id.required'   => '缺少【权限名称】@02',
+            'permission__id.int'        => '非法的参数【02】',
+        ];
+
         if( isset($request['id']) ){/// 编辑
         
-            $validator = Validator::make($request, [
-                'id'   => 'int'
-            ],[
-                'id.int' => '非法的id参数'
-            ]);
+            $_rule['id']            = 'int';
+            $_rule_msg['id.int']    = '非法的id参数';
+            $validator = Validator::make($request, $_rule, $_rule_msg);
         }else {/// 新增
-            $validator = Validator::make($request, [
-                'name'  => 'required',
-                'flag'  => 'int'
-
-            ],[
-                'name.required' => 'name为必填项',
-                'flag.int'      => '非法的flag参数'
-            ]);
+            $validator = Validator::make($request, $_rule, $_rule_msg);
         }
 
         if( !empty($validator->err) ){
@@ -282,64 +285,5 @@ class PermissionController extends Controller {
             'message'       => '操作成功！',
             'navTabId'      => Route::$navtab
         ])->exec('return');
-
-
-
-
-        ///接收数据
-        $request = REQUEST()->all();
-
-        ///检查数据
-        //check($request,  $this->_extra['form-elems'])
-
-        ///模型对象
-        $obj = M()->table('menu_permission');
-
-        if( isset($request['id']) ){///编辑
-            #查询已有数据
-            $ori = $obj->select('*')->where(['id', $request['id']])->find();
-
-            #新老数据对比，构建编辑数据
-            $request['level'] = isset($this->flag[$request['permission_flag']]) ? $this->flag[$request['permission_flag']] : 4;
-            $update = F()->compare($request, $ori, ['display_name', 'permission__id', 'route', 'request', 'navtab', 'parent_id', 'level3_type', 'level3_href', 'level', 'sort']);
-            if( empty($update) ) JSON()->stat(300)->msg('您还没有修改任何数据！请先修改数据。')->exec();
-            
-            $update['update_time'] = time();
-            $re = $obj->update($update)->where(['id', $request['id']])->exec();
-
-        }else{///新增
-
-            #数据是否重复，重复了没必要新增
-            $duplicate = $obj->select('id')->where([
-                ['display_name', $request['display_name']],
-                ['permission__id', $request['permission__id']],
-                ['menu__id', $request['menu__id']]
-            ])->limit(1)->find();
-            if(!empty($duplicate)) JSON()->stat(300)->msg('权限菜单已经存在！无需重复添加。')->exec();
-
-            $insert = [
-                'permission__id' => $request['permission__id'],
-                'route' => $request['route'],
-                'display_name' => $request['display_name'],
-                'parent_id' => $request['parent_id'],
-                'request' => $request['request'],
-                'navtab' => $request['navtab'],
-                'level3_type' => $request['level3_type'],
-                'level3_href' => $request['level3_href'],
-                'level' => isset($this->flag[$request['permission_flag']]) ? $this->flag[$request['permission_flag']] : 4,
-                'navtab' => $request['navtab'],
-                'sort' => $request['sort'],
-                'post_date' => time()
-            ];
-
-            $re = $obj->insert($insert)->exec();
-        }
-        
-        ///返回结果
-        if( $re ){
-            JSON()->navtab($this->_navTab.'_mpindex')->exec();
-        }else{
-            JSON()->stat(300)->msg('操作失败')->exec();
-        }
     }
 }
