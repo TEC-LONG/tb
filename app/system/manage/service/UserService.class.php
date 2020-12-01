@@ -56,7 +56,7 @@ class UserService {
 
         /// 构建查询条件
         $_condi = Fun::tb__condition($request, [
-            ['s_name', 'like']
+            [['s_name', 'name'], 'like']
         ]);
 
         /// 构建查询对象

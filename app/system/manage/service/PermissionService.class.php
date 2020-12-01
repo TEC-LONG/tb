@@ -4,8 +4,8 @@ namespace system\manage\service;
 use \model\PermissionModel;
 use model\MenuPermissionModel;
 use \Fun;
-use \TB;
 use \Err;
+use model\UserGroupPermissionModel;
 
 class PermissionService {
     
@@ -97,6 +97,96 @@ class PermissionService {
         if( !$re ) Err::throw('删除失败');
     }
 
+    /**
+     * 获取菜单权限页面数据
+     */
+    public function getGroupPermission($request){
+
+        /// 初始化参数
+        $menu_permission_model          = new MenuPermissionModel;
+        $user_group_permission_model    = new UserGroupPermissionModel;
+    
+        /// 查询当前组所具有的权限
+        $power_arr = $user_group_permission_model->select('menu_permission__id')
+        ->where(['user_group__id', $request['id']])
+        ->get();
+
+        $power = [];
+        foreach( $power_arr as $k=>$v){
+        
+            $power[] = $v['menu_permission__id'];
+        }
+        ///查询所有的权限菜单
+        $menu = $menu_permission_model->getAllLevelMenu();
+
+        return [
+            'power' => $power,
+            'menu'  => $menu
+        ];
+    }
+
+    /**
+     * 设置用户组权限功能
+     */
+    public function groupPermissionPost($request){
+    
+        /// 初始化参数
+        $mp_id                          = isset($request['mp_id']) ? $request['mp_id'] : [];
+        $user_group__id                 = $request['user_group__id'];
+        $user_group_permission_model    = new UserGroupPermissionModel;
+        
+        /// 调整数据
+        # 查询已有数据
+        $ori = $user_group_permission_model->select('menu_permission__id')->where(['user_group__id', $user_group__id])->get();
+        $ori = empty($ori) ? [] : $ori;
+
+        $ori_mp_id = [];
+        foreach( $ori as $v){
+        
+            $ori_mp_id[] = $v['menu_permission__id'];
+        }
+
+        # 比对数据
+        ## 交集 不变
+        // $id_intersect = array_intersect($mp_id, $ori_mp_id);
+
+        ## 在提交中不在原始中的 新增
+        $id_ad = array_diff($mp_id, $ori_mp_id);
+
+        ## 在原始中不在提交中的 删除
+        $id_del = array_diff($ori_mp_id, $mp_id);
+
+        /// 操作数据表
+        #新增
+        $ad_flag = false;
+        if( !empty($id_ad) ){
+        
+            $data_ad = [];
+            $post_date = time();
+            foreach( $id_ad as $v){
+                array_push($data_ad, [$v, $post_date, $request['user_group__id']]);
+            }
+            $re = $user_group_permission_model->fields('menu_permission__id, post_date, user_group__id')
+            ->insert($data_ad)
+            ->exec();
+
+            if($re) $ad_flag=true;
+        }
+
+        #删除
+        $del_flag = false;
+        if( !empty($id_del) ){
+
+            $re = $user_group_permission_model->where([
+                ['menu_permission__id', 'in', '('.implode(',', $id_del).')'],
+                ['user_group__id', $request['user_group__id']]
+            ])->delete();
+
+            if($re) $del_flag=true;
+        }
+
+        if( !$ad_flag&&!$del_flag ) Err::throw('请先修改数据再提交！');
+    }
 
     
 }

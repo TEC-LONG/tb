@@ -1,13 +1,16 @@
 <?php
 
 namespace system\manage\controller;
+use \system\manage\service\GroupService;
 use \system\manage\service\UserService;
+use model\UserGroupModel;
 use \model\UserModel;
 use \controller;
+use \Validator;
+use \Route;
 use \Fun;
 use \Json;
 use \Err;
-use model\UserGroupModel;
 
 class UserController extends Controller {
 
@@ -53,7 +56,7 @@ class UserController extends Controller {
     }
 
     /**
-     * 新增/编辑 用户组
+     * 新增/编辑 用户组页
      */
     public function groupEdit(){
 
@@ -72,8 +75,69 @@ class UserController extends Controller {
     }
 
     /**
-     * 
+     * 校验 groupPost方法 参数
      */
+    private function groupPostValidate($request){
+    
+        $_rule = [
+            'name' => 'required',
+            'sort' => 'int$|max&:100$|min&:0'
+        ];
+        $_rule_msg = [
+            'name.required' => '缺少【组名】',
+            'sort.int'      => '【排序】值错误',
+            'sort.int.max'  => '【排序】值不能超过100',
+            'sort.int.min'  => '【排序】值不能小于0'
+        ];
+
+        if( isset($request['id']) ){/// 编辑
+        
+            $_rule['id']            = 'int';
+            $_rule_msg['id.int']    = '非法的id参数';
+            $validator = Validator::make($request, $_rule, $_rule_msg);
+        }else {/// 新增
+            $validator = Validator::make($request, $_rule, $_rule_msg);
+        }
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 新增/编辑 用户组功能
+     */
+    public function groupPost(){
+
+        try{
+            /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 检查数据
+            $this->groupPostValidate($request);
+
+            /// 初始化参数
+            $group_service = new GroupService;
+
+            /// 执行处理
+            $group_service->groupPost($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => $err->getMessage(),
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'message'       => '操作成功！',
+            'navTabId'      => Route::$navtab
+        ])->exec('return');
+    }
 
     
 

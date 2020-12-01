@@ -77,8 +77,8 @@
 						<ul class="tree">
 							<li><a>aaa-1</a>
 								<ul>
-									<li><a href="http://local.teclong.cn/system/manage/user/list" target="navtab" rel="aaa-1-1">后台管理员</a></li>
-									<li><a href="http://local.teclong.cn/system/manage/user/group" target="navtab" rel="aaa-1-2">用户组管理</a></li>
+									<li><a href="http://local.teclong.cn/system/manage/user/list" target="navtab" rel="system_manage_userList">后台管理员</a></li>
+									<li><a href="http://local.teclong.cn/system/manage/user/group" target="navtab" rel="system_manage_userGroup">用户组管理</a></li>
 									<li><a href="http://local.teclong.cn/system/manage/permission/list" target="navtab" rel="system_manage_permissionList">权限管理</a></li>
 									<li><a href="http://local.teclong.cn/system/manage/menu/list" target="navtab" rel="system_manage_menuList">左侧导航菜单</a></li>
 									<li><a href="http://local.teclong.cn/system/manage/permission/menu" target="navtab" rel="system_manage_permissionMenu">菜单权限管理</a></li>
