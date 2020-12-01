@@ -286,4 +286,75 @@ class PermissionController extends Controller {
             'navTabId'      => Route::$navtab
         ])->exec('return');
     }
+
+    /**
+     * 校验 groupPermission方法 参数
+     */
+    private function groupPermissionValidate($request){
+
+        $validator = Validator::make($request, [
+            'id' => 'required'
+        ], [
+            'id.required' => '非法的请求'
+        ]);
+
+        if( !empty($validator->err) ){
+        
+            exit($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 设置用户组权限页面
+     */
+    public function groupPermission(){
+
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        /// 校验数据
+        $this->groupPermissionValidate($request);
+
+        /// 初始化参数
+        $permission_service = new PermissionService;
+
+        /// 获取页面数据
+        $info = $permission_service->getGroupPermission($request);
+
+        /// 渲染模板
+        $this->assign($info);
+        $this->assign('search', $request);
+        $this->display('group/permission.tpl');
+    }
+
+    /**
+     * 设置用户组权限功能
+     */
+    public function groupPermissionPost(){
+    
+        try{
+            /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 初始化参数
+            $permission_service = new PermissionService;
+
+            /// 执行处理
+            $permission_service->groupPermissionPost($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => $err->getMessage(),
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'message'       => '操作成功！',
+            'navTabId'      => Route::$navtab
+        ])->exec('return');
+    }
 }

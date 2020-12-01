@@ -48,8 +48,8 @@
 				<td>{$row.id}</td>
 				<td>
 					<a title="确实要删除？" target="ajaxTodo" href="" class="btnDel">删除</a>
-					<a title="编辑用户组" target="dialog" href="{Fun::L('/system/manage/user/group/edit')}?id={$row.id}" class="btnEdit" rel="system_manage_userGroupEdit"  minable="false" width="650" height="440">编辑用户组</a>
-					<a title="设置用户组权限" target="dialog" href="" class="btnAssign" rel=""  minable="false" width="950" height="740">设置用户组权限</a>
+					<a title="编辑用户组" target="dialog" href="{Fun::L('/system/manage/user/group/edit')}?id={$row.id}" class="btnEdit" rel="system_manage_userGroupEdit"  minable="false" width="750" height="240">编辑用户组</a>
+					<a title="设置用户组权限" target="dialog" href="{Fun::L('/system/manage/user/group/permission')}?id={$row.id}" class="btnAssign" rel="system_manage_userGroupPermission"  minable="false" width="950" height="740">设置用户组权限</a>
 				</td>
 			</tr>
 			{/foreach}

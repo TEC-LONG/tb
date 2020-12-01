@@ -20,8 +20,9 @@ Route::team(['prefix'=>'system'], function (){
 
             Route::get('/group', 'UserController@group')->navtab('system_manage_userGroup');# 用户组管理列表
             Route::get('/group/edit', 'UserController@groupEdit')->navtab('system_manage_userGroupEdit');# 新增/编辑 用户组
-            Route::get('/group/post', 'UserController@groupPost')->navtab('system_manage_userGroup');# 新增/编辑 用户组功能
-            Route::get('/group/permission', 'PermissionController@groupPermission');# 
+            Route::post('/group/post', 'UserController@groupPost')->navtab('system_manage_userGroup');# 新增/编辑 用户组功能
+            Route::get('/group/permission', 'PermissionController@groupPermission')->navtab('system_manage_userGroupPermission');# 设置用户组权限页面
+            Route::post('/group/permission/post', 'PermissionController@groupPermissionPost')->navtab('system_manage_userGroup');# 设置用户组权限功能
             
         });
 

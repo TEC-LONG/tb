@@ -3,6 +3,7 @@
 class TB{
 
     protected static $TB;
+    protected static $KEY;
 
     protected $table;
     protected $alias;
@@ -53,9 +54,10 @@ class TB{
     }
 
     public static function __callStatic($name, $arguments){
-        
-        if( empty(self::$TB) ){
-            self::$TB = new static;# 此处不应该用self,而应该使用静态延时绑定的static,以支持子类的继承
+
+        self::$KEY = $key = get_called_class();
+        if( empty(self::$TB[$key]) ){
+            self::$TB[$key] = new static;# 此处不应该用self,而应该使用静态延时绑定的static,以支持子类的继承
         }
         
         return self::magicCommon($name, $arguments);
@@ -63,8 +65,9 @@ class TB{
 
     public function __call($name, $arguments){
 
-        if( empty(self::$TB) ){
-            self::$TB = $this;
+        self::$KEY = $key = get_class($this);
+        if( empty(self::$TB[$key]) ){
+            self::$TB[$key] = $this;
         }
 
         return self::magicCommon($name, $arguments);
@@ -115,13 +118,13 @@ class TB{
 
             if( isset($arguments[1]) ){
 
-                return self::$TB->$method($arguments[0], $arguments[1]);
+                return self::$TB[self::$KEY]->$method($arguments[0], $arguments[1]);
             }
             
-            return self::$TB->$method($arguments[0]);
+            return self::$TB[self::$KEY]->$method($arguments[0]);
             
         }
-        return self::$TB->$method();
+        return self::$TB[self::$KEY]->$method();
     }
 
     protected function gotable($table){
