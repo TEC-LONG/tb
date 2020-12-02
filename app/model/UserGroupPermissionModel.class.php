@@ -5,5 +5,5 @@ use \Fun;
 
 class UserGroupPermissionModel extends BaseModel{
 
-    protected $table = 'user_group_permission';
+    protected $table = 'user_group_permission_copy1';
 }

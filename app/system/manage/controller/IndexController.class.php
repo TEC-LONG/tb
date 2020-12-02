@@ -7,39 +7,48 @@ use \controller;
 use \Json;
 use \Err;
 use \Fun;
-use \TB;
+use model\MenuPermissionModel;
+use model\UserGroupPermissionModel;
 
 class IndexController extends Controller {
 
-    protected $_data;
 
     public function index(){
 
         /// 查询三级以内所有菜单数据
-        $this->_data['menu1'] = TB::table('menu_permission as mp')->select('mp.display_name, mp.id, mp.parent_id')
+        $menu_permission_model = new MenuPermissionModel('mp');
+        $menu1 = $menu_permission_model->select('mp.display_name, mp.id, mp.parent_id')
         ->leftjoin('permission as p', 'mp.permission__id=p.id')
         ->where(['p.flag', array_search('PLAT', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
 
-        $this->_data['menu2'] = TB::table('menu_permission as mp')->select('mp.display_name, mp.id, mp.parent_id')
+        $menu2 = $menu_permission_model->select('mp.display_name, mp.id, mp.parent_id')
         ->leftjoin('permission as p', 'mp.permission__id=p.id')
         ->where(['p.flag', array_search('M-LV2', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
 
-        $this->_data['menu3'] = TB::table('menu_permission as mp')->select('mp.id, mp.display_name, mp.parent_id, mp.route, mp.navtab
+        $menu3 = $menu_permission_model->select('mp.id, mp.display_name, mp.parent_id, mp.route, mp.navtab
         , mp.level3_type, mp.level3_href')
         ->leftjoin('permission as p', 'mp.permission__id=p.id')
         ->where(['p.flag', array_search('M-LV3', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
 
         /// 查询当前用户所具有的权限菜单
         $user_group__id = $_SESSION['manager']['user_group__id'];
-        $user_menu      = TB::table('user_group_permission')->select('menu_permission__id')->where(['user_group__id', $user_group__id])->get();
+        $user_menu      = (new UserGroupPermissionModel)->select('menu_permission__id')->where(['user_group__id', $user_group__id])->get();
 
-        $this->_data['mp_ids'] = [];
+        $mp_ids = [];
         foreach( $user_menu as $v){
-            $this->_data['mp_ids'][] = $v['menu_permission__id'];
+            $mp_ids[] = $v['menu_permission__id'];
         }
 
+        // echo '<pre>';
+        // print_r($menu1);
+        // print_r($menu2);
+        // print_r($menu3);
+        // print_r($mp_ids);
+        // echo '<pre>';
+        // exit;
+
         /// 收藏网站
-        $this->_data['nav_link'] = [# 最多八个大数组，每个大数组中最多12个元素
+        $nav_link = [# 最多八个大数组，每个大数组中最多12个元素
             [
                 '百度统计' => 'http://tongji.baidu.com/web/welcome/login',
                 '百度站长平台' => 'http://zhanzhang.baidu.com',
@@ -74,8 +83,12 @@ class IndexController extends Controller {
         ];
 
         /// 分配模板变量  &  渲染模板
-        $this->_data['manager'] = self::$manager;
-        $this->assign($this->_data);
+        $this->assign('menu1', $menu1);
+        $this->assign('menu2', $menu2);
+        $this->assign('menu3', $menu3);
+        $this->assign('mp_ids', $mp_ids);
+        $this->assign('nav_link', $nav_link);
+        $this->assign('manager', self::$manager);
         $this->display('index.tpl');
     }
 
