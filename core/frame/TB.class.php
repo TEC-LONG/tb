@@ -139,17 +139,18 @@ class TB{
 
     protected function init(){
     
-        $this->e = '';
-        $this->limit = '';
-        $this->select = '';
-        $this->orderby = '';
-        $this->fields = '';
+        $this->e        = null;
+        $this->limit    = null;
+        $this->select   = null;
+        $this->orderby  = null;
+        $this->fields   = null;
 
-        $this->where = [];
-        $this->insert = [];
-        $this->update = [];
-        $this->left_join = [];
-        $this->update_fields = [];
+
+        $this->where            = [];
+        $this->insert           = [];
+        $this->update           = [];
+        $this->left_join        = [];
+        $this->update_fields    = [];
     }
 
     /**

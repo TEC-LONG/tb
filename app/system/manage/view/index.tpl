@@ -39,7 +39,7 @@
 			</div>
 			<div id="sidebar">
 				<div class="toggleCollapse"><h2>主菜单</h2><div>收缩</div></div>
-				<!-- <div class="accordion" fillSpace="sidebar">
+				<div class="accordion" fillSpace="sidebar">
 				{foreach $menu1 as $k1=>$v1}
 				{if in_array($v1.id, $mp_ids)}
 					<div class="accordionHeader">
@@ -68,8 +68,8 @@
 					</div>
 				{/if}
 				{/foreach}
-				</div> -->
-				<div class="accordion" fillSpace="sidebar">
+				</div>
+				<!-- <div class="accordion" fillSpace="sidebar">
 					<div class="accordionHeader">
 						<h2><span>Folder</span>aaa</h2>
 					</div>
@@ -86,7 +86,7 @@
 							</li>
 						</ul>
 					</div>
-				</div>
+				</div> -->
 			</div>
 		</div>
 
