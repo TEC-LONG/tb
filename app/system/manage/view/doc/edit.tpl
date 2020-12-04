@@ -1,20 +1,16 @@
 <div class="pageContent">
-	<form method="post" action="{Fun::L('/system/manage/permission/post')}" class="pageForm required-validate" onsubmit="return validateCallback(this, permissionAjaxDone);">
+	<form method="post" action="{Fun::L('/system/manage/doc/post')}" class="pageForm required-validate" onsubmit="return validateCallback(this, permissionAjaxDone);">
 		{if isset($row.id)}
 		<input type="hidden" name="id" value="{$row.id}">
 		{/if}
         <div class="pageFormContent" layoutH="56">
             <p>
-				<label>权限名称：</label>
-				<input class="required" name="name" type="text" value="{if isset($row)}{$row.name}{/if}"/>
+				<label>文档标题：</label>
+				<input class="required" name="title" type="text" value="{if isset($row)}{$row.title}{/if}"/>
 			</p>
             <p>
-				<label>权限标识：</label>
-				<select class="combox" name="flag">
-					{foreach $flag as $k=>$v}
-					<option value="{$k}" {if isset($row)&&$k==$row.flag}selected{/if}>{$v}</option>
-					{/foreach}
-				</select>
+				<label>备注说明：</label>
+				<textarea name="descr" cols="32" rows="7">{if isset($row)&&!empty($row.descr)}{$row.descr}{/if}</textarea>
 			</p>
 		</div>
 		<div class="formBar">

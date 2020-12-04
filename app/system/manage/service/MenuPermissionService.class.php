@@ -172,6 +172,7 @@ class MenuPermissionService {
                 'level3_type',
                 'level3_href',
                 'level',
+                'navtab',
                 'sort'
             ]);
             if( empty($_upd) ) Err::throw('您还没有修改任何数据！请先修改数据。');
@@ -187,8 +188,7 @@ class MenuPermissionService {
             # 数据是否重复，重复了没必要新增
             $duplicate = $menu_permission_model->select('id')->where([
                 ['display_name', $request['display_name']],
-                ['permission__id', $request['permission__id']],
-                ['menu__id', $request['menu__id']]
+                ['permission__id', $request['permission__id']]
             ])->find();
             if( !empty($duplicate) ) Err::throw('权限菜单已经存在！无需重复添加。');
 

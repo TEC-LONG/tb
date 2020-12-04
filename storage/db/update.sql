@@ -948,3 +948,33 @@ update shares set tmp='医药生物-医疗器械-医疗器械' where code='60052
 update shares set tmp='医药生物-生物医药-生物医药' where code='600530';
 update shares set tmp='有色金属-基本金属-铅锌' where code='600531';
 update shares set tmp='有色金属-基本金属-铅锌' where code='600531';
+
+
+
+
+
+
+CREATE TABLE `tl_doc` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `title` varchar(50) NOT NULL DEFAULT '' COMMENT '文档名称',
+    `descr` varchar(1000) NOT NULL DEFAULT '' COMMENT '文档简介',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
+    `update_time` int unsigned NOT NULL DEFAULT 0 COMMENT '修改时间',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文档记录表';
+
+CREATE TABLE `tl_doc_detail` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `doc__id` int unsigned NOT NULL DEFAULT 0 COMMENT '所属文档记录表id',
+    `title` varchar(50) NOT NULL DEFAULT '' COMMENT '标题名称',
+    `level` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '层级',
+    `pid` int unsigned NOT NULL DEFAULT 0 COMMENT '上级目录id',
+    `sort` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '排序',
+    `content` text COMMENT '文档内容',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
+    `update_time` int unsigned NOT NULL DEFAULT 0 COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_doc__id` (`doc__id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文档详情表';
+
+

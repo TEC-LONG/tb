@@ -5,6 +5,9 @@
  * @param   array   $request
  * @param   array   $row
  * @param   array   $fields
+                $fields = [
+                    'form_elem' => ‘field'
+                ]
  */
 function need_update($request, $row, $fields){
     
@@ -12,9 +15,14 @@ function need_update($request, $row, $fields){
     foreach( $row as $k=>$v){
     
         if( in_array($k, $fields) ){
+
+            $form_elem = array_search($k, $fields);
+            if( is_numeric($form_elem) ){
+                $form_elem = $k;   
+            }
             
-            if( $request[$k]!=$v ){
-                $update_data[$k] = $request[$k];
+            if( $request[$form_elem]!=$v ){
+                $update_data[$k] = $request[$form_elem];
             }
         }
     }

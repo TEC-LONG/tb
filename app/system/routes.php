@@ -46,5 +46,15 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/add', 'MenuController@add')->navtab('system_manage_menuList');# 新增菜单功能
             Route::post('/upd', 'MenuController@upd')->navtab('system_manage_menuList');# 编辑菜单功能
         });
+
+        Route::team(['prefix'=>'doc'], function (){
+            
+            Route::get('/list', 'DocController@list')->navtab('system_manage_docList');# 文档管理 页面
+            Route::get('/edit', 'DocController@edit')->navtab('system_manage_docEdit');# 添加/编辑 文档 页面
+            Route::post('/post', 'DocController@post')->navtab('system_manage_docList');# 添加/编辑 文档 功能
+            
+            Route::get('/mulu/list', 'DocController@muluList')->navtab('system_manage_docMuluList');# 具体文档目录管理 页面
+            
+        });
     });
 });

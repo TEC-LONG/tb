@@ -4,7 +4,6 @@ namespace system\manage\service;
 use \model\UserModel;
 use \model\UserGroupModel;
 use \Fun;
-use \TB;
 
 class UserService {
     

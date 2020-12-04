@@ -207,8 +207,7 @@ class PermissionController extends Controller {
         /// 编辑部分
         $info = [];
         if( isset($request['id']) ){
-            $info['row'] = (new MenuPermissionModel('mp'))->select('mp.*, m.name, p.name as pname, p.flag')
-            ->leftjoin('menu as m', 'mp.menu__id=m.id')
+            $info['row'] = (new MenuPermissionModel('mp'))->select('mp.*, p.name as pname, p.flag')
             ->leftjoin('permission as p', 'p.id=mp.permission__id')
             ->where(['mp.id', $request['id']])->find();
         }
