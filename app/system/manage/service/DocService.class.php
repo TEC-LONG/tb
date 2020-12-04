@@ -134,29 +134,140 @@ class DocService {
 
             ksort($_level_1_sort);
 
-            $_sort_asc_level_1 = [];
+            $_after_sort_asc_level_1 = [];
             foreach( $_level_1_sort as $_level_1_key){
             
-                $_sort_asc_level_1[] = $_level_1[$_level_1_key];
+                $_after_sort_asc_level_1[] = $_level_1[$_level_1_key];
             }
 
-            #
+            # 对所有level>1的数据 以pid归档，然后按照sort升序排序
             unset($_all_level_rows[1]);
-            foreach( $_sort_asc_level_1 as $level_1_row){
-            
+            $_after_sort_asc_greate_then_level_1 = [];
+            foreach( $_all_level_rows as $level_x){
+
+                ## 获得当前所有不重复的pid值
+                $this_all_pid = array_column($level_x, 'sort');
+                $this_all_pid = array_unique($this_all_pid);
+                
+                ## 根据pid归档数据
+                $_t = [];
+                foreach( $level_x as $level_x_row){
+                
+                    $this_pid = $level_x_row['pid'];
+                    if( !isset($_t[$this_pid]) ){
+                        $_t[$this_pid] = [];
+                    }
+
+                    $_t[$this_pid][] = $level_x_row;
+                }
+
+                ## 每个归档pid的集合按照sort升序排序
+                foreach( $_t as $this_pid=>$_t_pid_set){
+                
+                    $this_t_pid_set_sort = array_reverse(array_column($_t_pid_set, 'sort'));
+                    ksort($this_t_pid_set_sort);
+
+                    $this_after_sort_asc = [];
+                    foreach( $this_t_pid_set_sort as $_t_pid_set_key){
+                        $this_after_sort_asc[] = $_t_pid_set[$_t_pid_set_key];
+                    }
+
+                    $_t[$this_pid] = $this_after_sort_asc;
+                }
+
+                ## 排序好的数据覆盖掉旧的数据
+                foreach( $_t as $_t_pid_set){
+                
+                    foreach( $_t_pid_set as $row){
+                    
+                        $_after_sort_asc_greate_then_level_1[] = $row;
+                    }
+                }
             }
-
-            # 将排序好的level=1的数据替换掉原来没有排序的数据
-            $_all_level_rows[1] = $_sort_asc_level_1;
-
 
         }
 
         return ['rows' => $rows];
     }
 
-    protected function recursiveDoc(){
+    protected function getTidyDoc($rows){
     
+        # 以level做下标进行归档
+        $_all_level_rows = [];
+        foreach( $rows as $this_row){
+        
+            $this_level = $this_row['level'];
+            if( !isset($_all_level_rows[$this_level]) ){
+                $_all_level_rows[$this_level] = [];
+            }
+
+            $_all_level_rows[$this_level][] = $this_row;
+        }
+
+        # 根据level排序(升序)
+        ksort($_all_level_rows);
+
+        # 对所有level=1的数据按照sort升序排序
+        $_level_1       = $_all_level_rows[1];
+        $_level_1_sort  = array_reverse(array_column($_level_1, 'sort'));
+
+        ksort($_level_1_sort);
+
+        $_after_sort_asc_level_1 = [];
+        foreach( $_level_1_sort as $_level_1_key){
+        
+            $_after_sort_asc_level_1[] = $_level_1[$_level_1_key];
+        }
+
+        # 对所有level>1的数据 以pid归档，然后按照sort升序排序
+        unset($_all_level_rows[1]);
+        $_after_sort_asc_greate_then_level_1 = [];
+        foreach( $_all_level_rows as $level_x){
+
+            ## 获得当前所有不重复的pid值
+            $this_all_pid = array_column($level_x, 'sort');
+            $this_all_pid = array_unique($this_all_pid);
+            
+            ## 根据pid归档数据
+            $_t = [];
+            foreach( $level_x as $level_x_row){
+            
+                $this_pid = $level_x_row['pid'];
+                if( !isset($_t[$this_pid]) ){
+                    $_t[$this_pid] = [];
+                }
+
+                $_t[$this_pid][] = $level_x_row;
+            }
+
+            ## 每个归档pid的集合按照sort升序排序
+            foreach( $_t as $this_pid=>$_t_pid_set){
+            
+                $this_t_pid_set_sort = array_reverse(array_column($_t_pid_set, 'sort'));
+                ksort($this_t_pid_set_sort);
+
+                $this_after_sort_asc = [];
+                foreach( $this_t_pid_set_sort as $_t_pid_set_key){
+                    $this_after_sort_asc[] = $_t_pid_set[$_t_pid_set_key];
+                }
+
+                $_t[$this_pid] = $this_after_sort_asc;
+            }
+
+            ## 排序好的数据覆盖掉旧的数据
+            foreach( $_t as $_t_pid_set){
+            
+                foreach( $_t_pid_set as $row){
+                
+                    $_after_sort_asc_greate_then_level_1[] = $row;
+                }
+            }
+        }
+
+        return [
+            'level_1'               => $_after_sort_asc_level_1,
+            'greate_then_level_1'   => $_after_sort_asc_greate_then_level_1
+        ];
     }
     
 }
