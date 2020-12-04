@@ -22,6 +22,46 @@ class DocController extends Controller {
         var_dump($ar1);
         exit;
         
+        $arr = [
+            ['id'=>1, 'title'=>'a', 'level'=>1, 'pid'=>0, 'sort'=>5],
+            ['id'=>2, 'title'=>'b', 'level'=>1, 'pid'=>0, 'sort'=>2],
+            ['id'=>3, 'title'=>'c', 'level'=>1, 'pid'=>0, 'sort'=>2],
+            ['id'=>4, 'title'=>'d', 'level'=>1, 'pid'=>0, 'sort'=>1],
+            ['id'=>5, 'title'=>'e', 'level'=>1, 'pid'=>0, 'sort'=>3],
+            
+            ['id'=>6, 'title'=>'a-1', 'level'=>2, 'pid'=>1, 'sort'=>3],
+            ['id'=>7, 'title'=>'a-2', 'level'=>2, 'pid'=>1, 'sort'=>5],
+
+            ['id'=>8, 'title'=>'b-1', 'level'=>2, 'pid'=>2, 'sort'=>1],
+            ['id'=>9, 'title'=>'b-2', 'level'=>2, 'pid'=>2, 'sort'=>2],
+            ['id'=>10, 'title'=>'b-3', 'level'=>2, 'pid'=>2, 'sort'=>3],
+
+            ['id'=>11, 'title'=>'d-1', 'level'=>2, 'pid'=>4, 'sort'=>1],
+            ['id'=>12, 'title'=>'d-2', 'level'=>2, 'pid'=>4, 'sort'=>2],
+            ['id'=>13, 'title'=>'d-3', 'level'=>2, 'pid'=>4, 'sort'=>3],
+
+            ['id'=>14, 'title'=>'e-1', 'level'=>2, 'pid'=>5, 'sort'=>1],
+            ['id'=>15, 'title'=>'e-2', 'level'=>2, 'pid'=>5, 'sort'=>2],
+
+            ['id'=>16, 'title'=>'a-1-1', 'level'=>3, 'pid'=>6, 'sort'=>1],
+            ['id'=>17, 'title'=>'a-1-2', 'level'=>3, 'pid'=>6, 'sort'=>2],
+            ['id'=>18, 'title'=>'a-1-3', 'level'=>3, 'pid'=>6, 'sort'=>3],
+            ['id'=>19, 'title'=>'a-1-4', 'level'=>3, 'pid'=>6, 'sort'=>3],
+
+            ['id'=>20, 'title'=>'a-2-1', 'level'=>3, 'pid'=>7, 'sort'=>1],
+            ['id'=>21, 'title'=>'a-2-2', 'level'=>3, 'pid'=>7, 'sort'=>2],
+
+            ['id'=>22, 'title'=>'b-2-1', 'level'=>3, 'pid'=>9, 'sort'=>1],
+            ['id'=>23, 'title'=>'b-2-2', 'level'=>3, 'pid'=>9, 'sort'=>2],
+
+            ['id'=>16, 'title'=>'a-1-1', 'level'=>3, 'pid'=>6, 'sort'=>1],
+            ['id'=>17, 'title'=>'a-1-2', 'level'=>3, 'pid'=>6, 'sort'=>2],
+            ['id'=>18, 'title'=>'a-1-3', 'level'=>3, 'pid'=>6, 'sort'=>3],
+            ['id'=>19, 'title'=>'a-1-4', 'level'=>3, 'pid'=>6, 'sort'=>3],
+        ];
+
+
+
         /// 接收数据
         $request = Fun::request()->all();
 
