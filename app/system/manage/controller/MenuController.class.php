@@ -55,9 +55,9 @@ class MenuController extends Controller {
     private function addValidate($request){
     
         $validator = Validator::make($request, [
-            'level'         => 'required$||int',
-            'parent_id'     => 'required$||int',
-            'display_name'  => 'required'
+            'plevel'    => 'required$||int',
+            'pid'       => 'required$||int',
+            'name'      => 'required'
         ]);
 
         if( !empty($validator->err) ){

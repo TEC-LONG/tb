@@ -45,7 +45,6 @@ class GroupService {
             $re = $user_group_model->insert($insert)->exec();
             if( !$re ) Err::throw('新增操作失败');
         }
-
     }
 
 }

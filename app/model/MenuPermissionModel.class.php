@@ -1,6 +1,7 @@
 <?php
 namespace model;
 use \BaseModel;
+use \model\PermissionModel;
 
 class MenuPermissionModel extends BaseModel{
 
@@ -9,6 +10,9 @@ class MenuPermissionModel extends BaseModel{
     const C_REQUEST = ['无', 'GET', 'POST', 'REQUEST'];
     const C_LEVEL3_TYPE = ['内部跳转链接', '外部跳转', '无'];
 
+    /**
+     * 获取所有层级菜单数据
+     */
     public function getAllLevelMenu(){
     
         ///查询一级、二级、三级菜单及其相关的权限菜单
@@ -57,4 +61,35 @@ class MenuPermissionModel extends BaseModel{
         }
         return $all;
     }
+
+    /**
+     * 获取所有一级菜单
+     */
+    public function menu1(){
+    
+        return $this->alias('mp')->select('mp.display_name, mp.id, mp.parent_id')
+        ->leftjoin('permission as p', 'mp.permission__id=p.id')
+        ->where(['p.flag', array_search('PLAT', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
+    }
+
+    /**
+     * 获取所有二级菜单
+     */
+    public function menu2(){
+    
+        return $this->alias('mp')->select('mp.display_name, mp.id, mp.parent_id')
+        ->leftjoin('permission as p', 'mp.permission__id=p.id')
+        ->where(['p.flag', array_search('M-LV2', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
+    }
+
+    /**
+     * 获取所有三级菜单
+     */
+    public function menu3(){
+    
+        return $this->alias('mp')->select('mp.id, mp.display_name, mp.parent_id, mp.route, mp.navtab, mp.level3_type, mp.level3_href')
+        ->leftjoin('permission as p', 'mp.permission__id=p.id')
+        ->where(['p.flag', array_search('M-LV3', PermissionModel::C_FLAG)])->orderby('mp.sort desc')->get();
+    }
+
 }
