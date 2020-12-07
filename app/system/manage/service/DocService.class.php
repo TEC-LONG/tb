@@ -107,92 +107,165 @@ class DocService {
             'sort',
             'created_time',
             'update_time'
-        ])->order('level desc')->get();
+        ])->orderby('level desc')->get();
+
+        $rows = [
+            ['id'=>1, 'title'=>'a', 'level'=>1, 'pid'=>0, 'sort'=>1],
+            ['id'=>2, 'title'=>'b', 'level'=>1, 'pid'=>0, 'sort'=>2],
+            ['id'=>3, 'title'=>'c', 'level'=>1, 'pid'=>0, 'sort'=>2],
+            ['id'=>4, 'title'=>'d', 'level'=>1, 'pid'=>0, 'sort'=>3],
+            ['id'=>5, 'title'=>'e', 'level'=>1, 'pid'=>0, 'sort'=>4],
+            
+            ['id'=>6, 'title'=>'a-1', 'level'=>2, 'pid'=>1, 'sort'=>3],
+            ['id'=>7, 'title'=>'a-2', 'level'=>2, 'pid'=>1, 'sort'=>5],
+
+            ['id'=>8, 'title'=>'b-1', 'level'=>2, 'pid'=>2, 'sort'=>1],
+            ['id'=>9, 'title'=>'b-2', 'level'=>2, 'pid'=>2, 'sort'=>2],
+            ['id'=>10, 'title'=>'b-3', 'level'=>2, 'pid'=>2, 'sort'=>3],
+
+            ['id'=>14, 'title'=>'e-1', 'level'=>2, 'pid'=>5, 'sort'=>1],
+            ['id'=>15, 'title'=>'e-2', 'level'=>2, 'pid'=>5, 'sort'=>2],
+
+            ['id'=>16, 'title'=>'a-1-1', 'level'=>3, 'pid'=>6, 'sort'=>1],
+            ['id'=>17, 'title'=>'a-1-2', 'level'=>3, 'pid'=>6, 'sort'=>2],
+            ['id'=>18, 'title'=>'a-1-3', 'level'=>3, 'pid'=>6, 'sort'=>3],
+            ['id'=>19, 'title'=>'a-1-4', 'level'=>3, 'pid'=>6, 'sort'=>3],
+
+            ['id'=>20, 'title'=>'a-2-1', 'level'=>3, 'pid'=>7, 'sort'=>1],
+            ['id'=>21, 'title'=>'a-2-2', 'level'=>3, 'pid'=>7, 'sort'=>2],
+
+            ['id'=>22, 'title'=>'b-2-1', 'level'=>3, 'pid'=>9, 'sort'=>1],
+            ['id'=>23, 'title'=>'b-2-2', 'level'=>3, 'pid'=>9, 'sort'=>2],
+
+            ['id'=>24, 'title'=>'b-3-1', 'level'=>3, 'pid'=>10, 'sort'=>1],
+            ['id'=>25, 'title'=>'b-3-2', 'level'=>3, 'pid'=>10, 'sort'=>2],
+            ['id'=>26, 'title'=>'b-3-3', 'level'=>3, 'pid'=>10, 'sort'=>3],
+            ['id'=>27, 'title'=>'b-3-4', 'level'=>3, 'pid'=>10, 'sort'=>3],
+        ];
+        shuffle($rows);
 
         /// 组装数据
-        $re = [];
+        $tree_html = '';
         if( !empty($rows) ){
             
-            # 以level做下标进行归档
-            $_all_level_rows = [];
-            foreach( $rows as $this_row){
-            
-                $this_level = $this_row['level'];
-                if( !isset($_all_level_rows[$this_level]) ){
-                    $_all_level_rows[$this_level] = [];
-                }
+            # 不同pid下的数据按sort排序
+            $tidy_doc = $this->getTidyDoc($rows);
 
-                $_all_level_rows[$this_level][] = $this_row;
-            }
+            # 整理目录树
+            $tree = [];
+            $this->getDocTree($tree, $tidy_doc);
 
-            # 根据level排序(升序)
-            ksort($_all_level_rows);
-
-            # 对所有level=1的数据按照sort升序排序
-            $_level_1       = $_all_level_rows[1];
-            $_level_1_sort  = array_reverse(array_column($_level_1, 'sort'));
-
-            ksort($_level_1_sort);
-
-            $_after_sort_asc_level_1 = [];
-            foreach( $_level_1_sort as $_level_1_key){
-            
-                $_after_sort_asc_level_1[] = $_level_1[$_level_1_key];
-            }
-
-            # 对所有level>1的数据 以pid归档，然后按照sort升序排序
-            unset($_all_level_rows[1]);
-            $_after_sort_asc_greate_then_level_1 = [];
-            foreach( $_all_level_rows as $level_x){
-
-                ## 获得当前所有不重复的pid值
-                $this_all_pid = array_column($level_x, 'sort');
-                $this_all_pid = array_unique($this_all_pid);
-                
-                ## 根据pid归档数据
-                $_t = [];
-                foreach( $level_x as $level_x_row){
-                
-                    $this_pid = $level_x_row['pid'];
-                    if( !isset($_t[$this_pid]) ){
-                        $_t[$this_pid] = [];
-                    }
-
-                    $_t[$this_pid][] = $level_x_row;
-                }
-
-                ## 每个归档pid的集合按照sort升序排序
-                foreach( $_t as $this_pid=>$_t_pid_set){
-                
-                    $this_t_pid_set_sort = array_reverse(array_column($_t_pid_set, 'sort'));
-                    ksort($this_t_pid_set_sort);
-
-                    $this_after_sort_asc = [];
-                    foreach( $this_t_pid_set_sort as $_t_pid_set_key){
-                        $this_after_sort_asc[] = $_t_pid_set[$_t_pid_set_key];
-                    }
-
-                    $_t[$this_pid] = $this_after_sort_asc;
-                }
-
-                ## 排序好的数据覆盖掉旧的数据
-                foreach( $_t as $_t_pid_set){
-                
-                    foreach( $_t_pid_set as $row){
-                    
-                        $_after_sort_asc_greate_then_level_1[] = $row;
-                    }
-                }
-            }
-
+            # 根据目录树得到html
+            // $tree_html = $this->getDocTreeHtml($tree);
         }
 
-        return ['rows' => $rows];
+        // return ['tree_html' => $tree_html];
+        return ['tree' => $tree];
     }
 
-    protected function getTidyDoc($rows){
+    public function getDocTreeHtml($tree){
     
-        # 以level做下标进行归档
+        $_innerHtml = '';
+        $this->recursiveDocTreeLi($_innerHtml, $tree);
+
+        $_html = '';
+        if( !empty($_innerHtml) ){
+        
+            $_html = '<ul class="tree">'.$_innerHtml.'</ul>';
+        }
+        
+        return $_html;
+    }
+
+    public function recursiveDocTreeLi(&$innerHtml, $tree){
+    
+        foreach( $tree as $row){
+
+            /// 初始化参数
+            $self   = $row['self'];
+            $son    = isset($row['son']) ? $row['son'] : [];
+            
+            /// 自己
+            $innerHtml .= '<li><a href="http://www.baidu.com" target="_blank">'.$self['title'].'</a>';
+            if( !empty($son) ){
+            
+                $innerHtml .= '<ul>';
+                $this->recursiveDocTreeLi($innerHtml, $son);
+                $innerHtml .= '</ul></li>';
+            }else{
+                $innerHtml .= '</li>';
+            }
+        }
+    }
+
+    /**
+     * 对某个指定的doc，整理得到最终的目录树
+     */
+    public function getDocTreeJui(&$tree, $all, $pid=0){
+    
+        foreach( $all as $row){
+
+            /// 初始化参数
+            $this_id    = $row['id'];
+            $this_pid   = $row['pid'];
+
+            if( $this_pid==$pid ){
+
+                if( $this_pid!=0 ){/// 非一级
+                    
+                    if( !isset($tree['son']) ){
+                    
+                        $tree['son'] = [];
+                    }
+
+                    if( !isset($tree['son'][$this_id]) ){
+                    
+                        $tree['son'][$this_id] = [];
+                    }
+
+                    $tree['son'][$this_id]['self'] = $row;
+
+                    $this->getDocTree($tree['son'][$this_id], $all, $this_id);
+
+                }else{/// 一级
+                    
+                    if( !isset($tree[$this_id]) ){
+                    
+                        $tree[$this_id] = [];
+                    }
+    
+                    if( !isset($tree[$this_id]['self']) ){
+    
+                        $tree[$this_id]['self'] = $row;
+                    }
+                    $this->getDocTree($tree[$this_id], $all, $this_id);
+                }
+            }
+        }
+    }
+
+    /**
+     * 对某个指定的doc，整理得到最终的目录树
+     */
+    protected function getDocTree(&$tree, $all, $pid=0){
+    
+        foreach( $all as $row){
+        
+            if( $row['pid']==$pid ){
+            
+                $tree[] = $row;
+
+                $this->getDocTree($tree, $all, $row['id']);
+            }
+        }
+    }
+
+    /**
+     * 对某个指定的doc，其所有的目录项，不同pid下的数据按sort排序
+     */
+    public function getTidyDoc($rows){
+    
+        /// 以level做下标进行归档
         $_all_level_rows = [];
         foreach( $rows as $this_row){
         
@@ -204,31 +277,18 @@ class DocService {
             $_all_level_rows[$this_level][] = $this_row;
         }
 
-        # 根据level排序(升序)
+        /// 根据下标level值排序(升序)
         ksort($_all_level_rows);
 
-        # 对所有level=1的数据按照sort升序排序
-        $_level_1       = $_all_level_rows[1];
-        $_level_1_sort  = array_reverse(array_column($_level_1, 'sort'));
-
-        ksort($_level_1_sort);
-
-        $_after_sort_asc_level_1 = [];
-        foreach( $_level_1_sort as $_level_1_key){
-        
-            $_after_sort_asc_level_1[] = $_level_1[$_level_1_key];
-        }
-
-        # 对所有level>1的数据 以pid归档，然后按照sort升序排序
-        unset($_all_level_rows[1]);
-        $_after_sort_asc_greate_then_level_1 = [];
+        /// 对所有level>1的数据 以pid归档，然后按照sort升序排序
+        $_after_sort_asc_all = [];
         foreach( $_all_level_rows as $level_x){
 
-            ## 获得当前所有不重复的pid值
+            # 获得当前所有不重复的pid值
             $this_all_pid = array_column($level_x, 'sort');
             $this_all_pid = array_unique($this_all_pid);
             
-            ## 根据pid归档数据
+            # 根据pid归档数据
             $_t = [];
             foreach( $level_x as $level_x_row){
             
@@ -240,14 +300,14 @@ class DocService {
                 $_t[$this_pid][] = $level_x_row;
             }
 
-            ## 每个归档pid的集合按照sort升序排序
+            # 每个归档pid的集合按照sort升序排序
             foreach( $_t as $this_pid=>$_t_pid_set){
             
-                $this_t_pid_set_sort = array_reverse(array_column($_t_pid_set, 'sort'));
-                ksort($this_t_pid_set_sort);
+                $this_t_pid_set_sort = array_column($_t_pid_set, 'sort');
+                natsort($this_t_pid_set_sort);## 保持键名不变，按sort值升序排序
 
                 $this_after_sort_asc = [];
-                foreach( $this_t_pid_set_sort as $_t_pid_set_key){
+                foreach( $this_t_pid_set_sort as $_t_pid_set_key=>$_t_pid_set_val){
                     $this_after_sort_asc[] = $_t_pid_set[$_t_pid_set_key];
                 }
 
@@ -259,15 +319,12 @@ class DocService {
             
                 foreach( $_t_pid_set as $row){
                 
-                    $_after_sort_asc_greate_then_level_1[] = $row;
+                    $_after_sort_asc_all[] = $row;
                 }
             }
         }
 
-        return [
-            'level_1'               => $_after_sort_asc_level_1,
-            'greate_then_level_1'   => $_after_sort_asc_greate_then_level_1
-        ];
+        return $_after_sort_asc_all;
     }
     
 }
