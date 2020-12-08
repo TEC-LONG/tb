@@ -1,23 +1,8 @@
-<div class="pageHeader" style="border:1px #B8D0D6 solid">
-	<input type="hidden" name="pageNum" value="1" />
-	<div class="searchBar">
-		<table class="searchContent">
-			<tr>
-				<td>
-                    <a title="新建目录项" target="dialog" href="{Fun::L('/system/manage/doc/mulu/edit')}?doc__id={$doc__id}" rel="system_manage_docMuluEdit"  minable="false" width="450" height="180">
-                        <div class="buttonActive"><div class="buttonContent"><button>新目录项</button></div></div>
-                    </a>
-                </td>
-			</tr>
-		</table>
-	</div>
-</div>
-
 <h2 class="contentTitle">《{$doc_title}》</h2>
 
-<div id="resultBox"></div>
+<div id="resultBox">&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:" {literal}onclick="$.bringBack({id:0,level:0,title:''})"{/literal}>设置为顶级目录项</a></div>
 
-<div style=" float:left; display:block; margin:10px; overflow:auto; width:100%; height:770px; border:solid 1px #CCC; line-height:21px; background:#FFF;">
+<div style=" float:left; display:block; margin:10px; overflow:auto; width:95%; height:500px; border:solid 1px #CCC; line-height:21px; background:#FFF;">
     {$tree_html}
     <!-- <ul class="tree">
         <li><a href="http://www.baidu.com" target="_blank">框架面板</a>

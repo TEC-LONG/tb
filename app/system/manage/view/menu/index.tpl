@@ -39,16 +39,16 @@
 	/*初始化参数*/
 	var one = {json_encode($one)};
 	var url = init.url.main+'/system/manage/menu/child';
-	var navtab = "{$navatab}";
+	var navtab = "{$navtab}";
 	</script>
 	
 	
 		<div class="wareSort clearfix">
-			<ul id="{$navatab}_sort1"></ul>
-			<ul id="{$navatab}_sort2" style="display: none;"></ul>
-			<ul id="{$navatab}_sort3" style="display: none;"></ul>
+			<ul id="{$navtab}_sort1"></ul>
+			<ul id="{$navtab}_sort2" style="display: none;"></ul>
+			<ul id="{$navtab}_sort3" style="display: none;"></ul>
 		</div>
-		<div class="selectedSort"><b>您当前选择的商品类别是：</b><i id="{$navatab}_selectedSort"></i></div>
+		<div class="selectedSort"><b>您当前选择的商品类别是：</b><i id="{$navtab}_selectedSort"></i></div>
 	
 		<div class="pageFormContent" layoutH="60">
 		<!-- 添加 -->
@@ -56,10 +56,10 @@
 			<fieldset>
 				<legend>添加菜单</legend>
 				<dl>
-					<dt><div class="button"><div class="buttonContent"><button  id="{$navatab}_resetCatPid">重置父级菜单到顶级</button></div></div></dt>
+					<dt><div class="button"><div class="buttonContent"><button  id="{$navtab}_resetCatPid">重置父级菜单到顶级</button></div></div></dt>
 					<dd>
-						<input type="hidden" id="{$navatab}_parent_id" name="pid" value="0">
-						<input type="hidden" id="{$navatab}_parent_level" name="plevel" value="0">
+						<input type="hidden" id="{$navtab}_parent_id" name="pid" value="0">
+						<input type="hidden" id="{$navtab}_parent_level" name="plevel" value="0">
 					</dd>
 				</dl>
 				<dl>
@@ -79,13 +79,13 @@
 			<!-- 编辑 -->
 			<form method="post" action="{Fun::L('/system/manage/menu/upd')}"  class="pageForm required-validate" onsubmit="return validateCallback(this, navTabAjaxDone);">
 				<fieldset>
-					<legend>编辑【<strong class="{$navatab}_show_cat_name">菜单</strong>】</legend>
+					<legend>编辑【<strong class="{$navtab}_show_cat_name">菜单</strong>】</legend>
 					<dl class="nowrap">
 						<dt>新菜单名称：</dt>
 						<dd>
-							<input type="hidden" class="{$navatab}_this_cat_id" name="id">
-							<input type="hidden" class="{$navatab}_this_cat_name" name="ori_name">
-							<input class="required {$navatab}_this_cat_name" id="{$navatab}_this_cat_name" name="name" type="text" />
+							<input type="hidden" class="{$navtab}_this_cat_id" name="id">
+							<input type="hidden" class="{$navtab}_this_cat_name" name="ori_name">
+							<input class="required {$navtab}_this_cat_name" id="{$navtab}_this_cat_name" name="name" type="text" />
 						</dd>
 					</dl>
 					<dl></dl>

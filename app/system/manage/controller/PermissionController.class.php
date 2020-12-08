@@ -31,7 +31,7 @@ class PermissionController extends Controller {
         /// 分配模板变量&渲染模板
         $this->assign($info);
         $this->assign('search', $request);
-        $this->assign('navatab', Route::$navtab);
+        $this->assign('navtab', Route::$navtab);
         $this->assign('flag', PermissionModel::C_FLAG);
         $this->display('permission/index.tpl');
     }
@@ -52,7 +52,7 @@ class PermissionController extends Controller {
 
         /// 分配模板变量&渲染模板
         $this->assign($info);
-        $this->assign('navatab', Route::$navtab);
+        $this->assign('navtab', Route::$navtab);
         $this->assign('flag', PermissionModel::C_FLAG);
         $this->display('permission/edit.tpl');
     }
@@ -189,7 +189,7 @@ class PermissionController extends Controller {
         /// 分配模板变量&渲染模板
         $this->assign($info);
         $this->assign('search', $request);
-        $this->assign('navatab', Route::$navtab);
+        $this->assign('navtab', Route::$navtab);
         $this->assign('flag', PermissionModel::C_FLAG);
         $this->assign('mp_request', MenuPermissionModel::C_REQUEST);
         $this->assign('mp_lv3_type', MenuPermissionModel::C_LEVEL3_TYPE);

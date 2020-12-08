@@ -974,7 +974,8 @@ CREATE TABLE `tl_doc_detail` (
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
     `update_time` int unsigned NOT NULL DEFAULT 0 COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    KEY `idx_doc__id` (`doc__id`)
+    KEY `idx_doc__id` (`doc__id`),
+    KEY `idx_pid` (`pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文档详情表';
 
 

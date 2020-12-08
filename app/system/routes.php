@@ -54,6 +54,9 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/post', 'DocController@post')->navtab('system_manage_docList');# 添加/编辑 文档 功能
             
             Route::get('/mulu/list', 'DocController@muluList')->navtab('system_manage_docMuluList');# 具体文档目录管理 页面
+            Route::get('/mulu/lookup', 'DocController@lookup')->navtab('system_manage_docMuluLookup');# 目录项 查找带回 页面
+            Route::get('/mulu/edit', 'DocController@muluEdit')->navtab('system_manage_docMuluEdit');# 新增/编辑 目录项 页面
+            Route::post('/mulu/post', 'DocController@muluPost')->navtab('system_manage_docMuluList');# 新增/编辑 目录项 功能
             
         });
     });
