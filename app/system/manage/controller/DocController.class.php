@@ -168,6 +168,27 @@ class DocController extends Controller {
     }
 
     /**
+     * 校验 groupPost方法 参数
+     */
+    private function muluListValidate($request){
+    
+        $_rule = [
+            'id' => 'required'
+        ];
+        $_rule_msg = [
+            'id.required' => '非法的请求@1'
+        ];
+
+        $validator = Validator::make($request, $_rule, $_rule_msg);
+
+        if( !empty($validator->err) ){
+        
+            // Err::throw($validator->getErrMsg());
+            exit($validator->getErrMsg());
+        }
+    }
+
+    /**
      * 具体文档目录管理 页面
      */
     public function muluList(){
@@ -175,15 +196,132 @@ class DocController extends Controller {
         /// 接收数据
         $request = Fun::request()->all();
 
+        /// 校验数据
+        $this->muluListValidate($request);
+
         /// 初始化参数
         $doc_service = new DocService;
 
         /// 获取某个文档目录数据
         $info = $doc_service->getmuluList($request);
 
+        /// 获取当前文档标题
+        $doc = DocModel::select('title')->where(['id', $request['id']])->find();
+
         /// 分配模板变量&渲染模板
         $this->assign($info);
+        $this->assign('doc__id', $request['id']);
+        $this->assign('doc_title', $doc['title']);
         $this->display('doc_detail/index.tpl');
+    }
+
+    /**
+     * 目录项查找带回页面 页面
+     */
+    public function lookup(){
+        
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        /// 校验数据
+        $this->muluListValidate($request);
+
+        /// 初始化参数
+        $doc_service = new DocService;
+
+        /// 获取某个文档目录数据
+        $info = $doc_service->getmuluLookup($request);
+
+        /// 获取当前文档标题
+        $doc = DocModel::select('title')->where(['id', $request['id']])->find();
+
+        /// 分配模板变量&渲染模板
+        $this->assign($info);
+        $this->assign('doc__id', $request['id']);
+        $this->assign('doc_title', $doc['title']);
+        $this->display('doc_detail/lookup.tpl');
+    }
+
+    /**
+     * 新增/编辑 目录项 页面
+     */
+    public function muluEdit(){
+
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        ///编辑部分
+        $info = [];
+        if( isset($request['id']) ){
+            // $info['row'] = (new DocModel)->select('id, title, descr')->where(['id', $request['id']])->find();
+        }
+
+        ///分配模板变量&渲染模板
+        $this->assign($info);
+        $this->assign('navtab', Route::$navtab);
+        $this->assign('doc__id', $request['doc__id']);
+        $this->display('doc_detail/edit.tpl');
+    }
+
+    /**
+     * 校验 muluPostValidate方法 参数
+     */
+    private function muluPostValidate($request){
+    
+        $_rule = [
+            'title' => 'required'
+        ];
+        $_rule_msg = [
+            'title.required' => '缺少【目录项标题】'
+        ];
+
+        if( isset($request['id']) ){/// 编辑
+        
+            $_rule['id']            = 'int';
+            $_rule_msg['id.int']    = '非法的id参数';
+            $validator = Validator::make($request, $_rule, $_rule_msg);
+        }else {/// 新增
+            $validator = Validator::make($request, $_rule, $_rule_msg);
+        }
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 新增/编辑 目录项 功能
+     */
+    public function muluPost(){
+    
+        try{
+            /// 接收数据
+            $request = Fun::request()->all();
+
+            /// 检查数据
+            $this->muluPostValidate($request);
+
+            /// 初始化参数
+            $doc_service = new DocService;
+
+            /// 执行处理
+            $doc_service->muluPost($request);
+
+        }catch(\Exception $err){
+
+            echo Json::vars([
+                'statusCode'    => 300,
+                'message'       => $err->getMessage(),
+            ])->exec('return');
+            exit;
+        }
+
+        echo Json::vars([
+            'statusCode'    => 200,
+            'message'       => '操作成功！',
+            'navTabId'      => Route::$navtab
+        ])->exec('return');
     }
 
     

@@ -27,7 +27,7 @@ class MenuController extends Controller {
         /// 分配模板变量&渲染模板
         $this->assign($info);
         $this->assign('search', $request);
-        $this->assign('navatab', Route::$navtab);
+        $this->assign('navtab', Route::$navtab);
         $this->display('menu/index.tpl');
     }
 

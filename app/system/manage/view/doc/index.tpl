@@ -35,7 +35,7 @@
                         <th>创建时间</th>
                         <th>最后修改时间</th>
                         <th>ID</th>
-                        <th>操作</th>
+                        <!-- <th>操作</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -55,9 +55,9 @@
                             {/if}
                         </td>
                         <td>{$row.id}</td>
-                        <td>
+                        <!-- <td>
                             <a title="编辑文档" target="navTab" href="{Fun::L('/system/manage/doc/edit')}?id={$row.id}" class="btnEdit" rel="system_manage_docEdit">编辑文档</a>
-                        </td>
+                        </td> -->
                     </tr>
                     {/foreach}
                 </tbody>
@@ -83,23 +83,6 @@
 	</div>
 	
 	<div id="system_manage_docMuluList" class="unitBox" style="margin-left:520px;">
-		<div class="pageHeader" style="border:1px #B8D0D6 solid">
-			<form id="pagerForm" onsubmit="return divSearch(this, 'jbsxBox3');" action="demo/pagination/list3.html" method="post">
-				<input type="hidden" name="pageNum" value="1" />
-				<input type="hidden" name="numPerPage" value="" />
-				<input type="hidden" name="orderField" value="" />
-				<div class="searchBar">
-					<table class="searchContent">
-						<tr>
-							<td>
-								姓名：<input type="text" name="name" />
-							</td>
-							<td><div class="buttonActive"><div class="buttonContent"><button type="submit">检索</button></div></div></td>
-						</tr>
-					</table>
-				</div>
-			</form>
-		</div>
 	</div>
 	
 </div>
