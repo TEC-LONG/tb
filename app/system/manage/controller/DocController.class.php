@@ -9,6 +9,7 @@ use \Fun;
 use \Json;
 use \Err;
 use model\DocModel;
+use model\DocDetailModel;
 
 class DocController extends Controller {
 
@@ -243,6 +244,46 @@ class DocController extends Controller {
     }
 
     /**
+     * 校验 groupPost方法 参数
+     */
+    private function muluEditContentValidate($request){
+    
+        $_rule = [
+            'id' => 'required'
+        ];
+        $_rule_msg = [
+            'id.required' => '非法的请求@1'
+        ];
+
+        $validator = Validator::make($request, $_rule, $_rule_msg);
+
+        if( !empty($validator->err) ){
+        
+            // Err::throw($validator->getErrMsg());
+            exit($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 新增/编辑 目录项 页面
+     */
+    public function muluEditContent(){
+
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        /// 校验数据
+        $this->muluEditContentValidate($request);
+
+        /// 已有数据
+        $info['row'] = DocDetailModel::where(['id', $request['id']])->find();
+
+        ///分配模板变量&渲染模板
+        $this->assign($info);
+        $this->display('doc_detail/content.tpl');
+    }
+
+    /**
      * 新增/编辑 目录项 页面
      */
     public function muluEdit(){
@@ -253,7 +294,17 @@ class DocController extends Controller {
         ///编辑部分
         $info = [];
         if( isset($request['id']) ){
-            // $info['row'] = (new DocModel)->select('id, title, descr')->where(['id', $request['id']])->find();
+
+            # 当前目录项
+            $info['row'] = (new DocDetailModel('dd'))->select([
+                'dd.id',
+                'dd.title',
+                'dd.level',
+                'dd.pid',
+                'dd.sort',
+                'dd1.title' => 'ptitle'
+            ])->leftjoin('tl_doc_detail dd1', 'dd1.id=dd.pid')
+            ->where(['dd.id', $request['id']])->find();
         }
 
         ///分配模板变量&渲染模板

@@ -22,8 +22,8 @@
                 <ul class="toolBar">
                     <li><a class="add" href="{Fun::L('/system/manage/doc/edit')}" target="dialog" mask="true"><span>新文档</span></a></li>
                     <li><a class="edit" href="{Fun::L('/system/manage/doc/edit')}?id={ldelim}sid_{$navTab}}" target="dialog" mask="true"><span>修改文档标题</span></a></li>
-                    <li class="line">line</li>
-                    <li><a class="icon" href="demo/common/dwz-team.xls" target="dwzExport" title="实要导出这些记录吗?"><span>导出EXCEL</span></a></li>
+                    <!-- <li class="line">line</li>
+                    <li><a class="icon" href="demo/common/dwz-team.xls" target="dwzExport" title="实要导出这些记录吗?"><span>导出EXCEL</span></a></li> -->
                     <li><a class="delete" href="" target="ajaxTodo" title="确定要删除吗?"><span>放入回收站</span></a></li>
                 </ul>
             </div>

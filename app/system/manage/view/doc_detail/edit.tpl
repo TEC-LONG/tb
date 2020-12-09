@@ -15,9 +15,9 @@
 			</p>
             <p>
 				<label>上级目录：</label>
-				<input name="system_manage_docMuluEdit_parent_mulu.id" value="0" type="hidden"/>
-				<input name="system_manage_docMuluEdit_parent_mulu.level" value="0" type="hidden"/>
-				<input name="system_manage_docMuluEdit_parent_mulu.title" value="" type="text" readonly/>
+				<input name="system_manage_docMuluEdit_parent_mulu.id" value="{if isset($row)}{$row.pid}{else}0{/if}" type="hidden"/>
+				<input name="system_manage_docMuluEdit_parent_mulu.level" value="{if isset($row)}{$row.level-1}{else}0{/if}" type="hidden"/>
+				<input name="system_manage_docMuluEdit_parent_mulu.title" value="{if isset($row)}{$row.ptitle}{/if}" type="text" readonly/>
 				<a class="btnLook" href="{Fun::L('/system/manage/doc/mulu/lookup')}?id={$doc__id}" lookupGroup="system_manage_docMuluEdit_parent_mulu" width="400" height="600">上级目录</a>	
 			</p>
 		</div>
