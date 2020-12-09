@@ -7,40 +7,24 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>添加工程信息</title>
 	<link rel="shortcut icon" href="{Config::C('URL')}/system/share/images/ico128.ico" type="image/x-icon" />
-	<link rel="stylesheet" href="{$smarty.const.BOOTSTRAP4}/css/bootstrap.min.css"/>
-	<link rel="stylesheet" href="{$smarty.const.PUBLIC_TOOLS}/edmd/css/editormd.css"/>
-	<!-- <script src="{$smarty.const.PUBLIC_TOOLS}/js/jquery-3.3.1.slim.min.js"></script> -->
-	<script src="{$smarty.const.PUBLIC_TOOLS_JUI}/js/jquery-2.1.4.min.js"></script>
-	<script src="{$smarty.const.PUBLIC_TOOLS_PRETTIFY}/src/run_prettify.js?autoload=true&amp;skin=sunburst&amp;lang=css"></script>
-	<script src="{$smarty.const.PUBLIC_TOOLS}/js/popper.min.js"></script>
-	<script src="{$smarty.const.BOOTSTRAP4}/js/bootstrap.min.js"></script>
-	<script src="{$smarty.const.PUBLIC_TOOLS}/editor_md/editormd.js"></script>
+	<link rel="stylesheet" href="{Config::C('URL')}/vendor/twbs/bootstrap/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="{Config::C('URL')}/system/share/edmd/css/editormd.css"/>
+	<script src="{Config::C('URL')}/system/manage/jui/js/jquery-2.1.4.min.js"></script>
+	<script src="{Config::C('URL')}/system/share/prettify/src/run_prettify.js?autoload=true&amp;skin=sunburst&amp;lang=css"></script>
+	<!-- <scr ipt src="{$smarty.const.PUBLIC_TOOLS}/js/popper.min.js"></script> -->
+	<script src="{Config::C('URL')}/vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="{Config::C('URL')}/system/share/edmd/editormd.js"></script>
 </head>
 <body>
-	<ul class="nav nav-tabs">
-		<li class="nav-item">
-			<a class="nav-link active">添加工程信息</a>
-		</li>
-	</ul>
-	<form class="needs-validation" action="{$url.adh.url}" method="post">
+	<form class="needs-validation" action="" method="post">
 		<div class="form-row d-flex mt-3">
-			<div class="col-md-1"></div>
-			<div class="col-md-2">
-				<label for="tools_prorecord_add_title">工程信息标题</label>
-				<input type="text" class="form-control" id="tools_prorecord_add_title" name="title" placeholder="必填项" value="" required>
+            <div class="col-md-1"></div>
+            <div class="col-md-1">
+				<label><button class="btn btn-success" type="submit" style="margin-left:-110px;">应用当前操作</button></label>
 			</div>
 			<div class="col-md-1">
-				<label>所属工程</label>
-				<select name="belong_pro" class="form-control">
-					{foreach $belong_pro as $belong_pro_key=>$belong_pro_val}
-					<option value="{$belong_pro_key}">{$belong_pro_val}</option>
-					{/foreach}
-				</select>
-			</div>
-			<div class="col-md-1">
-				<label> </label>
-				<button class="btn btn-success" type="submit" style="margin-top:32px;">立即添加</button>
-			</div>
+                <label style="margin-top:7px;margin-left:-110px;">目录项：{$row.title}</label>
+            </div>
 		</div>
 		
 		<div class="form-row d-flex mt-3" id="editormd">
@@ -61,7 +45,7 @@ $(function() {
 		imageUpload: true,
 		watch:true,
 		imageFormats   : ["jpg", "jpeg", "gif", "png", "bmp", "webp","zip","rar"],
-		path   : "{$smarty.const.PUBLIC_TOOLS}/edmd/lib/",
+		path   : "{Config::C('URL')}/system/share/edmd/lib/",
 		imageUploadURL : "{$url.imgupmd.url}", //文件提交请求路径
 		saveHTMLToTextarea : true, //注意3：这个配置，方便post提交表单
 		theme        : "default",
