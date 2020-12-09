@@ -228,6 +228,22 @@ class DocService {
 
             $_this_str = '|--- '.date('Y.m.d H:i', $row['created_time']).' ----- '.date('Y.m.d H:i', (empty($row['update_time'])?$row['created_time']:$row['update_time'])).' ';
             for ($i=0; $i < ((5-$row['level']+1)*15); $i++) { 
+                $_this_str .= '--';
+            }
+            $_html .= '<tr><td>'.$_this_str.'<a href="http://www.baidu.com" target="_blank">'.$row['title'].' ['.$row['sort'].']</a></td><td>操作</td></tr>';
+        }
+
+        return $_html;
+    }
+    public function getDocTreeHtml_bak($tree){
+    
+        $_html = '';
+        foreach( $tree as $row){
+        
+            if( $row['level']>5 ) continue;
+
+            $_this_str = '|--- '.date('Y.m.d H:i', $row['created_time']).' ----- '.date('Y.m.d H:i', (empty($row['update_time'])?$row['created_time']:$row['update_time'])).' ';
+            for ($i=0; $i < ((5-$row['level']+1)*15); $i++) { 
             // for ($i=0; $i < ($row['level']*18); $i++) { 
                 $_this_str .= '--';
             }
