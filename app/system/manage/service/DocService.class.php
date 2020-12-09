@@ -226,11 +226,19 @@ class DocService {
         
             if( $row['level']>5 ) continue;
 
-            $_this_str = '|--- '.date('Y.m.d H:i', $row['created_time']).' ----- '.date('Y.m.d H:i', (empty($row['update_time'])?$row['created_time']:$row['update_time'])).' ';
-            for ($i=0; $i < ((5-$row['level']+1)*15); $i++) { 
+            $_this_str = '|--- '.date('Y.m.d H:i', $row['created_time']).' --------- '.date('Y.m.d H:i', (empty($row['update_time'])?$row['created_time']:$row['update_time'])).' ';
+            for ($i=0; $i < ((5-$row['level']+1)*13); $i++) { 
                 $_this_str .= '--';
             }
-            $_html .= '<tr><td>'.$_this_str.'<a href="http://www.baidu.com" target="_blank">'.$row['title'].' ['.$row['sort'].']</a></td><td>操作</td></tr>';
+            $_html .= '
+            <tr target="sid_system_manage_docMuluList_id" rel="'.$row['id'].'">
+                <td>
+                    '.$_this_str.'<a href="http://www.baidu.com" target="_blank">'.$row['title'].' ['.$row['sort'].']</a>
+                </td>
+                <td>
+                    <a title="编辑文档内容" target="_blank" href="'.Fun::L('/system/manage/doc/mulu/edit/content').'?id='.$row['id'].'" class="btnEdit">编辑文档内容</a>
+                </td>
+            </tr>';
         }
 
         return $_html;
@@ -444,16 +452,44 @@ class DocService {
     public function muluPost($request){
     
         /// 初始化参数
-        $now        = time();
-        $doc_detail_model  = new DocDetailModel;
+        $now                = time();
+        $doc_detail_model   = new DocDetailModel;
+
+        $request['pid']     = $request['system_manage_docMuluEdit_parent_mulu_id'];
+        $request['level']  = $request['system_manage_docMuluEdit_parent_mulu_level']+1;
+
+        unset($request['system_manage_docMuluEdit_parent_mulu_id']);
+        unset($request['system_manage_docMuluEdit_parent_mulu_level']);
 
         if( isset($request['id']) ){/// 编辑
             # 查询已有数据
             $row = $doc_detail_model->where(['id', $request['id']])->find();
 
             # 新老数据对比，构建编辑数据
-            $_upd = Fun::data__need_update($request, $row, ['title', 'descr']);
+            $_upd = Fun::data__need_update($request, $row, [
+                'pid',
+                'sort',
+                'title',
+                'doc__id',
+                'level',
+            ]);
             if( empty($_upd) ) Err::throw('您还没有修改任何数据！请先修改数据。');
+
+            if( isset($_upd['sort']) ){# 同级的目录项，大于等于当前sort值的 sort都+1
+            
+                $has_sort = $doc_detail_model->select('id')->where([
+                    ['pid', $request['pid']],
+                    ['sort', $request['sort']]
+                ])->find();
+
+                if( !empty($has_sort) ){
+                
+                    $doc_detail_model->fields('sort')->update(['@sort+1'])->where([
+                        ['pid', $request['pid']],
+                        ['sort', '>=', $_upd['sort']]
+                    ])->exec();
+                }
+            }
 
             $_upd['update_time'] = $now;
 
@@ -466,7 +502,7 @@ class DocService {
             # 数据是否重复，重复了没必要新增
             $_condi = [
                 ['title', $request['title']],
-                ['pid', $request['system_manage_docMuluEdit_parent_mulu_id']]
+                ['pid', $request['pid']]
             ];
             $duplicate = $doc_detail_model->select('id')->where($_condi)->find();
             if(!empty($duplicate)) Err::throw('目录项 "'.$request['title'].'" 已经存在！无需重复添加。');
@@ -475,10 +511,24 @@ class DocService {
                 'title'         => $request['title'],
                 'sort'          => $request['sort'],
                 'doc__id'       => $request['doc__id'],
-                'pid'           => $request['system_manage_docMuluEdit_parent_mulu_id'],
-                'level'         => ($request['system_manage_docMuluEdit_parent_mulu_level']+1),
+                'pid'           => $request['pid'],
+                'level'         => $request['level'],
                 'created_time'  => $now
             ];
+
+            # 同级的目录项，大于等于当前sort值的 sort都+1
+            $has_sort = $doc_detail_model->select('id')->where([
+                ['pid', $request['pid']],
+                ['sort', $request['sort']]
+            ])->find();
+
+            if( !empty($has_sort) ){
+            
+                $doc_detail_model->fields('sort')->update(['@sort+1'])->where([
+                    ['pid', $request['pid']],
+                    ['sort', '>=', $request['sort']]
+                ])->exec();
+            }
 
             # 执行新增
             $re = $doc_detail_model->insert($insert)->exec();
