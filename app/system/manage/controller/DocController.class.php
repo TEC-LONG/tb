@@ -11,6 +11,10 @@ use \Err;
 use model\DocModel;
 use model\DocDetailModel;
 
+use model\MenuPermissionModel;
+use model\UserGroupPermissionModel;
+use system\manage\service\IndexService;
+
 class DocController extends Controller {
 
     /**
@@ -244,46 +248,6 @@ class DocController extends Controller {
     }
 
     /**
-     * 校验 groupPost方法 参数
-     */
-    private function muluEditContentValidate($request){
-    
-        $_rule = [
-            'id' => 'required'
-        ];
-        $_rule_msg = [
-            'id.required' => '非法的请求@1'
-        ];
-
-        $validator = Validator::make($request, $_rule, $_rule_msg);
-
-        if( !empty($validator->err) ){
-        
-            // Err::throw($validator->getErrMsg());
-            exit($validator->getErrMsg());
-        }
-    }
-
-    /**
-     * 新增/编辑 目录项 页面
-     */
-    public function muluEditContent(){
-
-        /// 接收数据
-        $request = Fun::request()->all();
-
-        /// 校验数据
-        $this->muluEditContentValidate($request);
-
-        /// 已有数据
-        $info['row'] = DocDetailModel::where(['id', $request['id']])->find();
-
-        ///分配模板变量&渲染模板
-        $this->assign($info);
-        $this->display('doc_detail/content.tpl');
-    }
-
-    /**
      * 新增/编辑 目录项 页面
      */
     public function muluEdit(){
@@ -373,6 +337,138 @@ class DocController extends Controller {
             'message'       => '操作成功！',
             'navTabId'      => Route::$navtab
         ])->exec('return');
+    }
+
+    /**
+     * 校验 muluEditContent方法 参数
+     */
+    private function muluEditContentValidate($request){
+    
+        $_rule = [
+            'id' => 'required'
+        ];
+        $_rule_msg = [
+            'id.required' => '非法的请求@1'
+        ];
+
+        $validator = Validator::make($request, $_rule, $_rule_msg);
+
+        if( !empty($validator->err) ){
+        
+            // Err::throw($validator->getErrMsg());
+            exit($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 编辑 文档内容 页面
+     */
+    public function muluEditContent(){
+
+        /// 接收数据
+        $request = Fun::request()->all();
+
+        /// 校验数据
+        $this->muluEditContentValidate($request);
+
+        /// 已有数据
+        $info['row'] = DocDetailModel::where(['id', $request['id']])->find();
+
+        ///分配模板变量&渲染模板
+        $this->assign($info);
+        $this->display('doc_detail/content.tpl');
+    }
+    
+    /**
+     * 校验 muluEditContentPost方法 参数
+     */
+    private function muluEditContentPostValidate($request){
+    
+        $_rule = [
+            'id' => 'required'
+        ];
+        $_rule_msg = [
+            'id.required' => '非法的请求@1'
+        ];
+
+        $validator = Validator::make($request, $_rule, $_rule_msg);
+
+        if( !empty($validator->err) ){
+        
+            Err::throw($validator->getErrMsg());
+        }
+    }
+
+    /**
+     * 编辑 文档内容 功能
+     */
+    public function muluEditContentPost(){
+    
+        try{
+            /// 接收数据
+            $request = Fun::request()->all('n');
+
+            /// 检查数据
+            $this->muluEditContentPostValidate($request);
+
+            /// 初始化参数
+            $doc_detail_model           = new DocDetailModel;
+            $doc_detail_id              = $request['id'];
+            $request['content_html']    = $request['editormd-html-code'];
+            $request['content']         = str_replace('"', '&quot;',str_replace('\\', '\\\\', $request['content']));
+
+            #查询已有数据
+            $row    = $doc_detail_model->where(['id', $doc_detail_id])->find();
+            $_upd   = Fun::data__need_update($request, $row, ['content', 'content_html']);
+            if( empty($_upd) ) Err::throw('您还没有修改任何数据！请先修改数据。');
+
+            /// 执行处理
+            $_upd['update_time'] = time();
+
+            # 更新数据
+            $doc_detail_model->update($_upd)
+            ->where(['id', $doc_detail_id])
+            ->exec();
+
+        }catch(\Exception $err){
+
+            Fun::jump('/system/manage/doc/mulu/edit/content?id='.$doc_detail_id, $err->getMessage());
+        }
+
+        Fun::jump('/system/manage/doc/mulu/edit/content?id='.$doc_detail_id, '操作成功！');
+    }
+
+    /**
+     * 文档详情 页面
+     */
+    public function info(){
+    
+        /// 初始化参数
+        $index_service                  = new IndexService;
+        $menu_permission_model          = new MenuPermissionModel('mp');
+        $user_group_permission_model    = new UserGroupPermissionModel;
+
+        /// 查询三级以内所有菜单数据
+        $menu1 = $menu_permission_model->menu1();
+        $menu2 = $menu_permission_model->menu2();
+        $menu3 = $menu_permission_model->menu3();
+
+        /// 查询当前用户所具有的权限菜单
+        $user_group__id = $_SESSION['manager']['user_group__id'];
+        // $user_group__id = self::$manager['user_group__id'];
+        $mp_ids         = $user_group_permission_model->getMenuPermissionIds($user_group__id);
+
+        /// 收藏网站
+        $nav_link = $index_service->getNavLink();
+
+        /// 分配模板变量  &  渲染模板
+        $this->assign('menu1', $menu1);
+        $this->assign('menu2', $menu2);
+        $this->assign('menu3', $menu3);
+        $this->assign('mp_ids', $mp_ids);
+        $this->assign('nav_link', $nav_link);
+        $this->assign('manager', self::$manager);
+        $this->display('doc/info.tpl');
     }
 
     

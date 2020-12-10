@@ -2,7 +2,8 @@
 
 class Json{
     private $_re=null;
-    private static $Json=null;
+    private static $Json=[];
+    protected static $KEY=null;
 
     public function __construct(){
         
@@ -14,8 +15,9 @@ class Json{
 
     public static function __callStatic($name, $arguments){
         
-        if( empty(self::$Json) ){
-            self::$Json = new self;
+        self::$KEY = $key = get_called_class();
+        if( empty(self::$Json[$key]) ){
+            self::$Json[$key] = new self;
         }
         
         return self::magicCommon($name, $arguments);
@@ -23,8 +25,9 @@ class Json{
 
     public function __call($name, $arguments){
 
-        if( empty(self::$Json) ){
-            self::$Json = new self;
+        self::$KEY = $key = get_class($this);
+        if( empty(self::$Json[$key]) ){
+            self::$Json[$key] = $this;
         }
 
         return self::magicCommon($name, $arguments);
@@ -53,7 +56,7 @@ class Json{
         }
 
         /// 需要返回Json对象的
-        return self::$Json;
+        return self::$Json[self::$KEY];
     }
 
     private static function commonUse($method, $arguments=null){
@@ -62,13 +65,13 @@ class Json{
 
             if( isset($arguments[1]) ){
 
-                return self::$Json->$method($arguments[0], $arguments[1]);
+                return self::$Json[self::$KEY]->$method($arguments[0], $arguments[1]);
             }
             
-            return self::$Json->$method($arguments[0]);
+            return self::$Json[self::$KEY]->$method($arguments[0]);
             
         }
-        return self::$Json->$method();
+        return self::$Json[self::$KEY]->$method();
     }
 
     /**

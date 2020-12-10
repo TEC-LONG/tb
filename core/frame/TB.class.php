@@ -2,7 +2,7 @@
 
 class TB{
 
-    protected static $TB;
+    protected static $TB=[];
     protected static $KEY;
 
     protected $table;

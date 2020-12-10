@@ -2,34 +2,6 @@
 
 class App{
 
-    private static $_objs=array();
-
-    public static function single($className, $params, $type='single'){//$type='single'表示走单例；$type='no_single'表示不走单例
-
-        if( empty(self::$_objs[$className]) ){
-            if( empty($params) ):
-                self::$_objs[$className] = new $className;
-            else:
-                if( $className==='\Upload\File' ){
-                    self::$_objs[$className] = new $className($params[0], $params[1]);
-                }else{
-                    self::$_objs[$className] = new $className($params);
-                }
-            endif;
-        }
-
-        if( $type=='no_single' ){
-        
-            $tmp_obj = self::$_objs[$className];
-            unset(self::$_objs[$className]);
-            return $tmp_obj;
-
-        }elseif ( $type=='single' ) {
-            
-            return self::$_objs[$className];
-        }
-    }
-
     public static function autoload($className){ 
 
         //$className = basename($className);//得到了除去命名空间的纯类名，Linux下不认“\”做目录分隔符，basename无效
@@ -69,7 +41,7 @@ class App{
 
         $file = '';
     
-        if( in_array($single_class_name, ['TB', 'Json', 'Fun', 'Request', 'BaseCmd', 'BaseModel', 'Validator']) ){
+        if( in_array($single_class_name, ['Base', 'TB', 'Json', 'Fun', 'Request', 'BaseCmd', 'BaseModel', 'Validator', 'Upload']) ){
             
             $file = CORE_FRAME . '/' . $single_class_name . '.class.php';
         }elseif ( substr($single_class_name, -5)==='Model' ) {
@@ -180,6 +152,9 @@ class App{
 
                 # 父类控制器
                 include CORE_FRAME . '/Controller.class.php';
+            }elseif( $v=='Composer' ){
+            
+                include COMPOSER . '/autoload.php';
             }
         }
     }

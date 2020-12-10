@@ -47,6 +47,11 @@ Route::team(['prefix'=>'system'], function (){
             Route::post('/upd', 'MenuController@upd')->navtab('system_manage_menuList');# 编辑菜单功能
         });
 
+        Route::team(['prefix'=>'editor'], function (){
+        
+            Route::post('/md/img/up', 'EditorController@mdImgUp');# 适配 editorMD 图片上传 的功能
+        });
+
         Route::team(['prefix'=>'doc'], function (){
             
             Route::get('/list', 'DocController@list')->navtab('system_manage_docList');# 文档管理 页面
@@ -57,7 +62,10 @@ Route::team(['prefix'=>'system'], function (){
             Route::get('/mulu/lookup', 'DocController@lookup')->navtab('system_manage_docMuluLookup');# 目录项 查找带回 页面
             Route::get('/mulu/edit', 'DocController@muluEdit')->navtab('system_manage_docMuluEdit');# 新增/编辑 目录项 页面
             Route::post('/mulu/post', 'DocController@muluPost')->navtab('system_manage_docMuluList');# 新增/编辑 目录项 功能
-            Route::get('/mulu/edit/content', 'DocController@muluEditContent')->navtab('system_manage_docMuluEditContent');# 编辑 目录项 内容
+            Route::get('/mulu/edit/content', 'DocController@muluEditContent')->navtab('system_manage_docMuluEditContent');# 编辑 文档内容 页面
+            Route::post('/mulu/edit/content/post', 'DocController@muluEditContentPost');# 编辑 文档内容 功能
+
+            Route::get('/info', 'DocController@info')->navtab('system_manage_docInfo');# 文档详情 页面
             
         });
     });

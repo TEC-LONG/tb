@@ -3,11 +3,13 @@
 class Err{
 
     private static $Err=null;
+    protected static $KEY=null;
 
     public static function __callStatic($name, $arguments){
         
-        if( empty(self::$Err) ){
-            self::$Err = new self;
+        self::$KEY = $key = get_called_class();
+        if( empty(self::$Err[$key]) ){
+            self::$Err[$key] = new self;
         }
         
         return self::magicCommon($name, $arguments);
@@ -15,8 +17,9 @@ class Err{
 
     public function __call($name, $arguments){
     
-        if( empty(self::$Err) ){
-            self::$Err = new self;
+        self::$KEY = $key = get_class($this);
+        if( empty(self::$Err[$key]) ){
+            self::$Err[$key] = $this;
         }
 
         return self::magicCommon($name, $arguments);
@@ -29,17 +32,17 @@ class Err{
 
         if( $name=='throw' ){
         
-            return self::$Err->gothrowErr($arguments[0]);
+            return self::$Err[self::$KEY]->gothrowErr($arguments[0]);
         }elseif( $name=='try' ){
             
             if( isset($arguments[1]) ){
-                return self::$Err->gotry($arguments[0], $arguments[1]);
+                return self::$Err[self::$KEY]->gotry($arguments[0], $arguments[1]);
             }
-            return self::$Err->gotry($arguments[0]);
+            return self::$Err[self::$KEY]->gotry($arguments[0]);
         }
 
         $err = new \Exception('非法的操作: Err::'.$name);
-        self::$Err->handle($err);
+        self::$Err[self::$KEY]->handle($err);
         exit;
     }
 

@@ -233,7 +233,7 @@ class DocService {
             $_html .= '
             <tr target="sid_system_manage_docMuluList_id" rel="'.$row['id'].'">
                 <td>
-                    '.$_this_str.'<a href="http://www.baidu.com" target="_blank">'.$row['title'].' ['.$row['sort'].']</a>
+                    '.$_this_str.'<a href="'.Fun::L('/system/manage/doc/info').'" target="_blank">'.$row['title'].' ['.$row['sort'].']</a>
                 </td>
                 <td>
                     <a title="编辑文档内容" target="_blank" href="'.Fun::L('/system/manage/doc/mulu/edit/content').'?id='.$row['id'].'" class="btnEdit">编辑文档内容</a>

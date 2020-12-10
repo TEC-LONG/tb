@@ -1,8 +1,6 @@
 <?php
 
 namespace system\manage\controller;
-use \model\PermissionModel;
-use \model\UserModel;
 use \controller;
 use \Json;
 use \Err;
