@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>添加工程信息</title>
+	<title>{$row.title}</title>
 	<link rel="shortcut icon" href="{Config::C('URL')}/system/share/images/ico128.ico" type="image/x-icon" />
 	<link rel="stylesheet" href="{Config::C('URL')}/vendor/twbs/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="{Config::C('URL')}/system/share/edmd/css/editormd.css"/>
@@ -16,7 +16,8 @@
 	<script src="{Config::C('URL')}/system/share/edmd/editormd.js"></script>
 </head>
 <body>
-	<form class="needs-validation" action="" method="post">
+	<form class="needs-validation" action="{Fun::L('/system/manage/doc/mulu/edit/content/post')}" method="post">
+		<input type="hidden" name="id" value="{$row.id}" />
 		<div class="form-row d-flex mt-3">
             <div class="col-md-1"></div>
             <div class="col-md-1">
@@ -28,7 +29,7 @@
 		</div>
 		
 		<div class="form-row d-flex mt-3" id="editormd">
-			<textarea style="display:none;" name="content"></textarea>
+			<textarea style="display:none;" name="content">{$row.content}</textarea>
 		</div>
 	</form>
 	
@@ -38,7 +39,7 @@ $(function() {
 	var editor = editormd("editormd", {
 		htmlDecode: "style,script,iframe",
 		width: "95%",
-		height:'640px',
+		height:'840px',
 		syncScrolling : "single",
 		emoji:true,
 		//启动本地图片上传功能
@@ -46,7 +47,7 @@ $(function() {
 		watch:true,
 		imageFormats   : ["jpg", "jpeg", "gif", "png", "bmp", "webp","zip","rar"],
 		path   : "{Config::C('URL')}/system/share/edmd/lib/",
-		imageUploadURL : "{$url.imgupmd.url}", //文件提交请求路径
+		imageUploadURL : "{Fun::L('/system/manage/editor/md/img/up')}", //文件提交请求路径
 		saveHTMLToTextarea : true, //注意3：这个配置，方便post提交表单
 		theme        : "default",
 		// Preview container theme, added v1.5.0

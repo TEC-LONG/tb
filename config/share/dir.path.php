@@ -10,10 +10,9 @@ define('ROOT', dirname(dirname(dirname(__FILE__))));//定义根目录常量
  */
 define('APP',           ROOT.'/app');# APP_PATH => xxx/tb/app/
 define('CORE',          ROOT.'/core');
-define('PLUGINS',       ROOT.'/plugs');
+define('PLUGS',         ROOT.'/plugs');
 define('CONFIG',        ROOT.'/config');
 define('PUB',           ROOT.'/public');
-define('VENDOR',        ROOT.'/vendor');
 define('STORAGE',       ROOT.'/storage');
 
 /**
@@ -41,16 +40,20 @@ define('CORE_MIDWARE',  CORE.'/midware');
 define('CORE_FRAME_SMARTY', CORE_FRAME.'/smarty');
 
 /**
+ * /plugs
+ */
+define('COMPOSER',  PLUGS.'/vendor');
+
+/**
  * /public
  */
-define('PUB_SHARE',  PUB.'/share');
+define('PUB_UPLOAD',  PUB.'/upload');
 
 /**
  * /storage
  */
 define('STORAGE_LOG',       STORAGE.'/log');
 define('STORAGE_DW',        STORAGE.'/dw');
-define('STORAGE_UP',        STORAGE.'/up');
 define('STORAGE_CACHE',     STORAGE.'/cache');
 
 /**

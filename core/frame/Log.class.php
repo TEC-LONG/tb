@@ -2,7 +2,7 @@
 
 class Log{
 
-    private static $Log=null;
+    private static $Log;
 
     private $_type;
     private $_limit_type=['mixed', 'upload', 'download', 'database'];
@@ -21,7 +21,7 @@ class Log{
     public static function __callStatic($name, $arguments){
         
         if( empty(self::$Log) ){
-            self::$Log = new self;
+            self::$Log = new static;
         }
         
         return self::magicCommon($name, $arguments);
@@ -30,7 +30,7 @@ class Log{
     public function __call($name, $arguments){
     
         if( empty(self::$Log) ){
-            self::$Log = new self;
+            self::$Log = $this;
         }
 
         return self::magicCommon($name, $arguments);

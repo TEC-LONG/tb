@@ -3,11 +3,13 @@
 class Fun{
 
     private static $Fun=null;
+    protected static $KEY=null;
 
     public static function __callStatic($name, $arguments){
-        
-        if( empty(self::$Fun) ){
-            self::$Fun = new self;
+
+        self::$KEY = $key = get_called_class();
+        if( empty(self::$Fun[$key]) ){
+            self::$Fun[$key] = new self;
         }
         
         return self::magicCommon($name, $arguments);
@@ -15,8 +17,9 @@ class Fun{
 
     public function __call($name, $arguments){
     
-        if( empty(self::$Fun) ){
-            self::$Fun = new self;
+        self::$KEY = $key = get_class($this);
+        if( empty(self::$Fun[$key]) ){
+            self::$Fun[$key] = $this;
         }
 
         return self::magicCommon($name, $arguments);
@@ -62,7 +65,7 @@ class Fun{
         }
 
         /// 调用函数
-        return self::$Fun->functionRun($fun_name, $arguments);
+        return self::$Fun[self::$KEY]->functionRun($fun_name, $arguments);
     }
 
     /**

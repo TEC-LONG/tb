@@ -23,8 +23,8 @@ App::debug();
 /// 执行路由预处理程序
 Route::prepare();
 
-// //引入composer自动加载文件
-// include VENDOR_PATH . 'autoload.php';
+/// 引入composer自动加载文件
+App::includes(['Composer']);
 
 App::includes(['Smarty']);
 spl_autoload_register('App::autoload');

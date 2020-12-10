@@ -971,11 +971,24 @@ CREATE TABLE `tl_doc_detail` (
     `pid` int unsigned NOT NULL DEFAULT 0 COMMENT '上级目录id',
     `sort` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '排序',
     `content` text COMMENT '文档内容',
+    `content_html` text COMMENT 'html标签型内容',
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
     `update_time` int unsigned NOT NULL DEFAULT 0 COMMENT '修改时间',
     PRIMARY KEY (`id`),
     KEY `idx_doc__id` (`doc__id`),
     KEY `idx_pid` (`pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文档详情表';
+
+CREATE TABLE `tl_images` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `img` varchar(255) NOT NULL DEFAULT '' COMMENT '路径（如position=0则img为不包含域名的路径；如position=1则img为包含域名的路径）',
+  `position` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '图片位置，0=内网链接，1=外网链接',
+  `has_use` tinyint unsigned NOT NULL DEFAULT 1 COMMENT '是否已使用，0=未被使用，1=已被使用',
+  `is_del` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否软删除，0=未删除，1=已删除',
+  `type` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '图片类型，0=文档图片，1=相片',
+  `descr` varchar(1000) NOT NULL DEFAULT '' COMMENT '图片描述',
+  `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='图片表';
 
 
