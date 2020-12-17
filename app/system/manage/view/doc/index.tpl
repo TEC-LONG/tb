@@ -9,7 +9,7 @@
 					<table class="searchContent">
 						<tr>
 							<td>
-								姓名：<input type="text" name="name" />
+								文档标题：<input type="text" name="name" />
 							</td>
 							<td><div class="buttonActive"><div class="buttonContent"><button type="submit">检索</button></div></div></td>
 						</tr>
@@ -43,7 +43,7 @@
                     <tr target="sid_{$navTab}" rel="{$row.id}">
                         <td>{$k+1}</td>
                         <td>
-                            <a href="{Fun::L('/system/manage/doc/mulu/list')}?id={$row.id}" target="ajax" rel="system_manage_docMuluList" style="font-size:medium; text-decoration:none;">
+                            <a href="{Fun::L('/system/manage/doc/mulu/list')}?id={$row.id}" target="ajax" rel="system_manage_docMuluList" style="text-decoration:none;">
 								{$row.title}
 							</a>
                         </td>

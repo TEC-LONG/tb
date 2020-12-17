@@ -58,14 +58,15 @@ Route::team(['prefix'=>'system'], function (){
             Route::get('/edit', 'DocController@edit')->navtab('system_manage_docEdit');# 添加/编辑 文档 页面
             Route::post('/post', 'DocController@post')->navtab('system_manage_docList');# 添加/编辑 文档 功能
             
-            Route::get('/mulu/list', 'DocController@muluList')->navtab('system_manage_docMuluList');# 具体文档目录管理 页面
+            Route::request('/mulu/list', 'DocController@muluList')->navtab('system_manage_docMuluList');# 具体文档目录管理 页面
             Route::get('/mulu/lookup', 'DocController@lookup')->navtab('system_manage_docMuluLookup');# 目录项 查找带回 页面
             Route::get('/mulu/edit', 'DocController@muluEdit')->navtab('system_manage_docMuluEdit');# 新增/编辑 目录项 页面
             Route::post('/mulu/post', 'DocController@muluPost')->navtab('system_manage_docMuluList');# 新增/编辑 目录项 功能
             Route::get('/mulu/edit/content', 'DocController@muluEditContent')->navtab('system_manage_docMuluEditContent');# 编辑 文档内容 页面
             Route::post('/mulu/edit/content/post', 'DocController@muluEditContentPost');# 编辑 文档内容 功能
 
-            Route::get('/info', 'DocController@info')->navtab('system_manage_docInfo');# 文档详情 页面
+            Route::get('/info', 'DocController@info')->navtab('system_manage_docInfo');# 文档 页面
+            Route::get('/info/content', 'DocController@docDetailContent')->navtab('system_manage_docInfoContent');# 文档内容navtab 页面
             
         });
     });

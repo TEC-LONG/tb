@@ -49,7 +49,8 @@ class DocDetailModel extends BaseModel{
             'pid',
             'sort',
             'created_time',
-            'update_time'
+            'update_time',
+            '@(case WHEN LENGTH(content_html)>0 THEN 1 ELSE 0 END)' => 'c_len',
         ])->orderby('level desc')->get();
     }
 }

@@ -1,7 +1,27 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 {include file="../head.tpl"}
-
+<script type="text/javascript">
+// var detail_navtab	= "system_manage_docInfo{$doc_detail_id}";
+// var detail_title	= "aaa";
+// var detail_url		= "{Fun::L('/system/manage/doc/info/content')}?id={$doc_detail_id}";
+{literal}
+$(function(){
+	DWZ.init(init.url.main+"/system/manage/jui/dwz.frag.xml", {
+		statusCode:{ok:200, error:300, timeout:301}, //【可选】
+		pageInfo:{pageNum:"pageNum", numPerPage:"numPerPage", orderField:"orderField", orderDirection:"orderDirection"}, //【可选】
+		keys: {statusCode:"statusCode", message:"message"}, //【可选】
+		ui:{hideMode:'offsets'}, //【可选】hideMode:navTab组件切换的隐藏方式，支持的值有’display’，’offsets’负数偏移位置的值，默认值为’display’
+		debug:false,	// 调试模式 【true|false】
+		callback:function(){
+			initEnv();
+			$("#themeList").theme({themeBase:"themes"}); // themeBase 相对于index页面的主题base路径
+			// navTab.openTab(detail_navtab, detail_url, {'title': detail_title});
+		}
+	});
+});
+{/literal}
+</script>
 <body>
 	<div id="layout">
 		<div id="header">
@@ -38,55 +58,15 @@
 				</div>
 			</div>
 			<div id="sidebar">
-				<div class="toggleCollapse"><h2>主菜单</h2><div>收缩</div></div>
+				<div class="toggleCollapse"><h2>《{$doc_title}》</h2><div>收缩</div></div>
 				<div class="accordion" fillSpace="sidebar">
-				{foreach $menu1 as $k1=>$v1}
-				{if in_array($v1.id, $mp_ids)}
 					<div class="accordionHeader">
-						<h2><span>Folder</span>{$v1.display_name}</h2>
+						<h2><span>Folder</span>目录导航</h2>
 					</div>
 					<div class="accordionContent">
-						<ul class="tree">
-							{foreach $menu2 as $k2=>$v2}
-							{if in_array($v2.id, $mp_ids)}
-							{if $v1.id==$v2.parent_id}
-							<li><a>{$v2.display_name}</a>
-								<ul>
-								{foreach $menu3 as $k3=>$v3}
-								{if in_array($v3.id, $mp_ids)}
-								{if $v2.id==$v3.parent_id}
-									<li><a href="{if $v3.level3_type==1}{$v3.level3_href}{else}{Fun::L($v3.route)}{/if}" target="navtab" rel="{$v3['navtab']}">{$v3.display_name}</a></li>
-								{/if}
-								{/if}
-								{/foreach}
-								</ul>
-							</li>
-							{/if}
-							{/if}
-							{/foreach}
-						</ul>
+						{$tree_html}
 					</div>
-				{/if}
-				{/foreach}
 				</div>
-				<!-- <div class="accordion" fillSpace="sidebar">
-					<div class="accordionHeader">
-						<h2><span>Folder</span>aaa</h2>
-					</div>
-					<div class="accordionContent">
-						<ul class="tree">
-							<li><a>aaa-1</a>
-								<ul>
-									<li><a href="http://local.teclong.cn/system/manage/user/list" target="navtab" rel="system_manage_userList">后台管理员</a></li>
-									<li><a href="http://local.teclong.cn/system/manage/user/group" target="navtab" rel="system_manage_userGroup">用户组管理</a></li>
-									<li><a href="http://local.teclong.cn/system/manage/permission/list" target="navtab" rel="system_manage_permissionList">权限管理</a></li>
-									<li><a href="http://local.teclong.cn/system/manage/menu/list" target="navtab" rel="system_manage_menuList">左侧导航菜单</a></li>
-									<li><a href="http://local.teclong.cn/system/manage/permission/menu" target="navtab" rel="system_manage_permissionMenu">菜单权限管理</a></li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</div> -->
 			</div>
 		</div>
 
@@ -105,7 +85,13 @@
 				<ul class="tabsMoreList">
 					<li><a href="javascript:;">我的主页</a></li>
 				</ul>
-				{include file="../main.tpl"}
+				
+				<!-- 内容 -->
+				<div class="navTab-panel tabsPageContent layoutBox">
+					<div class="page unitBox">
+					</div>
+				</div>
+
 			</div>
 		</div>
 
