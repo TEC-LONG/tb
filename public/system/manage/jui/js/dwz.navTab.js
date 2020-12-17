@@ -102,7 +102,11 @@ var navTab = {
 	},
 	
 	_getTabs: function(){
-		return this._tabBox.find("> li");
+		if ( this._tabBox!==null ) {
+			
+			return this._tabBox.find("> li");
+		}
+		return false;
 	},
 	_getPanels: function(){
 		return this._panelBox.find("> div");
@@ -131,9 +135,14 @@ var navTab = {
 	_indexTabId: function(tabid){
 		if (!tabid) return -1;
 		var iOpenIndex = -1;
-		this._getTabs().each(function(index){
-			if ($(this).attr("tabid") == tabid){iOpenIndex = index; return;}
-		});
+
+		var t_obj = this._getTabs();
+
+		if (t_obj) {
+			t_obj.each(function(index){
+				if ($(this).attr("tabid") == tabid){iOpenIndex = index; return;}
+			});
+		}
 		return iOpenIndex;
 	},
 	_getLeft: function(){
@@ -356,9 +365,9 @@ var navTab = {
 	 */
 	openTab: function(tabid, url, options){ //if found tabid replace tab, else create a new tab.
 		var op = $.extend({title:"New Tab", type:"GET", data:{}, fresh:true, external:false}, options);
-
+		console.log(tabid);
 		var iOpenIndex = this._indexTabId(tabid);
-
+		
 		if (iOpenIndex >= 0){
 			var $tab = this._getTabs().eq(iOpenIndex);
 			var span$ = $tab.attr("tabid") == this._op.mainTabId ? "> span > span" : "> span";

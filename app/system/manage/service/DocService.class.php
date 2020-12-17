@@ -217,6 +217,36 @@ class DocService {
     }
 
     /**
+     * 获取 目录 页面数据
+     */
+    public function getmuluJui($request){
+    
+        /// 初始化参数
+        $doc__id            = $request['id'];
+        $doc_detail_model   = new DocDetailModel;
+
+        /// 查询数据
+        $rows = $doc_detail_model->getDocDetailByDocid($request, $doc__id);
+
+        /// 组装数据
+        $tree_html = '';
+        if( !empty($rows) ){
+            
+            # 不同pid下的数据按sort排序
+            $tidy_doc = $this->getTidyDoc($rows);
+
+            # 整理目录树
+            $tree = [];
+            $this->getDocTreeJui($tree, $tidy_doc);
+
+            # 根据目录树得到html
+            $tree_html = $this->getDocTreeHtmlJui($tree);
+        }
+
+        return ['tree_html' => $tree_html];
+    }
+
+    /**
      * 整理得到树状菜单html
      */
     public function getDocTreeHtml($tree){
@@ -230,15 +260,22 @@ class DocService {
             for ($i=0; $i < ((5-$row['level']+1)*13); $i++) { 
                 $_this_str .= '--';
             }
-            $_html .= '
+            $_htm = '
             <tr target="sid_system_manage_docMuluList_id" rel="'.$row['id'].'">
-                <td>
-                    '.$_this_str.'<a href="'.Fun::L('/system/manage/doc/info').'" target="_blank">'.$row['title'].' ['.$row['sort'].']</a>
-                </td>
+                <td>%s</td>
                 <td>
                     <a title="编辑文档内容" target="_blank" href="'.Fun::L('/system/manage/doc/mulu/edit/content').'?id='.$row['id'].'" class="btnEdit">编辑文档内容</a>
                 </td>
             </tr>';
+            
+            if( $row['c_len']==1 ){
+            
+                $_td1 = $_this_str.'<a href="'.Fun::L('/system/manage/doc/info/content').'?id='.$row['id'].'" target="_blank" style="color:green;">'.$row['title'].' ['.$row['sort'].']</a>';
+            }else{
+                $_td1 = $_this_str.'<a href="javascript:void(0)" >'.$row['title'].' ['.$row['sort'].']</a>';
+            }
+            
+            $_html .= sprintf($_htm, $_td1);
         }
 
         return $_html;
@@ -292,7 +329,12 @@ class DocService {
                 $innerHtml .= '<li><a href="javascript:" onclick="$.bringBack({id:'.$self['id'].',level:'.$self['level'].',title:\''.$self['title'].'\'})">'.$self['title'].'['.$self['sort'].']</a>';
             }else{
 
-                $innerHtml .= '<li><a href="http://www.baidu.com" target="_blank">'.$self['title'].'</a>';
+                # 有内容才给链接
+                if( $self['c_len']==1 ){
+                    $innerHtml .= '<li><a href="'.Fun::L('/system/manage/doc/info/content').'?id='.$self['id'].'" target="navTab" rel="system_manage_docInfo'.$self['id'].'" external="true" style="color:green;">'.$self['title'].'</a>';
+                }else{
+                    $innerHtml .= '<li><a href="javascript:void(0)">'.$self['title'].'</a>';
+                }
             }
             if( !empty($son) ){
             
@@ -502,7 +544,8 @@ class DocService {
             # 数据是否重复，重复了没必要新增
             $_condi = [
                 ['title', $request['title']],
-                ['pid', $request['pid']]
+                ['pid', $request['pid']],
+                ['doc__id', $request['doc__id']]
             ];
             $duplicate = $doc_detail_model->select('id')->where($_condi)->find();
             if(!empty($duplicate)) Err::throw('目录项 "'.$request['title'].'" 已经存在！无需重复添加。');

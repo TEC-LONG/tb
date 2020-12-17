@@ -1,0 +1,1 @@
+{htmlspecialchars_decode($this_doc_detail.content)}

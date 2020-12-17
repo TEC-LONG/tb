@@ -3,7 +3,7 @@
 		<table class="searchContent">
 			<tr>
 				<td>
-                    <span style="font-size:medium">《{$doc_title}》</span>
+                    <a href="{Fun::L('/system/manage/doc/info')}?id={$doc__id}" target="_blank"><span style="font-size:medium">《{$doc_title}》</span></a>
                 </td>
 			</tr>
 		</table>

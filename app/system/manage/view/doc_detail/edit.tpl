@@ -33,13 +33,18 @@
 </div>
 <script>
 var permissionAjaxDone = function (re) {
-	
+	var this_url = "{Fun::L('/system/manage/doc/mulu/list')}?id="+re.doc__id;
 	{literal}
-	/// re = {statusCode: 200, message: "操作成功", navTabId: "tools_prorecord_detad"}
 	if (re.statusCode==200) {
 		alertMsg.correct(re.message);
 		if (re.navTabId){
-			navTab.reloadFlag(re.navTabId);
+			// navTab.reloadFlag(re.navTabId);
+			// navTab.reload(this_url, {data:[re.navTabId]});
+			var tmp_form = document.createElement('form');
+			tmp_form.style = "display:none;";
+			tmp_form.method = 'get';
+			tmp_form.action = this_url;
+			divSearch(tmp_form, re.navTabId);
 		}
 		$.pdialog.closeCurrent();
 	}else{
