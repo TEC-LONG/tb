@@ -519,17 +519,35 @@ class DocService {
 
             if( isset($_upd['sort']) ){# 同级的目录项，大于等于当前sort值的 sort都+1
             
-                $has_sort = $doc_detail_model->select('id')->where([
+                $has_sort = $doc_detail_model->select('id, sort')->where([
                     ['pid', $request['pid']],
-                    ['sort', $request['sort']]
+                    ['doc__id', $request['doc__id']],
+                    ['sort', $_upd['sort']]
                 ])->find();
 
-                if( !empty($has_sort) ){
-                
-                    $doc_detail_model->fields('sort')->update(['@sort+1'])->where([
+                if( !empty($has_sort) ){## 能进来，则$has_sort['sort']=$_upd['sort']
+
+                    $_condi = [
                         ['pid', $request['pid']],
-                        ['sort', '>=', $_upd['sort']]
-                    ])->exec();
+                        ['doc__id', $request['doc__id']]
+                    ];
+
+                    ### 能进来则不可能存在$has_sort['sort']==$row['sort']的情况
+                    if( $has_sort['sort']>$row['sort'] ){### sort值改小，则区间内的sort值递增1
+                    
+                        $b_sort = $has_sort['sort'];
+                        $e_sort = $row['sort'];
+
+                        $_condi[] = ['sort', '>=', $b_sort];
+                        $_condi[] = ['sort', '<', $e_sort];
+
+                    }elseif( $has_sort['sort']<$row['sort'] ){### sort值改大，则大于修改后的sort值的sort递增1
+
+                        $b_sort     = $has_sort['sort'];
+                        $_condi[]   = ['sort', '>=', $b_sort];
+                    }
+                
+                    $doc_detail_model->fields('sort')->update(['@sort+1'])->where($_condi)->exec();
                 }
             }
 
