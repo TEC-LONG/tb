@@ -1,7 +1,13 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>fires工具管理系统</title>
-    <link rel="shortcut icon" href="{Config::C('URL')}/system/manage/jui/image/ico.ico" type="image/x-icon" />
+    <title>
+        {if isset($title)}
+        {$title}
+        {else}
+        
+        {/if}
+    </title>
+	<link rel="shortcut icon" href="{Config::C('URL')}/system/share/images/ico128.ico" type="image/x-icon" />
     <link href="{Config::C('URL')}/system/manage/jui/themes/default/style.css" rel="stylesheet" type="text/css" media="screen"/>
     <link href="{Config::C('URL')}/system/manage/jui/themes/css/core.css" rel="stylesheet" type="text/css" media="screen"/>
     <link href="{Config::C('URL')}/system/manage/jui/themes/css/print.css" rel="stylesheet" type="text/css" media="print"/>

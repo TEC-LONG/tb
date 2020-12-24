@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>{$row.title}</title>
+	<title>编辑:{$row.title}</title>
 	<link rel="shortcut icon" href="{Config::C('URL')}/system/share/images/ico128.ico" type="image/x-icon" />
 	<link rel="stylesheet" href="{Config::C('URL')}/vendor/twbs/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="{Config::C('URL')}/system/share/edmd/css/editormd.css"/>
@@ -23,7 +23,7 @@
             <div class="col-md-1">
 				<label><button class="btn btn-success" type="submit" style="margin-left:-110px;">应用当前操作</button></label>
 			</div>
-			<div class="col-md-1">
+			<div class="col-md-6">
                 <label style="margin-top:7px;margin-left:-110px;">目录项：{$row.title}</label>
             </div>
 		</div>

@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="{Config::C('URL')}/system/share/css/jquery.autoMenu.css">
 </head>
 <body>
+<style>
+.alert-success {
+    color: #050505;
+    background-color: rgba(255, 255, 255, 0.867);
+}
+</style>
+    
     <div class="container">
         <div class="row">
             <div class="col-sm-1"></div>

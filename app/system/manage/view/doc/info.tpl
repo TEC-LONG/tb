@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-{include file="../head.tpl"}
+{include file="../head.tpl" title="{$doc_title}"}
 <script type="text/javascript">
 // var detail_navtab	= "system_manage_docInfo{$doc_detail_id}";
 // var detail_title	= "aaa";
