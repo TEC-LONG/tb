@@ -432,8 +432,8 @@ class TB{
                 try{
                     $this->_pdo->beginTransaction();
                     foreach( $sql as $one_sql){
-                    
                         $this->_pdo->exec($one_sql);
+                        Log::set('type', 'tbEdit')->msg($one_sql.';');
                     }
                     $re = $this->_pdo->commit();//全部执行成功则提交事务
                     // $this->init();//执行完SQL语句则初始化一次
@@ -455,6 +455,7 @@ class TB{
 
                 try{
                     $this->_pdo->exec($sql);
+                    Log::set('type', 'tbEdit')->msg($sql.';');
                     // $this->init();//执行完SQL语句则初始化一次
                 }catch(\PDOException $e){
         

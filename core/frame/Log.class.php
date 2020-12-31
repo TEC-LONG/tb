@@ -5,7 +5,7 @@ class Log{
     private static $Log;
 
     private $_type;
-    private $_limit_type=['mixed', 'upload', 'download', 'database'];
+    private $_limit_type=['mixed', 'upload', 'download', 'database', 'tbEdit'];
 
     private $_msg=[];
     private $_save_path;
@@ -116,12 +116,13 @@ class Log{
 
         $time = date('Y-m-d H:i:s');
     
-        $templ = <<<heredoc
->>>>>>>>>>[{$time} {$this->_type}.start.log]
-%s
->>>>>>>>>>[{$time} {$this->_type}.end.log]
---------------------------------------------------------------------------------------------------------------------------{EOL}
-heredoc;
+        if( $this->_type=='tbEdit' ){
+        
+            $templ = "/*{$time}*/%s{EOL}{EOL}";
+        }else{
+
+            $templ = "[{$this->_type}@{$time}] %s{EOL}{EOL}";
+        }
 
         $templ = str_replace('{EOL}', PHP_EOL, $templ);
         $tmp_msg = implode(PHP_EOL, $this->_msg);

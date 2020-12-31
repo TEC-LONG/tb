@@ -5,7 +5,7 @@ use \Fun;
 
 class UserModel extends BaseModel{
 
-    protected $table = 'user';
+    protected $table = 'tl_user';
 
     const C_LEVEL       = ['普通用户',  '管理员'];
     const C_STATUS      = ['正常',      '禁用'];

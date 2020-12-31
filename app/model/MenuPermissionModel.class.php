@@ -5,7 +5,7 @@ use \model\PermissionModel;
 
 class MenuPermissionModel extends BaseModel{
 
-    protected $table = 'menu_permission_copy1';
+    protected $table = 'tl_menu_permission';
 
     const C_REQUEST = ['无', 'GET', 'POST', 'REQUEST'];
     const C_LEVEL3_TYPE = ['内部跳转链接', '外部跳转', '无'];

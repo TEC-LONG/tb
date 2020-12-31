@@ -5,7 +5,7 @@ use \Fun;
 
 class UserGroupPermissionModel extends BaseModel{
 
-    protected $table = 'user_group_permission_copy1';
+    protected $table = 'tl_user_group_permission';
 
     /**
      * 获取指定组的菜单权限id

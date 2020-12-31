@@ -289,7 +289,7 @@ class GupiaoService
                 $original_data_active_date  = array_column($original_data, '0');
 
                 # 已存在的数据中的最新一条
-                $has_newest_row = TB::table('shares_details_byday')->select('active_date')->where(['shares__id', $shares_id])->orderby('active_date_timestamp desc')->find();
+                $has_newest_row = TB::table('tl_shares_details_byday')->select('active_date')->where(['shares__id', $shares_id])->orderby('active_date_timestamp desc')->find();
 
                 if( !empty($has_newest_row) ){
                     
@@ -364,7 +364,7 @@ class GupiaoService
                     ['active_date_timestamp', strtotime($this_row[0].' 15:00:00')]
                 ];
 
-                $has_row = TB::table('shares_details_byday')->select('id,channel')->where($check_row)->find();
+                $has_row = TB::table('tl_shares_details_byday')->select('id,channel')->where($check_row)->find();
 
                 if( !empty($has_row) ){
 
@@ -392,7 +392,7 @@ class GupiaoService
                             ];
     
                             /// 更新子表
-                            $re = TB::table('shares_details_byday')
+                            $re = TB::table('tl_shares_details_byday')
                             ->update($_upd)
                             ->where(['id', '=', $has_row['id']])
                             ->exec();
@@ -520,7 +520,7 @@ class GupiaoService
                 continue;
             }
 
-            $re = TB::table('shares_details_byday')
+            $re = TB::table('tl_shares_details_byday')
             ->fields(implode(',', $_f))
             ->insert($data)
             ->exec();
@@ -589,7 +589,7 @@ class GupiaoService
                 ['shares__id', $i]
             ];
 
-            $tmp_shares_details_byday_row = TB::table('shares_details_byday')->select('active_date')->where($tmp_where)->orderby('id desc')->find();
+            $tmp_shares_details_byday_row = TB::table('tl_shares_details_byday')->select('active_date')->where($tmp_where)->orderby('id desc')->find();
             
             if( empty($tmp_shares_details_byday_row) ){
                 echo '无关联数据 --》》》' . $i . PHP_EOL;
@@ -631,7 +631,7 @@ class GupiaoService
             $percent = number_format(($dividend/$divisor)*100, 4) . '%';
 
             /// 获取当前票的所有记录
-            $this_shares_details_byday_row = TB::table('shares_details_byday as sdb')->select('
+            $this_shares_details_byday_row = TB::table('tl_shares_details_byday as sdb')->select('
                 sdb.id,
                 sdb.shares__id,
                 sdb.active_date,
@@ -962,7 +962,7 @@ class GupiaoService
             $percent = number_format(($dividend/$divisor)*100, 4) . '%';
 
             /// 获取当前票的所有记录
-            $this_shares_details_byday_row = TB::table('shares_details_byday as sdb')->select('
+            $this_shares_details_byday_row = TB::table('tl_shares_details_byday as sdb')->select('
                 sdb.id,
                 sdb.shares__id,
                 sdb.active_date,
@@ -1069,6 +1069,17 @@ class GupiaoService
             echo '完成：'. $percent . PHP_EOL;
             $dividend++;
         }
+    }
+
+    /**
+     * 计算均线偏离率
+     */
+    public function pianlilv(){
+    
+        /// 初始化参数
+        $now = time();
+
+
     }
     
     /**
@@ -1274,7 +1285,7 @@ class GupiaoService
             $shares__id = $v['id'];
         
             /// 获取当前股票历史数据
-            $this_share_details_byday = TB::table('shares_details_byday')->select('
+            $this_share_details_byday = TB::table('tl_shares_details_byday')->select('
                 id,
                 day_max_price,
                 day_end_price,
@@ -1401,7 +1412,7 @@ class GupiaoService
                     }
                 }
 
-                $re = TB::table('shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
+                $re = TB::table('tl_shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
                 if( !$re ){
                     echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
                     continue;
@@ -1508,7 +1519,7 @@ class GupiaoService
             $shares__id = $v['id'];
         
             /// 获取当前股票历史数据
-            $this_share_details_byday = TB::table('shares_details_byday')->select('
+            $this_share_details_byday = TB::table('tl_shares_details_byday')->select('
                 id,
                 day_min_price,
                 day_end_price,
@@ -1684,7 +1695,7 @@ class GupiaoService
                 }
 
                 # 更新
-                $re = TB::table('shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
+                $re = TB::table('tl_shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
                 if( !$re ){
                     echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
                     continue;
@@ -1710,7 +1721,7 @@ class GupiaoService
             distinct s.id,
             s.`code`,
             s.type
-        ')->leftjoin('shares_details_byday sdb', 's.id=sdb.shares__id')
+        ')->leftjoin('tl_shares_details_byday sdb', 's.id=sdb.shares__id')
         ->where([
             ['s.is_deprecated', 0],
             ['sdb.total_shizhi', '=', ''],
@@ -1793,7 +1804,7 @@ class GupiaoService
                     ['active_date_timestamp', strtotime($this_row[0].' 15:00:00')]
                 ];
 
-                $has_row = TB::table('shares_details_byday')->select('id, channel, total_shizhi')->where($check_row)->find();
+                $has_row = TB::table('tl_shares_details_byday')->select('id, channel, total_shizhi')->where($check_row)->find();
                 // var_dump(date('Y-m-d H:i:s', 1602514800));
                 // var_dump(TB::dbug());
                 if( !empty($has_row) ){
@@ -1817,7 +1828,7 @@ class GupiaoService
                         ];
 
                         /// 更新子表
-                        $re = TB::table('shares_details_byday')
+                        $re = TB::table('tl_shares_details_byday')
                         ->update($_upd)
                         ->where(['id', '=', $has_row['id']])
                         ->exec();

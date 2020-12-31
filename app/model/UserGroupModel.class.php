@@ -5,5 +5,5 @@ use \Fun;
 
 class UserGroupModel extends BaseModel{
 
-    protected $table = 'user_group_copy1';
+    protected $table = 'tl_user_group';
 }

@@ -93,12 +93,11 @@ class GupiaoCmd extends BaseCmd{
                  * 计算一年新低:  $gupiao_service->yearXindi();
                  */
                 case 4:# php cmd.php Gupiao 4
-                    // $gupiao_service->updateOriginal(1);
-                    $gupiao_service->updateOriginal(0);
-                    $gupiao_service->maPrice();
-                    // $gupiao_service->maAngle();
-                    $gupiao_service->yearXingao();
-                    $gupiao_service->yearXindi();
+                    // $gupiao_service->updateOriginal(0);
+                    // $gupiao_service->maPrice();
+                    $gupiao_service->maAngle();
+                    // $gupiao_service->yearXingao();
+                    // $gupiao_service->yearXindi();
                 break;
                 /**
                  * 5. 分类归档

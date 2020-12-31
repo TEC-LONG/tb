@@ -4,7 +4,7 @@ use \BaseModel;
 
 class PermissionModel extends BaseModel{
 
-    protected $table = 'permission_copy1';
+    protected $table = 'tl_permission';
 
     /**
      * 说明：
