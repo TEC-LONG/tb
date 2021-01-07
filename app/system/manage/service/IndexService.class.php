@@ -2,6 +2,8 @@
 
 namespace system\manage\service;
 use \Fun;
+use model\MixedStatisticsModel;
+use model\SdbStatisticsMovingAveragePianyilvModel;
 
 class IndexService {
     
@@ -44,5 +46,29 @@ class IndexService {
             ]
         ];
     }
+
+    /**
+     * 获取均线相关统计数据
+     */
+    public function getMaStatistics(){
+
+        /// 初始化参数
+        $re = [];
+        $mixed_statistics_model = new MixedStatisticsModel;
+
+        /// 均线偏移率极值
+        # 近10年极值
+        $re['_10years_pianyilv'] = $mixed_statistics_model->getContent(1);
+
+        # 近5年极值
+        $re['_5years_pianyilv'] = $mixed_statistics_model->getContent(2);
+
+        # 近3年极值
+        $re['_3years_pianyilv'] = $mixed_statistics_model->getContent(3);
+
+        /// 返回
+        return $re;
+    }
+
 
 }

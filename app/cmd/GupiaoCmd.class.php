@@ -3,10 +3,10 @@
 namespace cmd;
 use \cmd\service\GupiaoService;
 use \BaseCmd;
+use cmd\service\MovingAverageService;
+use cmd\service\NormalStatisticsService;
 use \Json;
 use \Err;
-use \Fun;
-use \TB;
 
 class GupiaoCmd extends BaseCmd{
 
@@ -27,8 +27,6 @@ class GupiaoCmd extends BaseCmd{
         $road   = $this->request('road', 0);# 0: 网易线路  1: 凤凰财经线路
         $bdate  = $this->request('bdate');
         $edate  = $this->request('edate');
-
-        $gupiao_service = new GupiaoService;
 
         /**
          * 1. 补充新的股票
@@ -51,7 +49,11 @@ class GupiaoCmd extends BaseCmd{
          */
 
         /// 执行功能
-        Err::try(function () use($type, $road, $bdate, $edate, $gupiao_service){
+        Err::try(function () use($type, $road, $bdate, $edate){
+
+            $gupiao_service         = new GupiaoService;
+            $moving_average_service = new MovingAverageService;
+            $normal_statistics      = new NormalStatisticsService;
 
             switch($type){
 
@@ -60,15 +62,15 @@ class GupiaoCmd extends BaseCmd{
                  * 补充新发行股票:             $gupiao_service->gupiaoAdd();
                  * 更新新增股票的每日数据:      $gupiao_service->updateOriginal();
                  * 更新新增股票的发行日期:      $gupiao_service->updateIssueDate();
-                 * 计算新增股票每日均价:        $gupiao_service->maPrice();
-                 * 计算新增股票每日均线角:      $gupiao_service->maAngle();
+                 * 计算新增股票每日均价:        $moving_average_service->maPrice();
+                 * 计算新增股票每日均线角:      $moving_average_service->maAngle();
                  */
                 case 1:# php cmd.php Gupiao 1
                     $gupiao_service->gupiaoAdd($road);
                     $gupiao_service->updateOriginal($road);
                     $gupiao_service->updateIssueDate();
-                    $gupiao_service->maPrice();
-                    $gupiao_service->maAngle();
+                    $moving_average_service->maPrice();
+                    $moving_average_service->maAngle();
                 break;
                 /**
                  * 2. 以网易线路更新股票每日数据
@@ -80,24 +82,26 @@ class GupiaoCmd extends BaseCmd{
                 /**
                  * 3. 更新股票对应的企业信息
                  * 抓取更新股票对应企业最新相关信息:  $gupiao_service->getCompanyDetails();
+                 * 拆分申万行业分类信息:  $gupiao_service->extraDoing();
                  */
                 case 3:# php cmd.php Gupiao 3
                     $gupiao_service->getCompanyDetails();
+                    // $gupiao_service->extraDoing();
                 break;
                 /**
                  * 4. 计算每日最高价是否创一年新高，新低
                  * 以凤凰线路更新最新数据:  $gupiao_service->updateOriginal(1);
-                 * 计算股票每日均价:        $gupiao_service->maPrice();
-                 * 计算股票每日均线角:      $gupiao_service->maAngle();
-                 * 计算一年新高:  $gupiao_service->yearXingao();
-                 * 计算一年新低:  $gupiao_service->yearXindi();
+                 * 计算股票每日均价:        $moving_average_service->maPrice();
+                 * 计算股票每日均线角:      $moving_average_service->maAngle();
+                 * 计算一年新高:  $normal_statistics->yearXingao();
+                 * 计算一年新低:  $normal_statistics->yearXindi();
                  */
                 case 4:# php cmd.php Gupiao 4
                     // $gupiao_service->updateOriginal(0);
-                    // $gupiao_service->maPrice();
-                    $gupiao_service->maAngle();
-                    // $gupiao_service->yearXingao();
-                    // $gupiao_service->yearXindi();
+                    $moving_average_service->maPrice();
+                    $moving_average_service->maAngle();
+                    // $normal_statistics->yearXingao();
+                    // $normal_statistics->yearXindi();
                 break;
                 /**
                  * 5. 分类归档
@@ -110,7 +114,9 @@ class GupiaoCmd extends BaseCmd{
                 case 0:# php cmd.php Gupiao 0
                     // $gupiao_service->test();
                     // $gupiao_service->constructPlate();
-                    $gupiao_service->shineng();
+
+                    // $gupiao_service->shineng();
+                    $moving_average_service->pianlilv();
                 break;
             }
 

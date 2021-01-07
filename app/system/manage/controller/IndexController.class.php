@@ -32,6 +32,9 @@ class IndexController extends Controller {
         /// 收藏网站
         $nav_link = $index_service->getNavLink();
 
+        /// 偏移率相关统计数据
+        $pianyilv = $index_service->getMaStatistics();
+
         /// 分配模板变量  &  渲染模板
         $this->assign('menu1', $menu1);
         $this->assign('menu2', $menu2);
@@ -39,6 +42,9 @@ class IndexController extends Controller {
         $this->assign('mp_ids', $mp_ids);
         $this->assign('nav_link', $nav_link);
         $this->assign('manager', self::$manager);
+        $this->assign('_10years_pianyilv', $pianyilv['_10years_pianyilv']);
+        $this->assign('_5years_pianyilv', $pianyilv['_5years_pianyilv']);
+        $this->assign('_3years_pianyilv', $pianyilv['_3years_pianyilv']);
         $this->display('index.tpl');
     }
 

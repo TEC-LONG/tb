@@ -11,6 +11,7 @@ class TB{
     protected $orderby;
     protected $groupby;
     protected $limit;
+    protected $having;
     protected $where=[];
     protected $left_join=[];
 
@@ -98,7 +99,8 @@ class TB{
                 'exec',
                 'delete',
                 'find',
-                'last_insert_id'
+                'last_insert_id',
+                'having'
             ];
         
             if( in_array($name, $allow_method) ){
@@ -353,6 +355,15 @@ class TB{
     }
 
     /**
+     * method:指定having条件
+     */
+    protected function gohaving($having){
+    
+        $this->having = ' having ' . $having;
+        return $this;
+    }
+
+    /**
      * method:指定order by条件
      * @param $orderby string order by条件，仅支持字符串类型
                 如：$orderby='post_date' 或 $orderby='post_date desc'
@@ -525,6 +536,7 @@ class TB{
 
             $sql = sprintf($sql, $this->select, $this->table, implode(' ', $this->left_join), implode(' and ', $this->where));
 
+            if(!empty($this->having)) $sql .= ' ' . $this->having;
             if(!empty($this->groupby)) $sql .= ' ' . $this->groupby;
             if(!empty($this->orderby)) $sql .= ' ' . $this->orderby;
             if(!empty($this->limit)) $sql .= ' ' . $this->limit;

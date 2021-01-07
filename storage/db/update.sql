@@ -22,11 +22,7 @@ CREATE TABLE `shares` (
     `is_deprecated` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否弃用；0=否；1=是',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票信息表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票信息表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `plate` (
@@ -41,11 +37,7 @@ CREATE TABLE `plate` (
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票行业板块表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票行业板块表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `shares__plate` (
@@ -56,11 +48,7 @@ CREATE TABLE `shares__plate` (
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_plate__id` (`plate__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票&行业板块中间表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票&行业板块中间表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `plate_prosperity_index_statistics_day` (
@@ -73,11 +61,7 @@ CREATE TABLE `plate_prosperity_index_statistics_day` (
     `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_plate__id` (`plate__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='板块每日繁荣指数统计表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='板块每日繁荣指数统计表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `plate_prosperity_index_statistics_month` (
@@ -90,11 +74,7 @@ CREATE TABLE `plate_prosperity_index_statistics_month` (
     `created_time` int NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_plate__id` (`plate__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='板块每月繁荣指数统计表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='板块每月繁荣指数统计表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `shares_details_byday` (
@@ -130,11 +110,7 @@ CREATE TABLE `shares_details_byday` (
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票详情表（按天记录)';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票详情表（按天记录)';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 0.0的价格数据全部变为None
 为空的价格数据全部变为None
@@ -147,11 +123,7 @@ CREATE TABLE `date_record` (
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='行情日期表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='行情日期表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 insert into date_record (active_date_timestamp, active_date, created_time) (select distinct active_date_timestamp, active_date, active_date_timestamp from shares_details_byday where 1 order by active_date_timestamp asc);
 
@@ -170,11 +142,7 @@ CREATE TABLE `xingao_and_xindi` (
     KEY `idx_code` (`code`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_date_record__id` (`date_record__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='新高新低数据记录表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='新高新低数据记录表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 /* 1年新高 */
@@ -284,11 +252,7 @@ CREATE TABLE `daily_weight_ths1` (
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_sdb__id` (`sdb__id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='每日个股权重表（按同花顺1板块分类统计）';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日个股权重表（按同花顺1板块分类统计）';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 insert into daily_weight_ths1 (shares__id, sdb__id, active_date, active_date_timestamp, day_start_price, uad_price, uad_range, volume, transaction_amount, total_shizhi, deal_shizhi, created_time) (select sdb.shares__id, sdb.id, sdb.active_date, sdb.active_date_timestamp, sdb.day_start_price, sdb.uad_price, sdb.uad_range, sdb.volume, sdb.transaction_amount, sdb.total_shizhi, sdb.deal_shizhi, sdb.created_time from shares_details_byday sdb left join shares s on sdb.shares__id=s.id where s.sdb_last_update_time<>0)
 
@@ -306,11 +270,7 @@ CREATE TABLE `daily_index_ths1` (
     PRIMARY KEY (`id`),
     KEY `idx_plate__id` (`plate__id`),
     KEY `idx_active_date_timestamp` (`active_date_timestamp`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='每日板块指数表（按同花顺1板块分类统计）';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日板块指数表（按同花顺1板块分类统计）';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `sdb_statistics` (
@@ -325,11 +285,7 @@ CREATE TABLE `sdb_statistics` (
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_shares_details_byday__id` (`shares_details_byday__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票详情每日统计表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='股票详情每日统计表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `sdb_statistics_price_deviate_probability` (
@@ -356,11 +312,7 @@ CREATE TABLE `sdb_statistics_price_deviate_probability` (
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_shares_details_byday__id` (`shares_details_byday__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='每日详情量价偏离率统计表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日详情量价偏离率统计表';
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
 
 
 CREATE TABLE `sdb_statistics_moving_average` (
@@ -391,7 +343,6 @@ CREATE TABLE `sdb_statistics_moving_average` (
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
     KEY `idx_shares_details_byday__id` (`shares_details_byday__id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='每日详情均线相关统计表';
 
 
@@ -412,17 +363,46 @@ CREATE TABLE `sdb_statistics_moving_average_pianyilv` (
     `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
     PRIMARY KEY (`id`),
     KEY `idx_shares__id` (`shares__id`),
+    KEY `idx_active_date_timestamp` (`active_date_timestamp`),
     KEY `idx_shares_details_byday__id` (`shares_details_byday__id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='每日详情均线偏离率统计表';
-=======
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='每日详情均线相关统计表';
 
 
-truncate shares;
-truncate shares_details_byday;
+CREATE TABLE `tl_mixed_statistics` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `content` text COMMENT '统计内容',
+    `statistics_rules__id` int unsigned NOT NULL DEFAULT 0 COMMENT '统计规则项名称表id',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_statistics_rules__id` (`statistics_rules__id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='综合统计表（适用于无需叠加每次需重新全面统计的方式）';
 
-alter table shares_details_byday ADD INDEX `idx_shares__id` (`shares__id`) USING BTREE;
->>>>>>> 98490fa7e9860752964aeba67bba906da4e8814c
+
+CREATE TABLE `tl_ma_pianyilv_statistics` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `statistics_rules__ids` varchar(20) DEFAULT NULL COMMENT '统计规则项名称表id集合，多个规则以"|"分隔id值',
+    `string_value` varchar(100) DEFAULT NULL COMMENT '统计值（字符串形态）',
+    `intval_value` int DEFAULT NULL COMMENT '统计值（整形形态）',
+    `json_value` text COMMENT 'json统计统计内容',
+    `last_end_time` int unsigned NOT NULL DEFAULT 0 COMMENT '统计节点时间',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_shares__id` (`shares__id`),
+    KEY `idx_statistics_rules__ids` (`statistics_rules__ids`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='个股均线偏移率相关统计表';
+
+
+CREATE TABLE `tl_statistics_rules` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `name` varchar(50) NOT NULL DEFAULT '' COMMENT '统计规则名称',
+    `descr` varchar(255) NOT NULL DEFAULT '' COMMENT '规则描述',
+    `flag` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '统计标识，0=无标识',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_flag` (`flag`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='统计规则项名称表';
+
 
 
 

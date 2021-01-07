@@ -4,6 +4,7 @@ namespace cmd\service;
 use \Err;
 use \Fun;
 use \TB;
+use \cmd\service\GupiaoCommonService;
 
 class GupiaoService
 {
@@ -70,6 +71,9 @@ class GupiaoService
      */
     protected function getCurlData($road, $type, $code, $start, $end){
 
+        /// 初始化参数
+        $gupiao_common_service = new GupiaoCommonService;
+
         if( $road==0 ){
         
             /**
@@ -80,7 +84,7 @@ class GupiaoService
             // $url        = 'http://quotes.money.163.com/service/chddata.html?code=0601318&start='.$start.'&end='.$end.'&fields='.$getfields;
     
             /// 转码
-            $content    = $this->sendCurl($url);
+            $content    = $gupiao_common_service->sendCurl($url);
             $content    = mb_convert_encoding($content, "UTF-8", "GBK");
     
             if( strlen($content)<=121 ){
@@ -89,7 +93,7 @@ class GupiaoService
         }elseif( $road==1 ){
             
             $url = 'http://api.finance.ifeng.com/akdaily/?code='.$type.$code.'&type=last';
-            $content = $this->sendCurl($url);
+            $content = $gupiao_common_service->sendCurl($url);
             $content = json_decode($content, true);
 
             if( empty($content['record']) ){
@@ -199,44 +203,6 @@ class GupiaoService
                 return false;
             }
         }
-    }
-
-    /**
-     * curl
-     */
-    protected function sendCurl($url,$params=false,$ispost=0){
-        $httpInfo = array();
-        $ch = curl_init();
-     
-        curl_setopt( $ch, CURLOPT_HTTP_VERSION , CURL_HTTP_VERSION_1_1 );
-        curl_setopt( $ch, CURLOPT_USERAGENT , 'JuheData' );
-        curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT , 60 );
-        curl_setopt( $ch, CURLOPT_TIMEOUT , 60);
-        curl_setopt( $ch, CURLOPT_RETURNTRANSFER , true );
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if( $ispost )
-        {
-            curl_setopt( $ch , CURLOPT_POST , true );
-            curl_setopt( $ch , CURLOPT_POSTFIELDS , $params );
-            curl_setopt( $ch , CURLOPT_URL , $url );
-        }
-        else
-        {
-            if($params){
-                curl_setopt( $ch , CURLOPT_URL , $url.'?'.$params );
-            }else{
-                curl_setopt( $ch , CURLOPT_URL , $url);
-            }
-        }
-        $response = curl_exec( $ch );
-        if ($response === FALSE) {
-            //echo "cURL Error: " . curl_error($ch);
-            return false;
-        }
-        $httpCode = curl_getinfo( $ch , CURLINFO_HTTP_CODE );
-        $httpInfo = array_merge( $httpInfo , curl_getinfo( $ch ) );
-        curl_close( $ch );
-        return $response;
     }
 
     /**
@@ -616,478 +582,13 @@ class GupiaoService
     }
 
     /**
-     * 计算均价
-     */
-    public function maPrice(){
-
-        $now = time();
-    
-        /// 获取shares所有id
-        $ids = TB::table('shares')->select('id')->where(['is_deprecated', 0])->get();
-
-        $dividend   = 1;
-        $divisor    = count($ids);
-        foreach( $ids as $v){
-            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
-
-            /// 获取当前票的所有记录
-            $this_shares_details_byday_row = TB::table('tl_shares_details_byday as sdb')->select('
-                sdb.id,
-                sdb.shares__id,
-                sdb.active_date,
-                sdb.active_date_timestamp,
-                sma.id as sma_id,
-                sdb.day_end_price,
-                sma.ma5_price,
-                sma.ma10_price,
-                sma.ma15_price,
-                sma.ma20_price,
-                sma.ma30_price,
-                sma.ma60_price,
-                sma.ma120_price,
-                sma.ma240_price
-            ')
-            ->leftjoin('sdb_statistics_moving_average as sma', 'sma.shares_details_byday__id=sdb.id')
-            ->where(['sdb.shares__id', $v['id']])
-            ->orderby('active_date_timestamp desc')
-            ->get();
-
-            if( empty($this_shares_details_byday_row) ) continue;
-
-            $last_price = [
-                'price' => 0
-            ];
-            foreach( $this_shares_details_byday_row as $k=>$sdbr_v){
-            
-                $ma = [];
-
-                /// 不存在则新增
-                if( empty($sdbr_v['sma_id']) ){
-
-                    $flag = 1;
-                    
-                    // $ma4_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 4, $last_price);
-                    // $ma['ma4_price'] = $ma4_price;
-                    $ma5_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 5, $last_price);
-                    $ma['ma5_price'] = $ma5_price;
-
-                    // $ma9_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 9, $last_price, $ma5_price);
-                    // $ma['ma9_price'] = $ma9_price;
-                    $ma10_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 10, $last_price, $ma5_price);
-                    $ma['ma10_price'] = $ma10_price;
-
-                    // $ma14_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 14, $last_price, $ma10_price);
-                    // $ma['ma14_price'] = $ma14_price;
-                    $ma15_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 15, $last_price, $ma10_price);
-                    $ma['ma15_price'] = $ma15_price;
-
-                    // $ma19_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 19, $last_price, $ma15_price);
-                    // $ma['ma19_price'] = $ma19_price;
-                    $ma20_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 20, $last_price, $ma15_price);
-                    $ma['ma20_price'] = $ma20_price;
-
-                    // $ma29_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 29, $last_price, $ma20_price);
-                    // $ma['ma29_price'] = $ma29_price;
-                    $ma30_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 30, $last_price, $ma20_price);
-                    $ma['ma30_price'] = $ma30_price;
-
-                    // $ma59_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 59, $last_price, $ma30_price);
-                    // $ma['ma59_price'] = $ma59_price;
-                    $ma60_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 60, $last_price, $ma30_price);
-                    $ma['ma60_price'] = $ma60_price;
-
-                    // $ma119_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 119, $last_price, $ma60_price);
-                    // $ma['ma119_price'] = $ma119_price;
-                    $ma120_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 120, $last_price, $ma60_price);
-                    $ma['ma120_price'] = $ma120_price;
-
-                    // $ma239_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 239, $last_price, $ma120_price);
-                    // $ma['ma239_price'] = $ma239_price;
-                    $ma240_price = $this->getAveragePrice($k, $this_shares_details_byday_row, 240, $last_price, $ma120_price);
-                    $ma['ma240_price'] = $ma240_price;
-
-                    $ma['shares__id']               = $sdbr_v['shares__id'];
-                    $ma['shares_details_byday__id'] = $sdbr_v['id'];
-                    $ma['active_date']              = $sdbr_v['active_date'];
-                    $ma['active_date_timestamp']    = $sdbr_v['active_date_timestamp'];
-                    $ma['ma_price_time']            = $now;
-                    $ma['created_time']             = $now;
-
-                }else{/// 存在则更新
-
-                    $flag = 2;
-
-                    // if( empty($sdbr_v['ma4_price']) ){
-                    //     $ma4_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 4, $last_price);
-                    //     $ma['ma4_price']    = $ma4_price;
-                    // }else{
-                    //     $ma4_price = $sdbr_v['ma4_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma5_price']) ){
-                        $ma5_price          = $this->getAveragePrice($k, $this_shares_details_byday_row, 5, $last_price);
-                        $ma['ma5_price']    = $ma5_price;
-                    }else{
-                        $ma5_price = $sdbr_v['ma5_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma9_price']) ){
-                    //     $ma9_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 9, $last_price, $ma5_price);
-                    //     $ma['ma9_price']   = $ma9_price;
-                    // }else{
-                    //     $ma9_price = $sdbr_v['ma9_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma10_price']) ){
-                        $ma10_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 10, $last_price, $ma5_price);
-                        $ma['ma10_price']   = $ma10_price;
-                    }else{
-                        $ma10_price = $sdbr_v['ma10_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma14_price']) ){
-                    //     $ma14_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 14, $last_price, $ma10_price);
-                    //     $ma['ma14_price']   = $ma14_price;
-                    // }else{
-                    //     $ma14_price = $sdbr_v['ma14_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma15_price']) ){
-                        $ma15_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 15, $last_price, $ma10_price);
-                        $ma['ma15_price']   = $ma15_price;
-                    }else{
-                        $ma15_price = $sdbr_v['ma15_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma19_price']) ){
-                    //     $ma19_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 19, $last_price, $ma15_price);
-                    //     $ma['ma19_price']   = $ma19_price;
-                    // }else{
-                    //     $ma19_price = $sdbr_v['ma19_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma20_price']) ){
-                        $ma20_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 20, $last_price, $ma15_price);
-                        $ma['ma20_price']   = $ma20_price;
-                    }else{
-                        $ma20_price = $sdbr_v['ma20_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma29_price']) ){
-                    //     $ma29_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 29, $last_price, $ma20_price);
-                    //     $ma['ma29_price']   = $ma29_price;
-                    // }else{
-                    //     $ma29_price = $sdbr_v['ma29_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma30_price']) ){
-                        $ma30_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 30, $last_price, $ma20_price);
-                        $ma['ma30_price']   = $ma30_price;
-                    }else{
-                        $ma30_price = $sdbr_v['ma30_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma59_price']) ){
-                    //     $ma59_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 59, $last_price, $ma30_price);
-                    //     $ma['ma59_price']   = $ma59_price;
-                    // }else{
-                    //     $ma59_price = $sdbr_v['ma59_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma60_price']) ){
-                        $ma60_price         = $this->getAveragePrice($k, $this_shares_details_byday_row, 60, $last_price, $ma30_price);
-                        $ma['ma60_price']   = $ma60_price;
-                    }else{
-                        $ma60_price = $sdbr_v['ma60_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma119_price']) ){
-                    //     $ma119_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 119, $last_price, $ma60_price);
-                    //     $ma['ma119_price']  = $ma119_price;
-                    // }else{
-                    //     $ma119_price = $sdbr_v['ma119_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma120_price']) ){
-                        $ma120_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 120, $last_price, $ma60_price);
-                        $ma['ma120_price']  = $ma120_price;
-                    }else{
-                        $ma120_price = $sdbr_v['ma120_price'];
-                    }
-
-                    // if( empty($sdbr_v['ma239_price']) ){
-                    //     $ma239_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 239, $last_price, $ma120_price);
-                    //     $ma['ma239_price']  = $ma239_price;
-                    // }else{
-                    //     $ma239_price = $sdbr_v['ma239_price'];
-                    // }
-
-                    if( empty($sdbr_v['ma240_price']) ){
-                        $ma240_price        = $this->getAveragePrice($k, $this_shares_details_byday_row, 240, $last_price, $ma120_price);
-                        $ma['ma240_price']  = $ma240_price;
-                    }else{
-                        $ma240_price = $sdbr_v['ma240_price'];
-                    }
-
-                    if( !empty($ma) ){
-                    
-                        $ma['ma_price_time'] = $now;
-                    }
-                }
-
-                if( empty($ma) ) continue;
-
-                if( $flag==1 ){/// 新增
-                
-                    $re = TB::table('sdb_statistics_moving_average')
-                    ->insert($ma)
-                    ->exec();
-
-                    if( !$re ){
-                        echo '新增失败！--》》shares_details_byday表id: ' . $sdbr_v['id'] . PHP_EOL;
-                    }else{
-                        $msg = '新增成功 --》shares_details_byday表id: ' . $sdbr_v['id'] . ' --》';
-                        $arr = [];
-                        foreach( $ma as $msg_k=>$msg_v){
-                        
-                            $arr[] =  $msg_k . ':' . $msg_v;
-                        }
-                        echo $msg . implode(' | ', $arr) . PHP_EOL;
-                    }
-
-                }else {/// 更新
-                    
-                    $re = TB::table('sdb_statistics_moving_average')
-                    ->update($ma)
-                    ->where(['id', '=', $sdbr_v['sma_id']])
-                    ->exec();
-
-                    if( !$re ){
-                        echo '更新失败！--》》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
-                    }else{
-                        $msg = '更新成功 --》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . ' --》';
-                        $arr = [];
-                        foreach( $ma as $msg_k=>$msg_v){
-                        
-                            $arr[] =  $msg_k . ':' . $msg_v;
-                        }
-                        echo $msg . implode(' | ', $arr) . PHP_EOL;
-                    }
-                }
-            }
-
-            echo '完成：'. $percent . PHP_EOL;
-            $dividend++;
-        }
-    }
-
-    /**
-     * 计算均价
-     */
-    protected function getAveragePrice($k, $data, $count, &$pre, $last_ma_price=''){
-
-        if( 
-            $last_ma_price==='none' &&
-            $count!=5
-        ){
-            return $last_ma_price;
-        }
-    
-        $i          = 0;
-        $times      = 0;
-        $ma_price   = 0;
-        do {
-            
-            $now_k = $k+$i;
-            $i++;
-    
-            if( !isset($data[$now_k]) ){
-                $ma_price = 'none';
-                return $ma_price;
-            }
-    
-            if(
-                empty($data[$now_k]['day_end_price']) ||
-                $data[$now_k]['day_end_price']=='0.0'
-            ){/// 收盘价为空  可能的情况：当天停牌
-            
-                if( $now_k==$k ){# 如果是第一条，则这条数据不计算均价(当天停牌，无均价可言)
-                    return 'none';
-                }
-                continue;
-            }else{
-    
-                // if( 
-                //     $count==5 &&
-                //     $times==4
-                // ){
-                //     $pre['price']    = $data[$now_k]['day_end_price'];
-                //     $pre['m5_key']   = $now_k;
-                // }elseif ( $times==$count-1 ) {
-                    
-                //     $ma_key         = 'm'.$count.'_key';
-                //     $pre[$ma_key]   = $now_k;
-                // }
-    
-                $ma_price = $ma_price+$data[$now_k]['day_end_price'];
-                $times++;
-            }
-    
-        } while ($times<$count);
-    
-        $price = round($ma_price/$count, 6);
-    
-        // if( $price==0 ){
-        //     var_dump($ma_price);
-        //     exit;
-        // }
-    
-        return $price;
-    }
-
-    /**
-     * 计算均线角
-     */
-    public function maAngle(){
-
-        $now = time();
-    
-        /// 获取shares所有id
-        $ids = TB::table('shares')->select('id, title, code')->where(['is_deprecated', 0])->get();
-
-        $dividend   = 1;
-        $divisor    = count($ids);
-        foreach( $ids as $v){
-
-            $percent = number_format(($dividend/$divisor)*100, 4) . '%';
-
-            /// 获取当前票的所有记录
-            $this_shares_details_byday_row = TB::table('tl_shares_details_byday as sdb')->select('
-                sdb.id,
-                sdb.shares__id,
-                sdb.active_date,
-                sdb.active_date_timestamp,
-                sma.id as sma_id,
-                sdb.day_end_price,
-                sma.ma5_angle,
-                sma.ma10_angle,
-                sma.ma15_angle,
-                sma.ma20_angle,
-                sma.ma30_angle,
-                sma.ma60_angle,
-                sma.ma120_angle,
-                sma.ma240_angle,
-                sma.ma5_price,
-                sma.ma10_price,
-                sma.ma15_price,
-                sma.ma20_price,
-                sma.ma30_price,
-                sma.ma60_price,
-                sma.ma120_price,
-                sma.ma240_price
-            ')
-            ->leftjoin('sdb_statistics_moving_average as sma', 'sma.shares_details_byday__id=sdb.id')
-            ->where(['sdb.shares__id', $v['id']])
-            ->orderby('active_date_timestamp desc')
-            ->get();
-
-            if( empty($this_shares_details_byday_row) ){
-                echo $v['title'].'；股票代码：'.$v['code'].' 无详情信息！'.PHP_EOL;
-                echo '完成：'. $percent . PHP_EOL;
-                continue;
-            }
-
-            $now_ma_price   = '';
-            $next_ma_price  = '';
-            foreach( $this_shares_details_byday_row as $k=>$sdbr_v){
-
-                /// 初始化参数
-                $ma_angle   = [];
-                $days       = [5, 10, 15, 20, 30, 60, 120, 240];
-
-                /// 计算均线角   横轴为时间，纵轴为均价；横轴时间一个单位值固定为10，表示一天
-                $now_ma_k   = $k;
-                $next_ma_k  = $k+1;
-
-                # 下一条均值不存在则无法计算当前均值的均线角
-                if( !isset($this_shares_details_byday_row[$next_ma_k]) ) continue;
-
-                foreach( $days as $day){
-
-                    $ma_num = 'ma'.$day;
-                    
-                    # 已经存在的无需再计算
-                    if( !empty($sdbr_v[$ma_num.'_angle']) ){
-                        // echo $v['title'].'；股票代码：'.$v['code'].'；shares_details_byday表id:'.$sdbr_v['id'].'已经存在'.$ma_num.'均线角'.PHP_EOL;
-                        continue;
-                    }
-    
-                    # 计算角度
-                    $now_ma_price   = $this_shares_details_byday_row[$now_ma_k][$ma_num.'_price'];
-                    $next_ma_price  = $this_shares_details_byday_row[$next_ma_k][$ma_num.'_price'];
-
-                    if( 
-                        is_null($now_ma_price) ||
-                        is_null($next_ma_price) ||
-                        $now_ma_price=='none' ||
-                        $next_ma_price=='none' ||
-                        trim($now_ma_price)==='' ||
-                        trim($next_ma_price)===''
-                     ){
-                        continue;
-                    }
-                    // var_dump($now_ma_price);
-                    // var_dump($next_ma_price);
-
-                    $ma_diff_price  = $now_ma_price-$next_ma_price;
-                    $numb1          = ($ma_diff_price/$next_ma_price)*100;
-                    $numb2          = 10;
-                    $angle          = rad2deg(atan($numb1/$numb2));# red2deg弧度转角度
-    
-                    // var_dump($angle);
-                    // echo '-------------'.PHP_EOL;
-                    $ma_angle[$ma_num.'_angle'] = $angle;
-                }
-
-                if( empty($ma_angle) ) continue;
-
-                $ma_angle['ma_angle_time'] = $now;
-
-                # 更新数据
-                $re = TB::table('sdb_statistics_moving_average')
-                ->update($ma_angle)
-                ->where(['id', '=', $sdbr_v['sma_id']])
-                ->exec();
-
-                if( !$re ){
-                    echo '更新失败！--》》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
-                }else{
-                    echo '更新成功 --》sdb_statistics_moving_average: ' . $sdbr_v['sma_id'] . PHP_EOL;
-                    echo '完成：'. $percent . PHP_EOL;
-                }
-            }
-            echo '完成：'. $percent . PHP_EOL;
-            $dividend++;
-        }
-    }
-
-    /**
-     * 计算均线偏离率
-     */
-    public function pianlilv(){
-    
-        /// 初始化参数
-        $now = time();
-
-
-    }
-    
-    /**
      * 抓取股票对应的企业信息
      */
     public function getCompanyDetails(){
 
-        $codes = TB::table('shares')->select('id, code')->where(1)->get();
+        /// 初始化参数
+        $codes                  = TB::table('shares')->select('id, code')->where(1)->get();
+        $gupiao_common_service  = new GupiaoCommonService;
 
         $dividend   = 1;
         $divisor    = count($codes);
@@ -1099,33 +600,33 @@ class GupiaoService
             $url = 'http://basic.10jqka.com.cn/'.$v['code'].'/company.html';
     
             /// 转码
-            $content    = $this->sendCurl($url);
+            $content    = $gupiao_common_service->sendCurl($url);
             $content    = mb_convert_encoding($content, "UTF-8", "GBK");
     
             /// 提取数据
             # 公司名称   公司名称：</strong><span>中国船舶重工集团动力股份有限公司</span>
-            $company_name = $this->regexInfo('公司名称：<\/strong><span>', '<\/span>', $content);
+            $company_name = $gupiao_common_service->regexInfo('公司名称：<\/strong><span>', '<\/span>', $content);
     
             # 公司曾用名
-            $company_name_once_used = $this->regexInfo('曾 用 名：<\/strong><span>', '<\/span>', $content);
+            $company_name_once_used = $gupiao_common_service->regexInfo('曾 用 名：<\/strong><span>', '<\/span>', $content);
     
             # 所属申万行业
-            $sw_cate = $this->regexInfo('所属申万行业：<\/strong><span>', '<\/span>', $content);
+            $sw_cate = $gupiao_common_service->regexInfo('所属申万行业：<\/strong><span>', '<\/span>', $content);
     
             # 主营业务
-            $main_business = $this->regexInfo('主营业务：<\/strong>\s+<span>', '<\/span>', $content);
+            $main_business = $gupiao_common_service->regexInfo('主营业务：<\/strong>\s+<span>', '<\/span>', $content);
     
             # 产品名称
-            $product_names = $this->regexInfo('产品名称：<\/strong>', '<\/td>', $content);
-            $product_names = $this->regexDelTag($product_names);
+            $product_names = $gupiao_common_service->regexInfo('产品名称：<\/strong>', '<\/td>', $content);
+            $product_names = $gupiao_common_service->regexDelTag($product_names);
     
             # 公司简介
-            // $intro = $this->regexInfo('公司简介：<\/strong>', '<\/td>', $content);
-            // $intro = $this->regexDelTag($intro);
+            // $intro = $gupiao_common_service->regexInfo('公司简介：<\/strong>', '<\/td>', $content);
+            // $intro = $gupiao_common_service->regexDelTag($intro);
             $intro = '';
 
             # 所属地域
-            $province = $this->regexInfo('所属地域：<\/strong><span>', '<\/span>', $content);
+            $province = $gupiao_common_service->regexInfo('所属地域：<\/strong><span>', '<\/span>', $content);
 
             /// 更新数据
             $tmp_update = [
@@ -1152,36 +653,6 @@ class GupiaoService
             echo '完成：'. $percent . PHP_EOL;
             $dividend++;
         }
-    }
-
-    public function regexInfo($b_str, $e_str, $content, $mode='Us'){
-    
-        preg_match('/'.$b_str.'.*'.$e_str.'/'.$mode, $content, $matches);
-
-        if( empty($matches) ) return '';
-
-        $b_str = preg_replace('/\s+/', '', str_replace('\\', '', str_replace('\s+', '', $b_str)));
-        $e_str = str_replace('\\', '', $e_str);
-        $matches[0] = preg_replace('/\s+/', '', $matches[0]);
-        
-        return str_replace($e_str, '', str_replace($b_str, '', $matches[0]));
-    }
-
-    public function regexDelTag($target){
-
-        if( empty($target) ) return '';
-    
-        preg_match_all('/<.*>/Us', $target, $matches);# U 懒惰模式，匹配最短的  s 使得.具有匹配换行符的作用
-
-        if( !empty($matches) ){
-            
-            foreach( $matches as $v){
-            
-                $target = str_replace($v, '', $target);
-            }
-        }
-
-        return $target;
     }
 
     /**
@@ -1258,453 +729,6 @@ class GupiaoService
         print_r($sw_cates_lv1);
         echo 'lv1共有：' . count($sw_cates_lv1) . '种分类' . PHP_EOL;
         print_r($sw_cates_lv2);
-    }
-
-    /**
-     * 补充股票每日一年新高数据
-     */
-    public function yearXingao(){
-
-        $now = time();
-    
-        /// 获取所有股票数据
-        $shares = TB::table('shares')->select('
-            id,
-            code,
-            title,
-            code,
-            company_name
-        ')->where(['is_deprecated', 0])->get();
-
-        $dividend   = 1;
-        $divisor    = count($shares);
-        foreach( $shares as $k=>$v){
-            // $v['code'] = '000014';
-            // $v['id'] = '1574';
-            $percent    = number_format(($dividend/$divisor)*100, 4) . '%';
-            $shares__id = $v['id'];
-        
-            /// 获取当前股票历史数据
-            $this_share_details_byday = TB::table('tl_shares_details_byday')->select('
-                id,
-                day_max_price,
-                day_end_price,
-                has_statistics_year_xingao,
-                active_date,
-                active_date_timestamp
-            ')->where(['shares__id', $shares__id])
-            ->orderby('active_date_timestamp asc')
-            ->get();
-
-            if( empty($this_share_details_byday) ) continue;
-
-            $passed_share_history_info = [];
-            // $_c = 0;
-            foreach( $this_share_details_byday as $detail_k=>$detail){
-
-                /// 初始化参数
-                $now_day_max_price_ori = (empty($detail['day_max_price'])||$detail['day_max_price']=='0.0') ? 
-                ( (empty($detail['day_end_price'])||$detail['day_end_price']=='0.0') ? 0 : $detail['day_end_price']) : 
-                $detail['day_max_price'];
-                $now_day_max_price = (empty($detail['day_max_price'])||$detail['day_max_price']=='0.0') ? 
-                ( (empty($detail['day_end_price'])||$detail['day_end_price']=='0.0') ? 
-                    0 : 
-                    intval($detail['day_end_price']*10000000)) : 
-                intval($detail['day_max_price'] * 10000000);
-
-                /// 已统计的跳过
-                if( $detail['has_statistics_year_xingao']==1 ){
-                
-                    # 超过一年的，去除第一个
-                    if( count($passed_share_history_info)>=238 ){## 一年365天 减去20个假日 减去周末约240个工作日 之所以是238，是因为接下来会将当天价格添加进去，那么下一轮将会取得239个中的
-                        
-                        array_shift($passed_share_history_info);
-                    }
-
-                    $passed_share_history_info[] = $now_day_max_price;
-                    continue;
-                }
-
-                /// 修改
-                $_upd = [
-                    'is_year_xingao'                => 0,
-                    'has_statistics_year_xingao'    => 1
-                ];
-
-                if( !empty($passed_share_history_info) ){
-
-                    $pshi_bak = $passed_share_history_info;
-                    # 倒序    
-                    rsort($pshi_bak);
-
-                    # 数据目标转整形
-                    $history_year_max_price = $pshi_bak[0];
-
-                    # 创1年新高
-                    if( $now_day_max_price>$history_year_max_price ){
-                    
-                        $_upd['is_year_xingao'] = 1;
-                    }
-
-                    # 超过一年的，去除第一个
-                    if( count($passed_share_history_info)>=238 ){## 一年365天 减去20个假日 减去周末约240个工作日  之所以是238，是因为接下来会将当天价格添加进去，那么下一轮将会取得239个中的
-                        
-                        array_shift($passed_share_history_info);
-                    }
-
-                }else{
-                    $_upd['is_year_xingao'] = 1;
-                }
-
-                # 将当前价格添加进目标历史集合中
-                $passed_share_history_info[] = $now_day_max_price;
-
-                # 更新
-                ## date_record
-                $_condi             = ['active_date_timestamp', $detail['active_date_timestamp']];
-                $has_date_record    = TB::table('date_record')->select('id')->where($_condi)->find();
-
-                if( empty($has_date_record) ){
-                
-                    $_dr_data = [
-                        'active_date'           => $detail['active_date'],
-                        'active_date_timestamp' => $detail['active_date_timestamp'],
-                        'created_time'          => $now,
-                    ];
-
-                    $re = TB::table('date_record')->insert($_dr_data)->exec();
-                    if( !$re ){
-                        echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
-                        continue;
-                    }else{
-                        $date_record__id = TB::last_insert_id();
-                    }
-
-                }else{
-                    $date_record__id = $has_date_record['id'];
-                }
-
-                ## xingao_and_xindi
-                $_condi = [
-                    ['date_record__id', $date_record__id],
-                    ['shares__id', $shares__id],
-                    ['type', 1]
-                ];
-                $has_xingao_and_xindi = TB::table('xingao_and_xindi')->select('id')->where($_condi)->find();
-
-                if( empty($has_xingao_and_xindi)&&$_upd['is_year_xingao']==1 ){
-                
-                    $_xax_data = [
-                        'date_record__id'   => $date_record__id,
-                        'shares__id'        => $shares__id,
-                        'title'             => $v['title'],
-                        'code'              => $v['code'],
-                        'company_name'      => $v['company_name'],
-                        'price'             => $now_day_max_price_ori,
-                        'type'              => 1,
-                        'created_time'      => $now
-                    ];
-
-                    $re = TB::table('xingao_and_xindi')->insert($_xax_data)->exec();
-                    if( !$re ){
-                        echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
-                        continue;
-                    }
-                }
-
-                $re = TB::table('tl_shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
-                if( !$re ){
-                    echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
-                    continue;
-                }
-            }
-
-            echo 'code: '.$v['code'].'；完成：'. $percent . PHP_EOL;
-            $dividend++;
-        }
-    }
-
-    /**
-     * 补充股票每日一年新高数据
-     */
-    protected $passed_share_history_info          = [];
-    protected $passed_share_history_info_3month   = [];
-    protected $passed_share_history_info_month    = [];
-    protected $passed_share_history_info_5day     = [];
-
-    protected function passedShareHistory($now_day_min_price){
-    
-        if( !empty($this->passed_share_history_info) ){
-
-            # 超过一年的，去除第一个
-            if( count($this->passed_share_history_info)>=238 ){## 一年365天 减去20个假日 减去周末约240个工作日  之所以是238，是因为接下来会将当天价格添加进去，那么下一轮将会取得239个中的最低和下一轮的当前价比较，正好是238+当前一轮价格+下一轮价格=240
-                            
-                array_shift($this->passed_share_history_info);
-            }
-
-            # 超过一季的，去除第一个
-            if( count($this->passed_share_history_info_3month)>=64 ){## 一个季度按66个工作日计
-                
-                array_shift($this->passed_share_history_info_3month);
-            }
-
-            # 超过一月的，去除第一个
-            if( count($this->passed_share_history_info_month)>=20 ){## 一月按22个工作日计
-                
-                array_shift($this->passed_share_history_info_month);
-            }
-
-            # 超过1周的，去除第一个
-            if( count($this->passed_share_history_info_5day)>=3 ){## 一周按5个工作日计
-                
-                array_shift($this->passed_share_history_info_5day);
-            }
-        }
-
-        # 将当前价格添加进目标历史集合中
-        $this->passed_share_history_info[]          = $now_day_min_price;
-        $this->passed_share_history_info_3month[]   = $now_day_min_price;
-        $this->passed_share_history_info_month[]    = $now_day_min_price;
-        $this->passed_share_history_info_5day[]     = $now_day_min_price;
-    }
-
-    protected function hasXindi($date_record__id, $shares__id, $now_day_min_price, $info, $type, $is_xindi=1){
-
-        $now = time();
-
-        $_condi = [
-            ['date_record__id', $date_record__id],
-            ['shares__id', $shares__id],
-            ['type', $type]
-        ];
-        $has_xingao_and_xindi = TB::table('xingao_and_xindi')->select('id')->where($_condi)->find();
-
-        if( empty($has_xingao_and_xindi)&&$is_xindi==1 ){
-        
-            return [
-                'date_record__id'   => $date_record__id,
-                'shares__id'        => $shares__id,
-                'title'             => $info['title'],
-                'code'              => $info['code'],
-                'company_name'      => $info['company_name'],
-                'price'             => $now_day_min_price,
-                'type'              => $type,
-                'created_time'      => $now
-            ];
-        }
-
-        return [];
-    }
-
-    public function yearXindi(){
-
-        $now = time();
-    
-        /// 获取所有股票数据
-        $shares = TB::table('shares')->select('
-            id,
-            code,
-            title,
-            code,
-            company_name
-        ')->where(['is_deprecated', 0])->get();
-
-        $dividend   = 1;
-        $divisor    = count($shares);
-        foreach( $shares as $k=>$v){
-
-            // $v['code'] = '000014';
-            // $v['id'] = '1574';
-            $percent    = number_format(($dividend/$divisor)*100, 4) . '%';
-            $shares__id = $v['id'];
-        
-            /// 获取当前股票历史数据
-            $this_share_details_byday = TB::table('tl_shares_details_byday')->select('
-                id,
-                day_min_price,
-                day_end_price,
-                has_statistics_year_xindi,
-                has_statistics_month_xindi,
-                has_statistics_5day_xindi,
-                has_statistics_3month_xindi,
-                active_date,
-                active_date_timestamp
-            ')
-            ->where(['shares__id', $shares__id])
-            ->orderby('active_date_timestamp asc')
-            ->get();
-
-            if( empty($this_share_details_byday) ) continue;
-
-            // $_c = 0;
-            foreach( $this_share_details_byday as $detail_k=>$detail){
-
-                /// 初始化参数
-                $now_day_min_price_ori = (empty($detail['day_min_price'])||$detail['day_min_price']=='0.0') ? 
-                ( (empty($detail['day_end_price'])||$detail['day_end_price']=='0.0') ? 0 : $detail['day_end_price']) : 
-                $detail['day_min_price'];
-                $now_day_min_price = (empty($detail['day_min_price'])||$detail['day_min_price']=='0.0') ? 
-                ( (empty($detail['day_end_price'])||$detail['day_end_price']=='0.0') ? 
-                    0 : 
-                    intval($detail['day_end_price']*10000000)) : 
-                intval($detail['day_min_price'] * 10000000);
-
-                /// 已统计的跳过
-                if( 
-                    $detail['has_statistics_year_xindi']==1 &&
-                    $detail['has_statistics_3month_xindi']==1 &&
-                    $detail['has_statistics_month_xindi']==1 &&
-                    $detail['has_statistics_5day_xindi']==1
-                ){
-                    $this->passedShareHistory($now_day_min_price);
-                    continue;
-                }
-
-                /// 修改
-                $_upd = [
-                    'is_year_xindi'                => 0,
-                    'has_statistics_year_xindi'    => 1,
-                    'is_3month_xindi'              => 0,
-                    'has_statistics_3month_xindi'  => 1,
-                    'is_month_xindi'               => 0,
-                    'has_statistics_month_xindi'   => 1,
-                    'is_5day_xindi'                => 0,
-                    'has_statistics_5day_xindi'    => 1
-                ];
-
-                # date_record是否已有对应的时间数据
-                $_condi             = ['active_date_timestamp', $detail['active_date_timestamp']];
-                $has_date_record    = TB::table('date_record')->select('id')->where($_condi)->find();
-
-                if( empty($has_date_record) ){
-                
-                    $_dr_data = [
-                        'active_date'           => $detail['active_date'],
-                        'active_date_timestamp' => $detail['active_date_timestamp'],
-                        'created_time'          => $now
-                    ];
-
-                    $re = TB::table('date_record')->insert($_dr_data)->exec();
-                    if( !$re ){
-                        echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
-                        $this->passedShareHistory($now_day_min_price);
-                        continue;
-                    }else{
-
-                        $date_record__id = TB::last_insert_id();
-                    }
-
-                }else{
-                    $date_record__id = $has_date_record['id'];
-                }
-
-                $_xindi_data = [];
-                if( !empty($this->passed_share_history_info) ){/// 一年的数据存在，则其他小于一年的数据都存在
-
-                    $pshi_bak           = $this->passed_share_history_info;
-                    $pshi_bak_3month    = $this->passed_share_history_info_3month;
-                    $pshi_bak_month     = $this->passed_share_history_info_month;
-                    $pshi_bak_5day      = $this->passed_share_history_info_5day;
-
-                    # 正序    
-                    sort($pshi_bak);
-                    sort($pshi_bak_3month);
-                    sort($pshi_bak_month);
-                    sort($pshi_bak_5day);
-
-                    # 取出最小
-                    $history_year_min_price     = $pshi_bak[0];
-                    $history_3month_min_price   = $pshi_bak_3month[0];
-                    $history_month_min_price    = $pshi_bak_month[0];
-                    $history_5day_min_price     = $pshi_bak_5day[0];
-
-                    # 创1年新低
-                    // var_dump($pshi_bak);
-                    // var_dump($now_day_min_price);
-                    // var_dump($history_year_min_price);
-                    // var_dump($now_day_min_price<$history_year_min_price);
-                    /* echo '-----------------'.PHP_EOL;
-                    if( $detail_k==10 ){
-                        exit;
-                    } */
-                    if( $now_day_min_price<$history_year_min_price ){
-
-                        if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 5) ){
-                            $_xindi_data[] = $_this_xindi_data;
-                        }
-                        $_upd['is_year_xindi'] = 1;
-                    }
-
-                    # 创1个季度新低
-                    if( $now_day_min_price<$history_3month_min_price ){
-                    
-                        if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 4) ){
-                            $_xindi_data[] = $_this_xindi_data;
-                        }
-                        $_upd['is_3month_xindi'] = 1;
-                    }
-
-                    # 创1个月新低
-                    if( $now_day_min_price<$history_month_min_price ){
-                    
-                        if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 3) ){
-                            $_xindi_data[] = $_this_xindi_data;
-                        }
-                        $_upd['is_month_xindi'] = 1;
-                    }
-
-                    # 创5日新低
-                    if( $now_day_min_price<$history_5day_min_price ){
-                    
-                        if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 2) ){
-                            $_xindi_data[] = $_this_xindi_data;
-                        }
-                        $_upd['is_5day_xindi'] = 1;
-                    }
-                }else{
-                    $_upd['is_year_xindi']      = 1;
-                    $_upd['is_3month_xindi']    = 1;
-                    $_upd['is_month_xindi']     = 1;
-                    $_upd['is_5day_xindi']      = 1;
-
-                    if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 5) ){
-                        $_xindi_data[] = $_this_xindi_data;
-                    }
-                    if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 4) ){
-                        $_xindi_data[] = $_this_xindi_data;
-                    }
-                    if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 3) ){
-                        $_xindi_data[] = $_this_xindi_data;
-                    }
-                    if( $_this_xindi_data = $this->hasXindi($date_record__id, $shares__id, $now_day_min_price_ori, $v, 2) ){
-                        $_xindi_data[] = $_this_xindi_data;
-                    }
-                }
-
-                # 将当前价格添加进目标历史集合中
-                $this->passedShareHistory($now_day_min_price);
-
-                # xingao_and_xindi
-                if( !empty($_xindi_data) ){
-                
-                    $re = TB::table('xingao_and_xindi')->fields(array_keys($_xindi_data[0]))->insert($_xindi_data)->exec();
-                    if( !$re ){
-                        echo '新增失败！--》》' . $detail['id'] . PHP_EOL;
-                        continue;
-                    }
-                }
-
-                # 更新
-                $re = TB::table('tl_shares_details_byday')->update($_upd)->where(['id', $detail['id']])->exec();
-                if( !$re ){
-                    echo '更新失败！--》》' . $detail['id'] . PHP_EOL;
-                    continue;
-                }
-            }
-
-            echo 'code: '.$v['code'].'；完成：'. $percent . PHP_EOL;
-            $dividend++;
-        }
     }
 
     /**
@@ -2055,8 +1079,8 @@ class GupiaoService
             
             $plate__id = $v['id'];
             # 获取当前板块下的所有股票
-            $rocks = TB::table('shares__plate sp')->select('sp.shares__id')
-            ->leftjoin('shares s', 's.id=sp.shares__id')
+            $rocks = TB::table('tl_shares__plate sp')->select('sp.shares__id')
+            ->leftjoin('tl_shares s', 's.id=sp.shares__id')
             ->where([
                 ['sp.plate__id', $plate__id],
                 ['s.is_deprecated', 0]
