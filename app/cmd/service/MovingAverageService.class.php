@@ -653,9 +653,17 @@ class MovingAverageService
                 ]
             ];
 
-            for ($i=1; $i <= 50; $i++) { 
+            for ($i=-50; $i <= 50; $i++) { 
+
+                if( $i===0 ) continue;
                 
-                $_info_key          = '>'.(($i-1)*2).'_<='.($i*2);
+                if( $i<0 ){
+
+                    $_info_key = '>'.($i*2).'_<='.(($i+1)*2);
+                }else{
+                    $_info_key = '>'.(($i-1)*2).'_<='.($i*2);
+                }
+
                 $info[$_info_key]   = [
                     'day_num'   => 0,### 天数
                     'next_day_up_num'               => 0,### 第二天上涨天数
@@ -700,8 +708,8 @@ class MovingAverageService
                 ];
             }
 
-            print_r($info);
-            exit;
+            // print_r($info);
+            // exit;
             
             # 统计数据
             foreach( $details as $_k=>$_detail){
@@ -744,6 +752,7 @@ class MovingAverageService
                         }
 
                     }else{### 奇数 如33   则$_info_key='>'.(33-1).'_<='.(33+1)
+
                         $_info_key = '>'.($_100bei_plv_del_point-1).'_<='.($_100bei_plv_del_point+1);
                     }
                 }
@@ -753,38 +762,18 @@ class MovingAverageService
 
                 if( $_next_detail_uad_range_10000bei>0 ){### 表示上涨
 
-                    $info[$_info_key]['next_day_up_num'] += 1;
-
-                    if( 
-                        $_next_detail_uad_range_10000bei<$info[$_info_key]['next_day_up_uad_range']['min'] ||
-                        $info[$_info_key]['next_day_up_uad_range']['min']===0
-                    ){
-                    
-                        $info[$_info_key]['next_day_up_uad_range']['min'] = $_next_detail_uad_range_10000bei;
-
-                    }elseif ( $_next_detail_uad_range_10000bei>$info[$_info_key]['next_day_up_uad_range']['max'] ) {
-
-                        $info[$_info_key]['next_day_up_uad_range']['max'] = $_next_detail_uad_range_10000bei;
-                    }
+                    $this->recursiveContinuedUp($details, $_k, $info[$_info_key]);
 
                 }else{### 已经排除了涨跌幅为0的情况，故else为小于0，表示下跌
 
-                    $info[$_info_key]['next_day_dw_num'] += 1;
+                    $this->recursiveContinuedDw($details, $_k, $info[$_info_key]);
 
-                    if( $_next_detail_uad_range_10000bei<$info[$_info_key]['next_day_dw_uad_range']['min'] ){
-                    
-                        $info[$_info_key]['next_day_up_uad_range']['min'] = $_next_detail_uad_range_10000bei;
-
-                    }elseif ( 
-                        $_next_detail_uad_range_10000bei>$info[$_info_key]['next_day_up_uad_range']['max'] ||
-                        $info[$_info_key]['next_day_dw_uad_range']['max']===0
-                    ) {
-
-                        $info[$_info_key]['next_day_up_uad_range']['max'] = $_next_detail_uad_range_10000bei;
-                    }
                 }
             }
 
+            print_r($info);
+            exit;
+            
         });
     }
 
@@ -880,7 +869,7 @@ class MovingAverageService
     
         if( $level==1 ){
         
-            return ['next_day_up_num', 'next_day_up_uad_range'];
+            return ['next_day_'.$flag.'_num', 'next_day_'.$flag.'_uad_range'];
         }elseif( $level<=9 ){
         
             return [
@@ -889,8 +878,8 @@ class MovingAverageService
             ];
         }else {
             return [
-                'continued_gt'.$level.'_day_'.$flag.'_num',
-                'continued_gt'.$level.'_day_'.$flag.'_uad_range'
+                'continued_gt9_day_'.$flag.'_num',
+                'continued_gt9_day_'.$flag.'_uad_range'
             ];
         }
     }
