@@ -1,11 +1,8 @@
 <?php
 
 namespace cmd;
-use \cmd\service\GupiaoService;
 use \BaseCmd;
 use cmd\service\MovingAverageService;
-use cmd\service\NormalStatisticsService;
-use \Json;
 use \Err;
 
 class MovingAverageStatisticsCmd extends BaseCmd{
@@ -33,15 +30,17 @@ class MovingAverageStatisticsCmd extends BaseCmd{
             switch($type){
 
                 /**
-                 * 1. 统计均线偏移率极值（10年，5年，3年偏离各均线极大值和极小值）：$gupiao_service->maxAndMinPianyilv();
+                 * 1. 统计均线偏移率极值（10年，5年，3年偏离各均线极大值和极小值）：$moving_average_service->maxAndMinPianyilv();
                  */
                 case 1:# php cmd.php MovingAverageStatistics 1
                     // $moving_average_service->maxAndMinPianyilv();
                 break;
                 /**
-                 * 1. 统计每支票在不同偏移率的涨幅情况：$gupiao_service->();
+                 * 1. 生成偏移率规则和区间：$moving_average_service->mkPianyilvRuleAndIntervals();
+                 * 2. 统计每支票在不同偏移率的涨幅情况：$moving_average_service->afterPianyilvZhangfu();
                  */
                 case 2:# php cmd.php MovingAverageStatistics 2
+                    // $moving_average_service->mkPianyilvRuleAndIntervals();
                     $moving_average_service->afterPianyilvZhangfu();
                 break;
             }

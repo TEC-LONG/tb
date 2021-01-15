@@ -3,12 +3,14 @@
 namespace cmd\service;
 use \Err;
 use \Fun;
+use model\IntervalsModel;
+use model\MaPianyilvStatisticsModel;
 use model\MixedStatisticsModel;
 use model\SdbStatisticsMovingAverageModel;
 use model\SdbStatisticsMovingAveragePianyilvModel;
 use model\SharesDetailsBydayModel;
 use model\SharesModel;
-use \TB;
+use model\StatisticsRulesModel;
 
 class MovingAverageService
 {
@@ -591,10 +593,18 @@ class MovingAverageService
 
             # 查询当前股票数据
             $details = $shares_details_byday_model->select([
+                'sdb.id',
                 'sdb.day_end_price',
                 'sdb.active_date',
                 'sdb.uad_range',
-                'smap.ma5_plv'
+                'smap.ma5_plv',
+                'smap.ma10_plv',
+                'smap.ma15_plv',
+                'smap.ma20_plv',
+                'smap.ma30_plv',
+                'smap.ma60_plv',
+                'smap.ma120_plv',
+                'smap.ma240_plv',
             ])->leftjoin('tl_sdb_statistics_moving_average_pianyilv smap', 'sdb.id=smap.shares_details_byday__id')
             ->where([
                 ['sdb.shares__id', $shares__id],
@@ -608,252 +618,387 @@ class MovingAverageService
             }
 
             # 初始化参数
-            $total_day_num = count($details);
-            $info = [
-                'gt100' => [## 偏离率>100
-                    'day_num'   => 0,### 天数
-                    'next_day_up_num'               => 0,### 第二天上涨天数
-                    'next_day_up_uad_range'         => [ 'min'=>0, 'max'=>0],### 第二天上涨的涨幅区间
-                    'continued_2_day_up_num'        => 0,### 持续2天上涨天数
-                    'continued_2_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续2天上涨的涨幅区间
-                    'continued_3_day_up_num'        => 0,### 持续3天上涨天数
-                    'continued_3_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续3天上涨的涨幅区间
-                    'continued_4_day_up_num'        => 0,### 持续4天上涨天数
-                    'continued_4_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续4天上涨的涨幅区间
-                    'continued_5_day_up_num'        => 0,### 持续5天上涨天数
-                    'continued_5_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续5天上涨的涨幅区间
-                    'continued_6_day_up_num'        => 0,### 持续6天上涨天数
-                    'continued_6_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续6天上涨的涨幅区间
-                    'continued_7_day_up_num'        => 0,### 持续7天上涨天数
-                    'continued_7_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续7天上涨的涨幅区间
-                    'continued_8_day_up_num'        => 0,### 持续8天上涨天数
-                    'continued_8_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续8天上涨的涨幅区间
-                    'continued_9_day_up_num'        => 0,### 持续9天上涨天数
-                    'continued_9_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续9天上涨的涨幅区间
-                    'continued_gt9_day_up_num'      => 0,### 持续上涨超过9天的天数
-                    'next_day_dw_num'               => 0,### 第二天下跌天数
-                    'next_day_dw_uad_range'         => [ 'min'=>0, 'max'=>0],### 第二天下跌的跌幅区间
-                    'continued_2_day_dw_num'        => 0,### 持续2天下跌天数
-                    'continued_2_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续2天下跌的跌幅区间
-                    'continued_3_day_dw_num'        => 0,### 持续3天下跌天数
-                    'continued_3_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续3天下跌的跌幅区间
-                    'continued_4_day_dw_num'        => 0,### 持续4天下跌天数
-                    'continued_4_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续4天下跌的跌幅区间
-                    'continued_5_day_dw_num'        => 0,### 持续5天下跌天数
-                    'continued_5_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续5天下跌的跌幅区间
-                    'continued_6_day_dw_num'        => 0,### 持续6天下跌天数
-                    'continued_6_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续6天下跌的跌幅区间
-                    'continued_7_day_dw_num'        => 0,### 持续7天下跌天数
-                    'continued_7_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续7天下跌的跌幅区间
-                    'continued_8_day_dw_num'        => 0,### 持续8天下跌天数
-                    'continued_8_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续8天下跌的跌幅区间
-                    'continued_9_day_dw_num'        => 0,### 持续9天下跌天数
-                    'continued_9_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续9天下跌的跌幅区间
-                    'continued_gt9_day_dw_num'      => 0,### 持续下跌超过9天的天数
-                ]
-            ];
-
-            for ($i=-50; $i <= 50; $i++) { 
-
-                if( $i===0 ) continue;
-                
-                if( $i<0 ){
-
-                    $_info_key = '>'.($i*2).'_<='.(($i+1)*2);
-                }else{
-                    $_info_key = '>'.(($i-1)*2).'_<='.($i*2);
-                }
-
-                $info[$_info_key]   = [
-                    'day_num'   => 0,### 天数
-                    'next_day_up_num'               => 0,### 第二天上涨天数
-                    'next_day_up_uad_range'         => [ 'min'=>0, 'max'=>0],### 第二天上涨的涨幅区间
-                    'continued_2_day_up_num'        => 0,### 持续2天上涨天数
-                    'continued_2_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续2天上涨的涨幅区间
-                    'continued_3_day_up_num'        => 0,### 持续3天上涨天数
-                    'continued_3_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续3天上涨的涨幅区间
-                    'continued_4_day_up_num'        => 0,### 持续4天上涨天数
-                    'continued_4_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续4天上涨的涨幅区间
-                    'continued_5_day_up_num'        => 0,### 持续5天上涨天数
-                    'continued_5_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续5天上涨的涨幅区间
-                    'continued_6_day_up_num'        => 0,### 持续6天上涨天数
-                    'continued_6_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续6天上涨的涨幅区间
-                    'continued_7_day_up_num'        => 0,### 持续7天上涨天数
-                    'continued_7_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续7天上涨的涨幅区间
-                    'continued_8_day_up_num'        => 0,### 持续8天上涨天数
-                    'continued_8_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续8天上涨的涨幅区间
-                    'continued_9_day_up_num'        => 0,### 持续9天上涨天数
-                    'continued_9_day_up_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续9天上涨的涨幅区间
-                    'continued_gt9_day_up_num'      => 0,### 持续上涨超过9天的天数
-                    'next_day_dw_num'               => 0,### 第二天下跌天数
-                    'next_day_dw_uad_range'         => [ 'min'=>0, 'max'=>0],### 第二天下跌的跌幅区间
-                    'continued_2_day_dw_num'        => 0,### 持续2天下跌天数
-                    'continued_2_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续2天下跌的跌幅区间
-                    'continued_3_day_dw_num'        => 0,### 持续3天下跌天数
-                    'continued_3_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续3天下跌的跌幅区间
-                    'continued_4_day_dw_num'        => 0,### 持续4天下跌天数
-                    'continued_4_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续4天下跌的跌幅区间
-                    'continued_5_day_dw_num'        => 0,### 持续5天下跌天数
-                    'continued_5_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续5天下跌的跌幅区间
-                    'continued_6_day_dw_num'        => 0,### 持续6天下跌天数
-                    'continued_6_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续6天下跌的跌幅区间
-                    'continued_7_day_dw_num'        => 0,### 持续7天下跌天数
-                    'continued_7_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续7天下跌的跌幅区间
-                    'continued_8_day_dw_num'        => 0,### 持续8天下跌天数
-                    'continued_8_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续8天下跌的跌幅区间
-                    'continued_9_day_dw_num'        => 0,### 持续9天下跌天数
-                    'continued_9_day_dw_uad_range'  => [ 'min'=>0, 'max'=>0],### 持续9天下跌的跌幅区间
-                    'continued_gt9_day_dw_num'      => 0,### 持续下跌超过9天的天数
-                    'continued_gt9_day_dw_uad_range'=> [ 'min'=>0, 'max'=>0],### 持续下跌超过9天的跌幅区间
-                ];
-            }
-
+            $total_day_num  = count($details);
             // print_r($info);
             // exit;
             
-            # 统计数据
-            foreach( $details as $_k=>$_detail){
+            $_period = [5, 10, 15, 20, 30, 60, 120, 240];
 
-                ## 无效数据跳过
-                if( in_array($_detail['ma5_plv'], [99999999, 88888888]) ) continue;
+            foreach( $_period as $_perio){
 
-                ## 第二天涨跌幅为0的跳过
-                $_next_k                            = $_k+1;
-                $_next_detail_uad_range             = $details[$_next_k]['uad_range'];### 第二天涨跌幅
-                $_next_detail_uad_range_10000bei    = (int)($_next_detail_uad_range*10000);### 因数据表中数据为百分数，有四位小数，故乘以10000转整型做比较
+                $info       = $this->mkInfo();
+                $_ma_name   = 'ma'.$_perio.'_plv';
 
-                if( $_next_detail_uad_range_10000bei===0 ) continue;
-            
-                ## 数据表的值是乘以10000倍后的值，除以100既可得到百分值
-                $_100bei_plv = $_detail['ma5_plv']/100;### 3432/100=34.32
+                foreach( $details as $_k=>$_detail){
 
-                ## 去除小数后是奇是偶
-                $_100bei_plv_del_point  = (int)number_format($_100bei_plv);### 34.32 ==》34
+                    # 确定$info的键
+                    ## 无效数据跳过
+                    if( in_array($_detail[$_ma_name], [99999999, 88888888]) ) continue;
 
-                ## 确定偏移率区间
-                if( $_100bei_plv_del_point>100 ){
+                    ## 第二天涨跌幅为0的跳过
+                    $_next_k                            = $_k+1;
+                    $_next_detail_uad_range             = $details[$_next_k]['uad_range'];### 第二天涨跌幅
+                    $_next_detail_uad_range_10000bei    = (int)($_next_detail_uad_range*10000);### 因数据表中数据为百分数，有四位小数，故乘以10000转整型做比较
+
+                    if( $_next_detail_uad_range_10000bei===0 ) continue;
                 
-                    $_info_key = 'gt100';
-                }else{
+                    ## 数据表的值是乘以10000倍后的值，除以100既可得到百分值
+                    $_100bei_plv        = $_detail[$_ma_name]/100;### 3432/100=34.32
+                    $_compare_target    = (int)number_format($_100bei_plv*100);#### 34.32*100  ==》 3432
 
-                    $_is_oushu = $_100bei_plv_del_point%2==0;
+                    ## 去除小数后是奇是偶
+                    $_100bei_plv_del_point  = (int)number_format($_100bei_plv);### 34.32 ==》34
 
-                    if( $_is_oushu ){### 偶数
+                    ## 确定偏移率区间
+                    if( $_compare_target>(70*100) ){
                     
-                        $_compare_target                = (int)number_format($_100bei_plv*100);#### 34.32*100  ==》 3432
-                        $_100bei_plv_del_point_10bei    = $_100bei_plv_del_point*100;#### 34*100 ==》 3400
+                        $_info_key = 'gt70';
+                    }elseif( $_compare_target<=(-70*100) ){
+                        
+                        $_info_key = 'lt=-70';
+                    }else{
 
-                        if( $_compare_target>$_100bei_plv_del_point_10bei ){#### 3432>3400
-                            ####                    34                             36
-                            $_info_key = '>'.$_100bei_plv_del_point.'_<='.($_100bei_plv_del_point+2);
-                        }else{#### 3400<=3400
-                            ####                     34-2                            34
-                            $_info_key = '>'.($_100bei_plv_del_point-2).'_<='.$_100bei_plv_del_point;
+                        $_is_oushu = $_100bei_plv_del_point%2==0;
+
+                        if( $_is_oushu ){### 偶数
+                        
+                            $_100bei_plv_del_point_10bei = $_100bei_plv_del_point*100;#### 34*100 ==》 3400
+
+                            if( $_compare_target>$_100bei_plv_del_point_10bei ){#### 3432>3400
+                                ####                    34                             36
+                                $_info_key = '>'.$_100bei_plv_del_point.'_<='.($_100bei_plv_del_point+2);
+                            }else{#### 3400<=3400
+                                ####                     34-2                            34
+                                $_info_key = '>'.($_100bei_plv_del_point-2).'_<='.$_100bei_plv_del_point;
+                            }
+
+                        }else{### 奇数 如33   则$_info_key='>'.(33-1).'_<='.(33+1)
+
+                            $_info_key = '>'.($_100bei_plv_del_point-1).'_<='.($_100bei_plv_del_point+1);
                         }
+                    }
 
-                    }else{### 奇数 如33   则$_info_key='>'.(33-1).'_<='.(33+1)
+                    ## 统计数据
+                    $info[$_info_key]['day_num'] += 1;### 区间统计天数+1
 
-                        $_info_key = '>'.($_100bei_plv_del_point-1).'_<='.($_100bei_plv_del_point+1);
+                    if( $_next_detail_uad_range_10000bei>0 ){### 表示上涨
+
+                        // if( $_info_key=='>-18_<=-16' ){
+                        
+                            $this->recursiveContinuedUpOrDw($details, $_k, $info[$_info_key], 'up');
+                        // }
+
+                    }else{### 已经排除了涨跌幅为0的情况，故else为小于0，表示下跌
+
+                        // if( $_info_key=='>-18_<=-16' ){
+                        
+                            $this->recursiveContinuedUpOrDw($details, $_k, $info[$_info_key], 'dw');
+                        // }
                     }
                 }
 
-                ## 统计数据
-                $info[$_info_key]['day_num'] += 1;### 区间统计天数+1
+                # 数据入库
+                $this->mpIndb($info, $_perio, $shares__id);
 
-                if( $_next_detail_uad_range_10000bei>0 ){### 表示上涨
-
-                    $this->recursiveContinuedUp($details, $_k, $info[$_info_key]);
-
-                }else{### 已经排除了涨跌幅为0的情况，故else为小于0，表示下跌
-
-                    $this->recursiveContinuedDw($details, $_k, $info[$_info_key]);
-
-                }
+                // var_dump(count($info));
+                // print_r($info['>-18_<=-16']);
+                print_r($info);
+                exit;
             }
-
-            print_r($info);
-            exit;
             
         });
     }
 
     /**
-     * 递归统计连涨
+     * 均线偏移--涨跌复现率 数据入库
      */
-    protected function recursiveContinuedUp($details, $_k, &$info_row, $level=1){
+    protected function mpIndb($info, $period, $shares__id){
 
-        /// 下一天涨跌幅为0的跳过
-        $_next_k                            = $_k+1;
-        $_next_detail_uad_range             = $details[$_next_k]['uad_range'];### 第二天涨跌幅
-        $_next_detail_uad_range_10000bei    = (int)($_next_detail_uad_range*10000);### 因数据表中数据为百分数，有四位小数，故乘以10000转整型做比较
+        /// 初始化参数
+        $intervals_model                = new IntervalsModel;
+        $statistics_rules_model         = new StatisticsRulesModel;
+        $ma_pianyilv_statistics_model   = new MaPianyilvStatisticsModel;
+        $statistics_rules__id           = $statistics_rules_model->period2rulesId($period);
+    
+        foreach( $info as $k=>$ma_pianyilv_statistics_row){
+        
+            if( $k=='gt70' ){
+            
+            }elseif( $k=='lt=-70' ){
+            
+            }else{
 
-        if( $_next_detail_uad_range_10000bei===0 ) return false;
+                /// 区间
+                $k_arr = explode('_', $k);
+                preg_match('/\d*$/', $k_arr[0], $matches1);
+                preg_match('/\d*$/', $k_arr[1], $matches2);
 
-        if( $_next_detail_uad_range_10000bei>0 ){### 表示上涨
+                $_condi = [
+                    ['b_interval', $matches1[0]],
+                    ['is_equal_to_b_interval', 0],
+                    ['e_interval', $matches2[0]],
+                    ['is_equal_to_e_interval', 0],
+                    ['statistics_rules__id', $statistics_rules__id]
+                ];
 
-            $_row_info_key  = $this->getRowInfoKey($level, 'u');
-            $up_num_name    = $_row_info_key[0];
-            $uad_range_name = $_row_info_key[1];
+                $intervals_row = $intervals_model->select('id')->where($_condi)->find();
+                if( empty($intervals_row) ) continue;
 
-            $info_row[$up_num_name] += 1;
+                /// 录入数据
+                # 初始化参数
+                $intervals__id = $intervals_row['id'];
 
-            if( 
-                $_next_detail_uad_range_10000bei<$info_row[$uad_range_name]['min'] ||
-                $info_row[$uad_range_name]['min']===0
-            ){
-                // 直接拿下一天的涨跌幅赋值是有问题的，如果时隔多天，那么数据就失真了，应该以基准天的收盘价做启示价重新计算
-                // 需要记录时间
-                // $info_row[$uad_range_name]['min'] = $_next_detail_uad_range_10000bei;
+                # 组装数据
+                $_data = [
+                    'shares__id'                            => $shares__id,
+                    'intervals__id'                         => $intervals__id,
+                    'day_num'                               => $ma_pianyilv_statistics_row['day_num'],
 
-            }elseif ( $_next_detail_uad_range_10000bei>$info_row[$uad_range_name]['max'] ) {
+                    'next_day_up_num'                       => $ma_pianyilv_statistics_row['next_day_up_num'],
+                    'next_day_up_uad_range'                 => json_encode($ma_pianyilv_statistics_row['next_day_up_uad_range']),
+                    'next_day_up_active_date_sets'          => json_encode($ma_pianyilv_statistics_row['next_day_up_active_date_sets']),
 
-                // $info_row[$uad_range_name]['max'] = $_next_detail_uad_range_10000bei;
+                    'continued_2_day_up_num'                => $ma_pianyilv_statistics_row['continued_2_day_up_num'],
+                    'continued_2_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_2_day_up_uad_range']),
+                    'continued_2_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_2_day_up_active_date_sets']),
+
+                    'continued_3_day_up_num'                => $ma_pianyilv_statistics_row['continued_3_day_up_num'],
+                    'continued_3_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_3_day_up_uad_range']),
+                    'continued_3_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_3_day_up_active_date_sets']),
+
+                    'continued_4_day_up_num'                => $ma_pianyilv_statistics_row['continued_4_day_up_num'],
+                    'continued_4_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_4_day_up_uad_range']),
+                    'continued_4_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_4_day_up_active_date_sets']),
+
+                    'continued_5_day_up_num'                => $ma_pianyilv_statistics_row['continued_5_day_up_num'],
+                    'continued_5_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_5_day_up_uad_range']),
+                    'continued_5_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_5_day_up_active_date_sets']),
+
+                    'continued_6_day_up_num'                => $ma_pianyilv_statistics_row['continued_6_day_up_num'],
+                    'continued_6_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_6_day_up_uad_range']),
+                    'continued_6_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_6_day_up_active_date_sets']),
+
+                    'continued_7_day_up_num'                => $ma_pianyilv_statistics_row['continued_7_day_up_num'],
+                    'continued_7_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_7_day_up_uad_range']),
+                    'continued_7_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_7_day_up_active_date_sets']),
+
+                    'continued_8_day_up_num'                => $ma_pianyilv_statistics_row['continued_8_day_up_num'],
+                    'continued_8_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_8_day_up_uad_range']),
+                    'continued_8_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_8_day_up_active_date_sets']),
+
+                    'continued_9_day_up_num'                => $ma_pianyilv_statistics_row['continued_9_day_up_num'],
+                    'continued_9_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_9_day_up_uad_range']),
+                    'continued_9_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_9_day_up_active_date_sets']),
+
+                    'continued_gt9_day_up_num'                => $ma_pianyilv_statistics_row['continued_gt9_day_up_num'],
+                    'continued_gt9_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_uad_range']),
+                    'continued_gt9_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_active_date_sets']),
+
+                    'next_day_dw_num'                       => $ma_pianyilv_statistics_row['next_day_dw_num'],
+                    'next_day_dw_uad_range'                 => json_encode($ma_pianyilv_statistics_row['next_day_dw_uad_range']),
+                    'next_day_dw_active_date_sets'          => json_encode($ma_pianyilv_statistics_row['next_day_dw_active_date_sets']),
+
+                    'continued_2_day_dw_num'                => $ma_pianyilv_statistics_row['continued_2_day_dw_num'],
+                    'continued_2_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_uad_range']),
+                    'continued_2_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_active_date_sets']),
+
+                    'continued_3_day_dw_num'                => $ma_pianyilv_statistics_row['continued_3_day_dw_num'],
+                    'continued_3_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_3_day_dw_uad_range']),
+                    'continued_3_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_3_day_dw_active_date_sets']),
+
+                    'continued_4_day_dw_num'                => $ma_pianyilv_statistics_row['continued_4_day_dw_num'],
+                    'continued_4_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_uad_range']),
+                    'continued_4_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_active_date_sets']),
+
+                    'continued_5_day_dw_num'                => $ma_pianyilv_statistics_row['continued_5_day_dw_num'],
+                    'continued_5_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_uad_range']),
+                    'continued_5_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_active_date_sets']),
+
+                    'continued_6_day_dw_num'                => $ma_pianyilv_statistics_row['continued_6_day_dw_num'],
+                    'continued_6_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_uad_range']),
+                    'continued_6_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_active_date_sets']),
+
+                    'continued_7_day_dw_num'                => $ma_pianyilv_statistics_row['continued_7_day_dw_num'],
+                    'continued_7_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_uad_range']),
+                    'continued_7_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_active_date_sets']),
+
+                    'continued_8_day_dw_num'                => $ma_pianyilv_statistics_row['continued_8_day_dw_num'],
+                    'continued_8_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_uad_range']),
+                    'continued_8_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_active_date_sets']),
+
+                    'continued_9_day_dw_num'                => $ma_pianyilv_statistics_row['continued_9_day_dw_num'],
+                    'continued_9_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_uad_range']),
+                    'continued_9_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_active_date_sets']),
+
+                    'continued_gt9_day_dw_num'                => $ma_pianyilv_statistics_row['continued_gt9_day_dw_num'],
+                    'continued_gt9_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_uad_range']),
+                    'continued_gt9_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_active_date_sets']),
+                ];
+
+                # 是否存在
+                $has_row_condi = [
+                    ['shares__id', $shares__id],
+                    ['intervals__id', $intervals__id]
+                ];
+                $has_row = $ma_pianyilv_statistics_model->select('id')->where($has_row_condi)->find();
+
+                if( $has_row ){## 更新
+                
+
+                }else{## 新增
+
+                    $_data['created_time'] = time();
+
+                }
+
+
+
             }
+        }
+    }
 
-            $this->recursiveContinuedUp($details, $_next_k, $info_row, $level+1);
-            return true;
+    /**
+     * 递归统计连涨或连跌
+     * @param   string  $type   up表示统计连涨；dw表示统计连跌
+     */
+    protected function recursiveContinuedUpOrDw($details, $_k, &$info_row, $type='up', $level=1, $first_day_key=''){
+
+        /// 初始化参数
+        if( $level==1 ){
+            $first_day_key = $_k;
+        }
+        $_next_k                = $_k+1;
+        $_first_detail          = $details[$first_day_key];
+        $_next_detail           = $details[$_next_k];
+        $first_day_id           = $_first_detail['id'];
+        $first_day_end_price    = $_first_detail['day_end_price'];
+
+        # 下一天涨跌幅
+        $_uad_range_10000bei = (int)($_next_detail['uad_range']*10000);
+        ## 下一天涨跌幅为0的跳过
+        if( $_uad_range_10000bei===0 ) return false;
+
+        if( $level==1 ){## 第二天的涨跌幅
+            $_next_detail_uad_range = $_next_detail['uad_range'];
+        }else{## 第n天离基准天的涨跌幅=(第n天的收盘价-基准天的收盘价)/基准天的收盘价
+            $_next_detail_uad_range = ($_next_detail['day_end_price']-$first_day_end_price)/$first_day_end_price;
+            $_next_detail_uad_range = round($_next_detail_uad_range, 4);
+        }
+
+        $_next_detail_uad_range_10000bei = (int)($_next_detail_uad_range*10000);### 因数据表中数据为百分数，有四位小数，故乘以10000转整型做比较
+
+        switch($type){
+        case 'up':# 统计连涨
+            if( $_uad_range_10000bei>0 ){### 表示上涨
+
+                $_row_info_key      = $this->getRowInfoKey($level, 'u');
+                $up_num_name        = $_row_info_key[0];
+                $uad_range_name     = $_row_info_key[1];
+                $date_interval_name = $_row_info_key[2];
+    
+                $info_row[$up_num_name] += 1;
+
+                #### 搜集涨幅集合
+                $this->uadRangeDwAndUp($info_row[$uad_range_name], $_next_detail_uad_range_10000bei, $first_day_id, 'up');
+
+                $end_active_date = $this->recursiveContinuedUpOrDw($details, $_next_k, $info_row, 'up', $level+1, $first_day_key);
+
+                #### 时间范围
+                if( $end_active_date ){
+                
+                    $info_row[$date_interval_name][$first_day_id] = ['b_date'=>$_first_detail['active_date'], 'e_date'=>$end_active_date];
+                }else {
+                    
+                    $info_row[$date_interval_name][$first_day_id] = ['b_date'=>$_first_detail['active_date'], 'e_date'=>$_next_detail['active_date']];
+                }
+                
+                if( $end_active_date ){
+                
+                    return $end_active_date;
+                }else {
+                    return false;
+                }
+            }
+        break;
+        case 'dw':# 统计连跌
+            if( $_next_detail_uad_range_10000bei<0 ){### 表示下跌（不包括0）
+    
+                $_row_info_key      = $this->getRowInfoKey($level, 'd');
+                $up_num_name        = $_row_info_key[0];
+                $uad_range_name     = $_row_info_key[1];
+                $date_interval_name = $_row_info_key[2];
+    
+                $info_row[$up_num_name] += 1;
+    
+                #### 搜集跌幅集合
+                $this->uadRangeDwAndUp($info_row[$uad_range_name], $_next_detail_uad_range_10000bei, $first_day_id, 'dw');
+
+                #### 下一次连跌持续
+                $end_active_date = $this->recursiveContinuedUpOrDw($details, $_next_k, $info_row, 'dw', $level+1, $first_day_key);
+
+                #### 时间范围
+                if( $end_active_date ){
+                    $info_row[$date_interval_name][$first_day_id] = ['b'=>$_first_detail['active_date'], 'e'=>$end_active_date];
+                }else {
+                    $info_row[$date_interval_name][$first_day_id] = ['b'=>$_first_detail['active_date'], 'e'=>$_next_detail['active_date']];
+                }
+                
+                if( $end_active_date ){
+                
+                    return $end_active_date;
+                }else {
+                    return false;
+                }
+            }
+        break;
         }
 
         return false;
     }
 
     /**
-     * 递归统计连跌
+     * 搜集涨跌幅集合
+     * @param   $type   string  可选值：'up'表示上涨幅度集合；'dw'表示下跌幅度集合
      */
-    protected function recursiveContinuedDw($details, $_k, &$info_row, $level=1){
-
-        /// 下一天涨跌幅为0的跳过
-        $_next_k                            = $_k+1;
-        $_next_detail_uad_range             = $details[$_next_k]['uad_range'];### 第二天涨跌幅
-        $_next_detail_uad_range_10000bei    = (int)($_next_detail_uad_range*10000);### 因数据表中数据为百分数，有四位小数，故乘以10000转整型做比较
-
-        if( $_next_detail_uad_range_10000bei===0 ) return false;
+    protected function uadRangeDwAndUp(&$uad_range, $_next_detail_uad_range_10000bei, $first_day_id, $type){
     
-        if( $_next_detail_uad_range_10000bei<0 ){### 表示下跌
 
-            $_row_info_key  = $this->getRowInfoKey($level, 'd');
-            $up_num_name    = $_row_info_key[0];
-            $uad_range_name = $_row_info_key[1];
+        if( !isset($uad_range[$type]) ){
 
-            $info_row[$up_num_name] += 1;
-
-            if( $_next_detail_uad_range_10000bei<$info_row[$uad_range_name]['min'] ){
-            
-                // $info_row[$uad_range_name]['min'] = $_next_detail_uad_range_10000bei;
-
-            }elseif ( 
-                $_next_detail_uad_range_10000bei>$info_row[$uad_range_name]['max'] ||
-                $info_row[$uad_range_name]['max']===0
-            ) {
-
-                // $info_row[$uad_range_name]['max'] = $_next_detail_uad_range_10000bei;
-            }
-
-            $this->recursiveContinuedDw($details, $_next_k, $info_row, $level+1);
-            return true;
+            $uad_range[$type] = [];
         }
+        $uad_range[$type][$first_day_id] = $_next_detail_uad_range_10000bei;
 
-        return false;
+        // if( !isset($uad_range['min'])&&!isset($uad_range['max']) ){##### 仅当$level==1时,本条件才会成立
+    
+        //     if( is_null($last_uad_range_min) ){
+            
+        //         $uad_range['min'] = $_next_detail_uad_range_10000bei;
+        //     }else {
+                
+        //         $uad_range['min'] = $last_uad_range_min>$_next_detail_uad_range_10000bei ? $_next_detail_uad_range_10000bei : $last_uad_range_min;
+        //     }
+
+        //     if( is_null($last_uad_range_max) ){
+            
+        //         $uad_range['max'] = $_next_detail_uad_range_10000bei;
+        //     }else {
+                
+        //         $uad_range['max'] = $last_uad_range_max>$_next_detail_uad_range_10000bei ? $last_uad_range_max : $_next_detail_uad_range_10000bei;
+        //     }
+
+        // }else {
+
+        //     if( $_next_detail_uad_range_10000bei>$uad_range['max'] ){
+            
+        //         $uad_range['max'] = $_next_detail_uad_range_10000bei;
+        //     }
+
+        //     if( $_next_detail_uad_range_10000bei<$uad_range['min'] ){
+            
+        //         $uad_range['min'] = $_next_detail_uad_range_10000bei;
+        //     }
+        // }
     }
 
     /**
@@ -869,19 +1014,186 @@ class MovingAverageService
     
         if( $level==1 ){
         
-            return ['next_day_'.$flag.'_num', 'next_day_'.$flag.'_uad_range'];
+            return [
+                'next_day_'.$flag.'_num',
+                'next_day_'.$flag.'_uad_range',
+                'next_day_'.$flag.'_active_date_sets'
+            ];
         }elseif( $level<=9 ){
         
             return [
                 'continued_'.$level.'_day_'.$flag.'_num',
-                'continued_'.$level.'_day_'.$flag.'_uad_range'
+                'continued_'.$level.'_day_'.$flag.'_uad_range',
+                'continued_'.$level.'_day_'.$flag.'_active_date_sets'
             ];
         }else {
             return [
                 'continued_gt9_day_'.$flag.'_num',
-                'continued_gt9_day_'.$flag.'_uad_range'
+                'continued_gt9_day_'.$flag.'_uad_range',
+                'continued_gt9_day_'.$flag.'_active_date_sets'
             ];
         }
+    }
+
+    /**
+     * 生成info数组
+     */
+    protected function mkInfo(){
+
+        /// 初始化参数
+        $info               = [];
+        $common_key_and_val = [
+            'day_num'   => 0,### 天数
+            'next_day_up_num'                       => 0,### 第二天上涨天数
+            'next_day_up_uad_range'                 => [],### 第二天上涨的涨幅区间
+            'next_day_up_active_date_sets'          => [],### 第二天上涨的历史日期区间集合
+
+            'continued_2_day_up_num'                => 0,### 持续2天上涨天数
+            'continued_2_day_up_uad_range'          => [],### 持续2天上涨的涨幅区间
+            'continued_2_day_up_active_date_sets'   => [],### 持续2天上涨的历史日期区间集合
+
+            'continued_3_day_up_num'                => 0,### 持续3天上涨天数
+            'continued_3_day_up_uad_range'          => [],### 持续3天上涨的涨幅区间
+            'continued_3_day_up_active_date_sets'   => [],### 持续3天上涨的历史日期区间集合
+
+            'continued_4_day_up_num'                => 0,### 持续4天上涨天数
+            'continued_4_day_up_uad_range'          => [],### 持续4天上涨的涨幅区间
+            'continued_4_day_up_active_date_sets'   => [],### 持续4天上涨的历史日期区间集合
+
+            'continued_5_day_up_num'                => 0,### 持续5天上涨天数
+            'continued_5_day_up_uad_range'          => [],### 持续5天上涨的涨幅区间
+            'continued_5_day_up_active_date_sets'   => [],### 持续5天上涨的历史日期区间集合
+
+            'continued_6_day_up_num'                => 0,### 持续6天上涨天数
+            'continued_6_day_up_uad_range'          => [],### 持续6天上涨的涨幅区间
+            'continued_6_day_up_active_date_sets'   => [],### 持续6天上涨的历史日期区间集合
+
+            'continued_7_day_up_num'                => 0,### 持续7天上涨天数
+            'continued_7_day_up_uad_range'          => [],### 持续7天上涨的涨幅区间
+            'continued_7_day_up_active_date_sets'   => [],### 持续7天上涨的历史日期区间集合
+
+            'continued_8_day_up_num'                => 0,### 持续8天上涨天数
+            'continued_8_day_up_uad_range'          => [],### 持续8天上涨的涨幅区间
+            'continued_8_day_up_active_date_sets'   => [],### 持续8天上涨的历史日期区间集合
+
+            'continued_9_day_up_num'                => 0,### 持续9天上涨天数
+            'continued_9_day_up_uad_range'          => [],### 持续9天上涨的涨幅区间
+            'continued_9_day_up_active_date_sets'   => [],### 持续9天上涨的历史日期区间集合
+
+            'continued_gt9_day_up_num'              => 0,### 持续上涨超过9天的天数
+            'continued_gt9_day_up_uad_range'        => [],### 持续上涨超过9天的涨幅区间
+            'continued_gt9_day_up_active_date_sets' => [],### 持续上涨超过9天的历史日期区间集合
+
+            'next_day_dw_num'                       => 0,### 第二天下跌天数
+            'next_day_dw_uad_range'                 => [],### 第二天下跌的跌幅区间
+            'next_day_dw_active_date_sets'          => [],### 第二天下跌的历史日期区间集合
+
+            'continued_2_day_dw_num'                => 0,### 持续2天下跌天数
+            'continued_2_day_dw_uad_range'          => [],### 持续2天下跌的跌幅区间
+            'continued_2_day_dw_active_date_sets'   => [],### 持续2天下跌的历史日期区间集合
+
+            'continued_3_day_dw_num'                => 0,### 持续3天下跌天数
+            'continued_3_day_dw_uad_range'          => [],### 持续3天下跌的跌幅区间
+            'continued_3_day_dw_active_date_sets'   => [],### 持续3天下跌的历史日期区间集合
+
+            'continued_4_day_dw_num'                => 0,### 持续4天下跌天数
+            'continued_4_day_dw_uad_range'          => [],### 持续4天下跌的跌幅区间
+            'continued_4_day_dw_active_date_sets'   => [],### 持续4天下跌的历史日期区间集合
+
+            'continued_5_day_dw_num'                => 0,### 持续5天下跌天数
+            'continued_5_day_dw_uad_range'          => [],### 持续5天下跌的跌幅区间
+            'continued_5_day_dw_active_date_sets'   => [],### 持续5天下跌的历史日期区间集合
+
+            'continued_6_day_dw_num'                => 0,### 持续6天下跌天数
+            'continued_6_day_dw_uad_range'          => [],### 持续6天下跌的跌幅区间
+            'continued_6_day_dw_active_date_sets'   => [],### 持续6天下跌的历史日期区间集合
+
+            'continued_7_day_dw_num'                => 0,### 持续7天下跌天数
+            'continued_7_day_dw_uad_range'          => [],### 持续7天下跌的跌幅区间
+            'continued_7_day_dw_active_date_sets'   => [],### 持续7天下跌的历史日期区间集合
+
+            'continued_8_day_dw_num'                => 0,### 持续8天下跌天数
+            'continued_8_day_dw_uad_range'          => [],### 持续8天下跌的跌幅区间
+            'continued_8_day_dw_active_date_sets'   => [],### 持续8天下跌的历史日期区间集合
+
+            'continued_9_day_dw_num'                => 0,### 持续9天下跌天数
+            'continued_9_day_dw_uad_range'          => [],### 持续9天下跌的跌幅区间
+            'continued_9_day_dw_active_date_sets'   => [],### 持续9天下跌的历史日期区间集合
+
+            'continued_gt9_day_dw_num'              => 0,### 持续下跌超过9天的天数
+            'continued_gt9_day_dw_uad_range'        => [],### 持续下跌超过9天的跌幅区间
+            'continued_gt9_day_dw_active_date_sets' => [],### 持续下跌超过9天的历史日期区间集合
+        ];
+    
+        $info['lt=-70'] = $common_key_and_val;## 偏离率<=-70
+
+        for ($i=-35; $i <= 35; $i++) { 
+
+            if( $i===0 ) continue;
+            
+            if( $i<0 ){
+
+                $_info_key = '>'.($i*2).'_<='.(($i+1)*2);
+            }else{
+                $_info_key = '>'.(($i-1)*2).'_<='.($i*2);
+            }
+
+            $info[$_info_key] = $common_key_and_val;
+        }
+
+        $info['gt70'] = $common_key_and_val;## 偏离率>70
+
+        return $info;
+    }
+
+    /**
+     * 生成偏移率规则和区间
+     */
+    public function mkPianyilvRuleAndIntervals(){
+    
+        /// 初始化参数
+        $now                    = time();
+        $interval_model         = new IntervalsModel;
+        $statistics_rules_model = new StatisticsRulesModel;
+
+        /// 新增规则，已经新增则返回规则表id
+        $rules = [4, 5, 6, 7, 8, 9, 10, 11];
+
+        foreach( $rules as $_r){
+        
+            $statistics_rules__id = $statistics_rules_model->getId($_r);
+
+            /// 组装数据
+            $_insert = [
+                ['b_interval'=>70, 'is_equal_to_b_interval'=>0, 'e_interval'=>111, 'is_equal_to_e_interval'=>0, 'statistics_rules__id'=>$statistics_rules__id],
+                ['b_interval'=>-111, 'is_equal_to_b_interval'=>0, 'e_interval'=>-70, 'is_equal_to_e_interval'=>1, 'statistics_rules__id'=>$statistics_rules__id]
+            ];
+
+            for ($i=-35; $i <= 35; $i++) { 
+
+                if( $i===0 ) continue;
+                
+                if( $i<0 ){
+
+                    $_insert[] = ['b_interval'=>$i*2, 'is_equal_to_b_interval'=>0, 'e_interval'=>($i+1)*2, 'is_equal_to_e_interval'=>1, 'statistics_rules__id'=>$statistics_rules__id];
+                }else{
+                    $_insert[] = ['b_interval'=>($i-1)*2, 'is_equal_to_b_interval'=>0, 'e_interval'=>$i*2, 'is_equal_to_e_interval'=>1, 'statistics_rules__id'=>$statistics_rules__id];
+                }
+            }
+
+            /// 无数据则添加
+            foreach( $_insert as $row){
+                $condition = Fun::tb__kv2condition($row);
+                $_has_row = $interval_model->select('id')->where($condition)->find();
+
+                if( !$_has_row ){
+                    
+                    $row['created_time'] = $now;
+                    $interval_model->insert($row)->exec();
+                }
+            }
+        }
+        
     }
 
 }

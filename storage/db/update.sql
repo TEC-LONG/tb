@@ -378,21 +378,6 @@ CREATE TABLE `tl_mixed_statistics` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='综合统计表（适用于无需叠加每次需重新全面统计的方式）';
 
 
-CREATE TABLE `tl_ma_pianyilv_statistics` (
-    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
-    `statistics_rules__ids` varchar(20) DEFAULT NULL COMMENT '统计规则项名称表id集合，多个规则以"|"分隔id值',
-    `string_value` varchar(100) DEFAULT NULL COMMENT '统计值（字符串形态）',
-    `intval_value` int DEFAULT NULL COMMENT '统计值（整形形态）',
-    `json_value` text COMMENT 'json统计统计内容',
-    `last_end_time` int unsigned NOT NULL DEFAULT 0 COMMENT '统计节点时间',
-    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
-    PRIMARY KEY (`id`),
-    KEY `idx_shares__id` (`shares__id`),
-    KEY `idx_statistics_rules__ids` (`statistics_rules__ids`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='个股均线偏移率相关统计表';
-
-
 CREATE TABLE `tl_statistics_rules` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
     `name` varchar(50) NOT NULL DEFAULT '' COMMENT '统计规则名称',
@@ -402,6 +387,96 @@ CREATE TABLE `tl_statistics_rules` (
     PRIMARY KEY (`id`),
     KEY `idx_flag` (`flag`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='统计规则项名称表';
+
+
+CREATE TABLE `tl_intervals` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `b_interval` tinyint DEFAULT NULL COMMENT '区间起始值',
+    `is_equal_to_b_interval` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否等于区间起始值',
+    `e_interval` tinyint DEFAULT NULL COMMENT '区间结束值',
+    `is_equal_to_e_interval` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否等于区间结束值',
+    `statistics_rules__id` int unsigned NOT NULL DEFAULT 0 COMMENT '统计规则项名称表id',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_statistics_rules__id` (`statistics_rules__id`),
+    KEY `idx_b_interval` (`b_interval`),
+    KEY `idx_e_interval` (`e_interval`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='区间表';
+
+
+CREATE TABLE `tl_ma_pianyilv_statistics` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `intervals__id` int unsigned NOT NULL DEFAULT 0 COMMENT '区间表id',
+    `day_num` int unsigned NOT NULL DEFAULT 0 COMMENT '总天数',
+    `next_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '第二天上涨的天数',
+    `next_day_up_uad_range` text COMMENT '第二天上涨的涨幅记录（json格式）',
+    `next_day_up_active_date_sets` text COMMENT '第二天上涨的时段记录（json格式）',
+    `continued_2_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续2天上涨的天数',
+    `continued_2_day_up_uad_range` text COMMENT '连续2天上涨的涨幅记录（json格式）',
+    `continued_2_day_up_active_date_sets` text COMMENT '连续2天上涨的时段记录（json格式）',
+    `continued_3_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续3天上涨的天数',
+    `continued_3_day_up_uad_range` text COMMENT '连续3天上涨的涨幅记录（json格式）',
+    `continued_3_day_up_active_date_sets` text COMMENT '连续3天上涨的时段记录（json格式）',
+    `continued_4_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续4天上涨的天数',
+    `continued_4_day_up_uad_range` text COMMENT '连续4天上涨的涨幅记录（json格式）',
+    `continued_4_day_up_active_date_sets` text COMMENT '连续4天上涨的时段记录（json格式）',
+    `continued_5_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续5天上涨的天数',
+    `continued_5_day_up_uad_range` text COMMENT '连续5天上涨的涨幅记录（json格式）',
+    `continued_5_day_up_active_date_sets` text COMMENT '连续5天上涨的时段记录（json格式）',
+    `continued_6_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续6天上涨的天数',
+    `continued_6_day_up_uad_range` text COMMENT '连续6天上涨的涨幅记录（json格式）',
+    `continued_6_day_up_active_date_sets` text COMMENT '连续6天上涨的时段记录（json格式）',
+    `continued_7_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续7天上涨的天数',
+    `continued_7_day_up_uad_range` text COMMENT '连续7天上涨的涨幅记录（json格式）',
+    `continued_7_day_up_active_date_sets` text COMMENT '连续7天上涨的时段记录（json格式）',
+    `continued_8_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续8天上涨的天数',
+    `continued_8_day_up_uad_range` text COMMENT '连续8天上涨的涨幅记录（json格式）',
+    `continued_8_day_up_active_date_sets` text COMMENT '连续8天上涨的时段记录（json格式）',
+    `continued_9_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续9天上涨的天数',
+    `continued_9_day_up_uad_range` text COMMENT '连续9天上涨的涨幅记录（json格式）',
+    `continued_9_day_up_active_date_sets` text COMMENT '连续9天上涨的时段记录（json格式）',
+    `continued_gt9_day_up_num` int unsigned NOT NULL DEFAULT 0 COMMENT '持续上涨超过9天的天数',
+    `continued_gt9_day_up_uad_range` text COMMENT '持续上涨超过9天的涨幅记录（json格式）',
+    `continued_gt9_day_up_active_date_sets` text COMMENT '持续上涨超过9天的时段记录（json格式）',
+    `next_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '第二天下跌的天数',
+    `next_day_dw_uad_range` text COMMENT '第二天下跌的跌幅记录（json格式）',
+    `next_day_dw_active_date_sets` text COMMENT '第二天下跌的时段记录（json格式）',
+    `continued_2_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续2天下跌的天数',
+    `continued_2_day_dw_uad_range` text COMMENT '连续2天下跌的跌幅记录（json格式）',
+    `continued_2_day_dw_active_date_sets` text COMMENT '连续2天下跌的时段记录（json格式）',
+    `continued_3_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续3天下跌的天数',
+    `continued_3_day_dw_uad_range` text COMMENT '连续3天下跌的跌幅记录（json格式）',
+    `continued_3_day_dw_active_date_sets` text COMMENT '连续3天下跌的时段记录（json格式）',
+    `continued_4_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续4天下跌的天数',
+    `continued_4_day_dw_uad_range` text COMMENT '连续4天下跌的跌幅记录（json格式）',
+    `continued_4_day_dw_active_date_sets` text COMMENT '连续4天下跌的时段记录（json格式）',
+    `continued_5_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续5天下跌的天数',
+    `continued_5_day_dw_uad_range` text COMMENT '连续5天下跌的跌幅记录（json格式）',
+    `continued_5_day_dw_active_date_sets` text COMMENT '连续5天下跌的时段记录（json格式）',
+    `continued_6_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续6天下跌的天数',
+    `continued_6_day_dw_uad_range` text COMMENT '连续6天下跌的跌幅记录（json格式）',
+    `continued_6_day_dw_active_date_sets` text COMMENT '连续6天下跌的时段记录（json格式）',
+    `continued_7_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续7天下跌的天数',
+    `continued_7_day_dw_uad_range` text COMMENT '连续7天下跌的跌幅记录（json格式）',
+    `continued_7_day_dw_active_date_sets` text COMMENT '连续7天下跌的时段记录（json格式）',
+    `continued_8_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续8天下跌的天数',
+    `continued_8_day_dw_uad_range` text COMMENT '连续8天下跌的跌幅记录（json格式）',
+    `continued_8_day_dw_active_date_sets` text COMMENT '连续8天下跌的时段记录（json格式）',
+    `continued_9_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '连续9天下跌的天数',
+    `continued_9_day_dw_uad_range` text COMMENT '连续9天下跌的跌幅记录（json格式）',
+    `continued_9_day_dw_active_date_sets` text COMMENT '连续9天下跌的时段记录（json格式）',
+    `continued_gt9_day_dw_num` int unsigned NOT NULL DEFAULT 0 COMMENT '持续下跌超过9天的天数',
+    `continued_gt9_day_dw_uad_range` text COMMENT '持续下跌超过9天的跌幅记录（json格式）',
+    `continued_gt9_day_dw_active_date_sets` text COMMENT '持续下跌超过9天的时段记录（json格式）',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_shares__id` (`shares__id`),
+    KEY `idx_intervals__id` (`intervals__id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='个股均线偏移率相关统计表';
+
+
+
 
 
 
