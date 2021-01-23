@@ -1,4 +1,4 @@
-CREATE TABLE `shares` (
+CREATE TABLE `tl_shares` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
     `title` varchar(50) NOT NULL DEFAULT '' COMMENT '股票中文名称',
     `code` varchar(30) NOT NULL DEFAULT '' COMMENT '股票代码',
@@ -20,12 +20,32 @@ CREATE TABLE `shares` (
     `cate_2` varchar(10) NOT NULL DEFAULT '' COMMENT '所属申万行业分类2',
     `province` varchar(10) NOT NULL DEFAULT '' COMMENT '所在省份',
     `is_deprecated` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '是否弃用；0=否；1=是',
+    `total_day_num` int unsigned NOT NULL DEFAULT 0 COMMENT '当前股票有效行情运行天数（用于作为tl_ma_pianyilv_statistics表的复现率分母值）',
     PRIMARY KEY (`id`),
     KEY `idx_code` (`code`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票信息表';
 
 
-CREATE TABLE `plate` (
+CREATE TABLE `tl_groups` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `name` varchar(30) NOT NULL DEFAULT '' COMMENT '分组名称',
+    `type` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '所属类型；0=无；1=股票；2=基金',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='综合组别表';
+
+
+CREATE TABLE `tl_shares__groups` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `shares__id` int unsigned NOT NULL DEFAULT 0 COMMENT '股票信息表id',
+    `groups__id` int unsigned NOT NULL DEFAULT 0 COMMENT '综合组别表id',
+    `spec_content` varchar(1000) NOT NULL DEFAULT '' COMMENT '特殊内容（如警戒值）',
+    `created_time` int unsigned NOT NULL DEFAULT 0 COMMENT '数据创建时间',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='股票分组表';
+
+
+CREATE TABLE `tl_plate` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
     `name` varchar(30) NOT NULL DEFAULT '' COMMENT '板块名称',
     `code` varchar(30) NOT NULL DEFAULT '' COMMENT '板块代码',

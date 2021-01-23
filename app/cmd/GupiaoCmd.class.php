@@ -97,7 +97,8 @@ class GupiaoCmd extends BaseCmd{
                  * 计算一年新低:  $normal_statistics->yearXindi();
                  */
                 case 4:# php cmd.php Gupiao 4
-                    // $gupiao_service->updateOriginal(0);
+                    // $gupiao_service->updateOriginal(1);
+                    // $gupiao_service->updateOriginal(0);## 网易线路
                     $moving_average_service->maPrice();
                     $moving_average_service->maAngle();
                     // $normal_statistics->yearXingao();

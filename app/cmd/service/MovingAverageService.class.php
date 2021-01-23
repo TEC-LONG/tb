@@ -586,7 +586,7 @@ class MovingAverageService
         $ids = $shares_model->select('id')->where(['is_deprecated', 0])->get();
 
         /// 遍历每支股票
-        $gupiao_common_service->outputPercent($ids, function ($key, $row, &$dividend, $parent_percent) use ($shares_details_byday_model, $that){
+        $gupiao_common_service->outputPercent($ids, function ($key, $row, &$dividend, $parent_percent) use ($shares_details_byday_model, $that, $shares_model){
         
             # 初始化参数
             $shares__id = $row['id'];
@@ -618,16 +618,23 @@ class MovingAverageService
             }
 
             # 初始化参数
+            $_period        = [5, 10, 15, 20, 30, 60, 120, 240];
+            $this_dividend  = 1;
+            $this_divisor   = count($_period);
             $total_day_num  = count($details);
+
+            if( $total_day_num>0 ){
+            
+                $shares_model->update(['total_day_num'=>$total_day_num])->where(['id', $shares__id])->exec();
+            }
             // print_r($info);
             // exit;
-            
-            $_period = [5, 10, 15, 20, 30, 60, 120, 240];
 
             foreach( $_period as $_perio){
 
-                $info       = $this->mkInfo();
-                $_ma_name   = 'ma'.$_perio.'_plv';
+                $this_percent   = number_format(($this_dividend/$this_divisor)*100, 4) . '%';
+                $info           = $this->mkInfo();
+                $_ma_name       = 'ma'.$_perio.'_plv';
 
                 foreach( $details as $_k=>$_detail){
 
@@ -642,7 +649,7 @@ class MovingAverageService
 
                     if( $_next_detail_uad_range_10000bei===0 ) continue;
                 
-                    ## 数据表的值是乘以10000倍后的值，除以100既可得到百分值
+                    ## 数据表的值是比值小数乘以10000倍后的值，故乘以100则为百分数
                     $_100bei_plv        = $_detail[$_ma_name]/100;### 3432/100=34.32
                     $_compare_target    = (int)number_format($_100bei_plv*100);#### 34.32*100  ==》 3432
 
@@ -702,8 +709,11 @@ class MovingAverageService
 
                 // var_dump(count($info));
                 // print_r($info['>-18_<=-16']);
-                print_r($info);
-                exit;
+                // print_r($info);
+                // exit;
+
+                echo '总体：'.$parent_percent.'; 当前：'.$this_percent.PHP_EOL;
+                $this_dividend++;
             }
             
         });
@@ -721,11 +731,25 @@ class MovingAverageService
         $statistics_rules__id           = $statistics_rules_model->period2rulesId($period);
     
         foreach( $info as $k=>$ma_pianyilv_statistics_row){
+
+            $_condi = [
+                ['statistics_rules__id', $statistics_rules__id]
+            ];
         
             if( $k=='gt70' ){
-            
+
+                $_condi[] = ['b_interval', 70];
+                $_condi[] = ['is_equal_to_b_interval', 0];
+                $_condi[] = ['e_interval', 111];
+                $_condi[] = ['is_equal_to_e_interval', 0];
+
             }elseif( $k=='lt=-70' ){
             
+                $_condi[] = ['b_interval', -111];
+                $_condi[] = ['is_equal_to_b_interval', 0];
+                $_condi[] = ['e_interval', -70];
+                $_condi[] = ['is_equal_to_e_interval', 1];
+
             }else{
 
                 /// 区间
@@ -733,128 +757,201 @@ class MovingAverageService
                 preg_match('/\d*$/', $k_arr[0], $matches1);
                 preg_match('/\d*$/', $k_arr[1], $matches2);
 
-                $_condi = [
-                    ['b_interval', $matches1[0]],
-                    ['is_equal_to_b_interval', 0],
-                    ['e_interval', $matches2[0]],
-                    ['is_equal_to_e_interval', 0],
-                    ['statistics_rules__id', $statistics_rules__id]
-                ];
+                $_condi[] = ['b_interval', $matches1[0]];
+                $_condi[] = ['is_equal_to_b_interval', 0];
+                $_condi[] = ['e_interval', $matches2[0]];
+                $_condi[] = ['is_equal_to_e_interval', 1];
+            }
 
-                $intervals_row = $intervals_model->select('id')->where($_condi)->find();
-                if( empty($intervals_row) ) continue;
+            $intervals_row = $intervals_model->select('id')->where($_condi)->find();
+            if( empty($intervals_row) ) continue;
 
-                /// 录入数据
-                # 初始化参数
-                $intervals__id = $intervals_row['id'];
+            /// 录入数据
+            # 初始化参数
+            $intervals__id = $intervals_row['id'];
 
-                # 组装数据
-                $_data = [
-                    'shares__id'                            => $shares__id,
-                    'intervals__id'                         => $intervals__id,
-                    'day_num'                               => $ma_pianyilv_statistics_row['day_num'],
+            # 组装数据
+            $_data = $this->getData($ma_pianyilv_statistics_row);
 
-                    'next_day_up_num'                       => $ma_pianyilv_statistics_row['next_day_up_num'],
-                    'next_day_up_uad_range'                 => json_encode($ma_pianyilv_statistics_row['next_day_up_uad_range']),
-                    'next_day_up_active_date_sets'          => json_encode($ma_pianyilv_statistics_row['next_day_up_active_date_sets']),
+            if( empty($_data) ){
+            
+                continue;
+            }
 
-                    'continued_2_day_up_num'                => $ma_pianyilv_statistics_row['continued_2_day_up_num'],
-                    'continued_2_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_2_day_up_uad_range']),
-                    'continued_2_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_2_day_up_active_date_sets']),
+            # 是否存在
+            $has_row_condi = [
+                ['shares__id', $shares__id],
+                ['intervals__id', $intervals__id]
+            ];
+            $has_row = $ma_pianyilv_statistics_model->select('id')->where($has_row_condi)->find();
 
-                    'continued_3_day_up_num'                => $ma_pianyilv_statistics_row['continued_3_day_up_num'],
-                    'continued_3_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_3_day_up_uad_range']),
-                    'continued_3_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_3_day_up_active_date_sets']),
+            if( $has_row ){## 更新
 
-                    'continued_4_day_up_num'                => $ma_pianyilv_statistics_row['continued_4_day_up_num'],
-                    'continued_4_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_4_day_up_uad_range']),
-                    'continued_4_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_4_day_up_active_date_sets']),
+                $ma_pianyilv_statistics_model->update($_data)->where($has_row_condi)->exec();
 
-                    'continued_5_day_up_num'                => $ma_pianyilv_statistics_row['continued_5_day_up_num'],
-                    'continued_5_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_5_day_up_uad_range']),
-                    'continued_5_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_5_day_up_active_date_sets']),
+            }else{## 新增
 
-                    'continued_6_day_up_num'                => $ma_pianyilv_statistics_row['continued_6_day_up_num'],
-                    'continued_6_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_6_day_up_uad_range']),
-                    'continued_6_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_6_day_up_active_date_sets']),
-
-                    'continued_7_day_up_num'                => $ma_pianyilv_statistics_row['continued_7_day_up_num'],
-                    'continued_7_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_7_day_up_uad_range']),
-                    'continued_7_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_7_day_up_active_date_sets']),
-
-                    'continued_8_day_up_num'                => $ma_pianyilv_statistics_row['continued_8_day_up_num'],
-                    'continued_8_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_8_day_up_uad_range']),
-                    'continued_8_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_8_day_up_active_date_sets']),
-
-                    'continued_9_day_up_num'                => $ma_pianyilv_statistics_row['continued_9_day_up_num'],
-                    'continued_9_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_9_day_up_uad_range']),
-                    'continued_9_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_9_day_up_active_date_sets']),
-
-                    'continued_gt9_day_up_num'                => $ma_pianyilv_statistics_row['continued_gt9_day_up_num'],
-                    'continued_gt9_day_up_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_uad_range']),
-                    'continued_gt9_day_up_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_active_date_sets']),
-
-                    'next_day_dw_num'                       => $ma_pianyilv_statistics_row['next_day_dw_num'],
-                    'next_day_dw_uad_range'                 => json_encode($ma_pianyilv_statistics_row['next_day_dw_uad_range']),
-                    'next_day_dw_active_date_sets'          => json_encode($ma_pianyilv_statistics_row['next_day_dw_active_date_sets']),
-
-                    'continued_2_day_dw_num'                => $ma_pianyilv_statistics_row['continued_2_day_dw_num'],
-                    'continued_2_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_uad_range']),
-                    'continued_2_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_active_date_sets']),
-
-                    'continued_3_day_dw_num'                => $ma_pianyilv_statistics_row['continued_3_day_dw_num'],
-                    'continued_3_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_3_day_dw_uad_range']),
-                    'continued_3_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_3_day_dw_active_date_sets']),
-
-                    'continued_4_day_dw_num'                => $ma_pianyilv_statistics_row['continued_4_day_dw_num'],
-                    'continued_4_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_uad_range']),
-                    'continued_4_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_active_date_sets']),
-
-                    'continued_5_day_dw_num'                => $ma_pianyilv_statistics_row['continued_5_day_dw_num'],
-                    'continued_5_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_uad_range']),
-                    'continued_5_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_active_date_sets']),
-
-                    'continued_6_day_dw_num'                => $ma_pianyilv_statistics_row['continued_6_day_dw_num'],
-                    'continued_6_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_uad_range']),
-                    'continued_6_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_active_date_sets']),
-
-                    'continued_7_day_dw_num'                => $ma_pianyilv_statistics_row['continued_7_day_dw_num'],
-                    'continued_7_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_uad_range']),
-                    'continued_7_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_active_date_sets']),
-
-                    'continued_8_day_dw_num'                => $ma_pianyilv_statistics_row['continued_8_day_dw_num'],
-                    'continued_8_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_uad_range']),
-                    'continued_8_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_active_date_sets']),
-
-                    'continued_9_day_dw_num'                => $ma_pianyilv_statistics_row['continued_9_day_dw_num'],
-                    'continued_9_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_uad_range']),
-                    'continued_9_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_active_date_sets']),
-
-                    'continued_gt9_day_dw_num'                => $ma_pianyilv_statistics_row['continued_gt9_day_dw_num'],
-                    'continued_gt9_day_dw_uad_range'          => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_uad_range']),
-                    'continued_gt9_day_dw_active_date_sets'   => json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_active_date_sets']),
-                ];
-
-                # 是否存在
-                $has_row_condi = [
-                    ['shares__id', $shares__id],
-                    ['intervals__id', $intervals__id]
-                ];
-                $has_row = $ma_pianyilv_statistics_model->select('id')->where($has_row_condi)->find();
-
-                if( $has_row ){## 更新
-                
-
-                }else{## 新增
-
-                    $_data['created_time'] = time();
-
-                }
-
-
-
+                $_data['shares__id']    = $shares__id;
+                $_data['intervals__id'] = $intervals__id;
+                $_data['created_time']  = time();
+                $ma_pianyilv_statistics_model->insert($_data)->exec();
             }
         }
+    }
+
+    /**
+     * 组装data数据
+     */
+    protected function getData($ma_pianyilv_statistics_row){
+    
+        $_data = [];
+
+            if( $ma_pianyilv_statistics_row['day_num']!=0 ){
+            
+                $_data['day_num'] = $ma_pianyilv_statistics_row['day_num'];
+            }
+
+            if( $ma_pianyilv_statistics_row['next_day_up_num']!=0 ){
+            
+                $_data['next_day_up_num']               = $ma_pianyilv_statistics_row['next_day_up_num'];
+                $_data['next_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['next_day_up_uad_range']);
+                $_data['next_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['next_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_2_day_up_num']!=0 ){
+            
+                $_data['continued_2_day_up_num']               = $ma_pianyilv_statistics_row['continued_2_day_up_num'];
+                $_data['continued_2_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_2_day_up_uad_range']);
+                $_data['continued_2_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_2_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_3_day_up_num']!=0 ){
+            
+                $_data['continued_3_day_up_num']               = $ma_pianyilv_statistics_row['continued_3_day_up_num'];
+                $_data['continued_3_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_3_day_up_uad_range']);
+                $_data['continued_3_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_3_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_4_day_up_num']!=0 ){
+            
+                $_data['continued_4_day_up_num']               = $ma_pianyilv_statistics_row['continued_4_day_up_num'];
+                $_data['continued_4_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_4_day_up_uad_range']);
+                $_data['continued_4_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_4_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_5_day_up_num']!=0 ){
+            
+                $_data['continued_5_day_up_num']               = $ma_pianyilv_statistics_row['continued_5_day_up_num'];
+                $_data['continued_5_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_5_day_up_uad_range']);
+                $_data['continued_5_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_5_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_6_day_up_num']!=0 ){
+            
+                $_data['continued_6_day_up_num']               = $ma_pianyilv_statistics_row['continued_6_day_up_num'];
+                $_data['continued_6_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_6_day_up_uad_range']);
+                $_data['continued_6_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_6_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_7_day_up_num']!=0 ){
+            
+                $_data['continued_7_day_up_num']               = $ma_pianyilv_statistics_row['continued_7_day_up_num'];
+                $_data['continued_7_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_7_day_up_uad_range']);
+                $_data['continued_7_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_7_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_8_day_up_num']!=0 ){
+            
+                $_data['continued_8_day_up_num']               = $ma_pianyilv_statistics_row['continued_8_day_up_num'];
+                $_data['continued_8_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_8_day_up_uad_range']);
+                $_data['continued_8_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_8_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_9_day_up_num']!=0 ){
+            
+                $_data['continued_9_day_up_num']               = $ma_pianyilv_statistics_row['continued_9_day_up_num'];
+                $_data['continued_9_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_9_day_up_uad_range']);
+                $_data['continued_9_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_9_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_gt9_day_up_num']!=0 ){
+            
+                $_data['continued_gt9_day_up_num']               = $ma_pianyilv_statistics_row['continued_gt9_day_up_num'];
+                $_data['continued_gt9_day_up_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_uad_range']);
+                $_data['continued_gt9_day_up_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_gt9_day_up_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['next_day_dw_num']!=0 ){
+            
+                $_data['next_day_dw_num']               = $ma_pianyilv_statistics_row['next_day_dw_num'];
+                $_data['next_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['next_day_dw_uad_range']);
+                $_data['next_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['next_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_2_day_dw_num']!=0 ){
+            
+                $_data['continued_2_day_dw_num']               = $ma_pianyilv_statistics_row['continued_2_day_dw_num'];
+                $_data['continued_2_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_uad_range']);
+                $_data['continued_2_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_2_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_3_day_dw_num']!=0 ){
+            
+                $_data['continued_3_day_dw_num']               = $ma_pianyilv_statistics_row['continued_3_day_dw_num'];
+                $_data['continued_3_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_3_day_dw_uad_range']);
+                $_data['continued_3_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_3_day_dww_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_4_day_dw_num']!=0 ){
+            
+                $_data['continued_4_day_dw_num']               = $ma_pianyilv_statistics_row['continued_4_day_dw_num'];
+                $_data['continued_4_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_uad_range']);
+                $_data['continued_4_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_4_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_5_day_dw_num']!=0 ){
+            
+                $_data['continued_5_day_dw_num']               = $ma_pianyilv_statistics_row['continued_5_day_dw_num'];
+                $_data['continued_5_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_uad_range']);
+                $_data['continued_5_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_5_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_6_day_dw_num']!=0 ){
+            
+                $_data['continued_6_day_dw_num']               = $ma_pianyilv_statistics_row['continued_6_day_dw_num'];
+                $_data['continued_6_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_uad_range']);
+                $_data['continued_6_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_6_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_7_day_dw_num']!=0 ){
+            
+                $_data['continued_7_day_dw_num']               = $ma_pianyilv_statistics_row['continued_7_day_dw_num'];
+                $_data['continued_7_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_uad_range']);
+                $_data['continued_7_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_7_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_8_day_dw_num']!=0 ){
+            
+                $_data['continued_8_day_dw_num']               = $ma_pianyilv_statistics_row['continued_8_day_dw_num'];
+                $_data['continued_8_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_uad_range']);
+                $_data['continued_8_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_8_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_9_day_dw_num']!=0 ){
+            
+                $_data['continued_9_day_dw_num']               = $ma_pianyilv_statistics_row['continued_9_day_dw_num'];
+                $_data['continued_9_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_uad_range']);
+                $_data['continued_9_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_9_day_dw_active_date_sets']);
+            }
+
+            if( $ma_pianyilv_statistics_row['continued_gt9_day_dw_num']!=0 ){
+            
+                $_data['continued_gt9_day_dw_num']               = $ma_pianyilv_statistics_row['continued_gt9_day_dw_num'];
+                $_data['continued_gt9_day_dw_uad_range']         = json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_uad_range']);
+                $_data['continued_gt9_day_dw_active_date_sets']  = json_encode($ma_pianyilv_statistics_row['continued_gt9_day_dw_active_date_sets']);
+            }
+
+            return $_data;
     }
 
     /**
@@ -880,8 +977,8 @@ class MovingAverageService
 
         if( $level==1 ){## 第二天的涨跌幅
             $_next_detail_uad_range = $_next_detail['uad_range'];
-        }else{## 第n天离基准天的涨跌幅=(第n天的收盘价-基准天的收盘价)/基准天的收盘价
-            $_next_detail_uad_range = ($_next_detail['day_end_price']-$first_day_end_price)/$first_day_end_price;
+        }else{## 第n天离基准天的涨跌幅=((第n天的收盘价-基准天的收盘价)/基准天的收盘价)*100     之所以乘以100，是因为数据表保存的就是乘以100后的结果，需要与数据表的结构保持一致
+            $_next_detail_uad_range = (($_next_detail['day_end_price']-$first_day_end_price)/$first_day_end_price)*100;
             $_next_detail_uad_range = round($_next_detail_uad_range, 4);
         }
 
@@ -968,37 +1065,6 @@ class MovingAverageService
             $uad_range[$type] = [];
         }
         $uad_range[$type][$first_day_id] = $_next_detail_uad_range_10000bei;
-
-        // if( !isset($uad_range['min'])&&!isset($uad_range['max']) ){##### 仅当$level==1时,本条件才会成立
-    
-        //     if( is_null($last_uad_range_min) ){
-            
-        //         $uad_range['min'] = $_next_detail_uad_range_10000bei;
-        //     }else {
-                
-        //         $uad_range['min'] = $last_uad_range_min>$_next_detail_uad_range_10000bei ? $_next_detail_uad_range_10000bei : $last_uad_range_min;
-        //     }
-
-        //     if( is_null($last_uad_range_max) ){
-            
-        //         $uad_range['max'] = $_next_detail_uad_range_10000bei;
-        //     }else {
-                
-        //         $uad_range['max'] = $last_uad_range_max>$_next_detail_uad_range_10000bei ? $last_uad_range_max : $_next_detail_uad_range_10000bei;
-        //     }
-
-        // }else {
-
-        //     if( $_next_detail_uad_range_10000bei>$uad_range['max'] ){
-            
-        //         $uad_range['max'] = $_next_detail_uad_range_10000bei;
-        //     }
-
-        //     if( $_next_detail_uad_range_10000bei<$uad_range['min'] ){
-            
-        //         $uad_range['min'] = $_next_detail_uad_range_10000bei;
-        //     }
-        // }
     }
 
     /**

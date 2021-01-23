@@ -5,6 +5,11 @@ use \Err;
 use \Fun;
 use \TB;
 use \cmd\service\GupiaoCommonService;
+use model\DailyWeightThs1Model;
+use model\PlateModel;
+use model\SharesDetailsBydayModel;
+use model\SharesModel;
+use model\SharesPlateModel;
 
 class GupiaoService
 {
@@ -170,13 +175,16 @@ class GupiaoService
         }
 
         /// 录入shares表数据
+        # 初始化参数
+        $shares_model = new SharesModel;
+
         # 不存在才录入
         $tmp_condition = [
             ['title', $shares_title],
             ['code', $code],
             ['type', $shares_type]
         ];
-        $has_row = TB::table('shares')->select('*')
+        $has_row = $shares_model->select('*')
         ->where($tmp_condition)
         ->find();
 
@@ -194,9 +202,7 @@ class GupiaoService
                 'created_time'  => time()
             ];
         
-            $re = TB::table('shares')
-            ->insert($main_data)
-            ->exec();
+            $re = $shares_model->insert($main_data)->exec();
         
             if( !$re ){
                 echo '录入主表数据失败! main_data: ' . serialize($main_data) . PHP_EOL;
@@ -210,10 +216,13 @@ class GupiaoService
      */
     public function updateOriginal($road){
     
-        $end_time = time();
+        /// 初始化参数
+        $end_time                   = time();
+        $shares_details_byday_model = new SharesDetailsBydayModel;
+        $shares_model               = new SharesModel;
 
         /// 获取shares所有id
-        $codes = TB::table('shares')->select('id, code, type, sdb_last_update_time')->where(['is_deprecated', 0])->get();
+        $codes = $shares_model->select('id, code, type, sdb_last_update_time')->where(['is_deprecated', 0])->get();
 
         $dividend   = 1;
         $divisor    = count($codes);
@@ -255,7 +264,7 @@ class GupiaoService
                 $original_data_active_date  = array_column($original_data, '0');
 
                 # 已存在的数据中的最新一条
-                $has_newest_row = TB::table('tl_shares_details_byday')->select('active_date')->where(['shares__id', $shares_id])->orderby('active_date_timestamp desc')->find();
+                $has_newest_row = $shares_details_byday_model->select('active_date')->where(['shares__id', $shares_id])->orderby('active_date_timestamp desc')->find();
 
                 if( !empty($has_newest_row) ){
                     
@@ -268,16 +277,6 @@ class GupiaoService
                         continue;
                     }
                 }
-
-                /* foreach( $original_data as $kk=>$vv){
-                
-                    if( $vv[0]=='2012-05-30' ){
-                    
-                        print_r($vv);
-                    }
-                }
-
-                exit; */
             }
 
             /// 录入shares_details_byday表数据
@@ -330,7 +329,7 @@ class GupiaoService
                     ['active_date_timestamp', strtotime($this_row[0].' 15:00:00')]
                 ];
 
-                $has_row = TB::table('tl_shares_details_byday')->select('id,channel')->where($check_row)->find();
+                $has_row = $shares_details_byday_model->select('id,channel')->where($check_row)->find();
 
                 if( !empty($has_row) ){
 
@@ -358,8 +357,7 @@ class GupiaoService
                             ];
     
                             /// 更新子表
-                            $re = TB::table('tl_shares_details_byday')
-                            ->update($_upd)
+                            $re = $shares_details_byday_model->update($_upd)
                             ->where(['id', '=', $has_row['id']])
                             ->exec();
 
@@ -373,8 +371,7 @@ class GupiaoService
                                 'sdb_last_update_time' => $sdb_last_update_time
                             ];
                 
-                            $re = TB::table('shares')
-                            ->update($shares_data)
+                            $re = $shares_model->update($shares_data)
                             ->where(['id', '=', $shares_id])
                             ->exec();
                 
@@ -486,8 +483,7 @@ class GupiaoService
                 continue;
             }
 
-            $re = TB::table('tl_shares_details_byday')
-            ->fields(implode(',', $_f))
+            $re = $shares_details_byday_model->fields(implode(',', $_f))
             ->insert($data)
             ->exec();
 
@@ -504,8 +500,7 @@ class GupiaoService
                     'sdb_last_update_time' => $sdb_last_update_time
                 ];
     
-                $re = TB::table('shares')
-                ->update($shares_data)
+                $re = $shares_model->update($shares_data)
                 ->where(['id', '=', $shares_id])
                 ->exec();
     
@@ -528,15 +523,20 @@ class GupiaoService
      * 更新shares表发行日期
      */
     public function updateIssueDate(){
+
+        /// 初始化参数
+        $shares_model               = new SharesModel;
+        $shares_details_byday_model = new SharesDetailsBydayModel;
+
         /// 最大id
-        $max_row_id = TB::table('shares')->select('max(id) as id')->where(1)->find();
+        $max_row_id = $shares_model->select('max(id) as id')->where(1)->find();
         $max_row_id = $max_row_id['id'];
 
         for ($i=$max_row_id; $i>0 ; $i--) { 
 
             /// 校验数据
             # shares表是否存在此id的数据
-            $shares_has_row = TB::table('shares')->select('*')->where(['id', $i])->find();
+            $shares_has_row = $shares_model->select('*')->where(['id', $i])->find();
             if( empty($shares_has_row) ){
                 echo '当前id: '.$i.' 在shares表无对应的记录！'.PHP_EOL;
                 continue;
@@ -555,7 +555,7 @@ class GupiaoService
                 ['shares__id', $i]
             ];
 
-            $tmp_shares_details_byday_row = TB::table('tl_shares_details_byday')->select('active_date')->where($tmp_where)->orderby('id desc')->find();
+            $tmp_shares_details_byday_row = $shares_details_byday_model->select('active_date')->where($tmp_where)->orderby('id desc')->find();
             
             if( empty($tmp_shares_details_byday_row) ){
                 echo '无关联数据 --》》》' . $i . PHP_EOL;
@@ -568,8 +568,7 @@ class GupiaoService
                 'issue_date_timestamp'  => !empty($tmp_shares_details_byday_row['active_date']) ? strtotime($tmp_shares_details_byday_row['active_date'] . ' 15:00:00') : 0
             ];
 
-            $re = TB::table('shares')
-            ->update($tmp_update)
+            $re = $shares_model->update($tmp_update)
             ->where(['id', '=', $i])
             ->exec();
 
@@ -587,7 +586,8 @@ class GupiaoService
     public function getCompanyDetails(){
 
         /// 初始化参数
-        $codes                  = TB::table('shares')->select('id, code')->where(1)->get();
+        $shares_model           = new SharesModel;
+        $codes                  = $shares_model->select('id, code')->where(1)->get();
         $gupiao_common_service  = new GupiaoCommonService;
 
         $dividend   = 1;
@@ -639,8 +639,7 @@ class GupiaoService
                 'province'                     => $province,
             ];
 
-            $re = TB::table('shares')
-            ->update($tmp_update)
+            $re = $shares_model->update($tmp_update)
             ->where(['id', '=', $v['id']])
             ->exec();
 
@@ -660,11 +659,13 @@ class GupiaoService
      */
     public function extraDoing(){
 
-        $now = time();
+        /// 初始化参数
+        $now            = time();
+        $shares_model   = new SharesModel;
     
         /// 分类拆分
         # 获取所有数据
-        $shares = TB::table('shares')->select('id, code, sw_cate')->where([
+        $shares = $shares_model->select('id, code, sw_cate')->where([
             ['is_deprecated', 0],
             ['is_explode_cate', 0]
         ])->get();
@@ -690,7 +691,7 @@ class GupiaoService
             if( $this_cate1=='—' ) continue;
 
             # 更新shares数据表
-            $re = TB::table('shares')->update([
+            $re = $shares_model->update([
                 'tmp4' => $this_cate1,
                 'tmp5' => $this_cate2,
                 'is_explode_cate'   => 1,
@@ -736,8 +737,7 @@ class GupiaoService
      */
     public function test(){
 
-        $road = 0;
-    
+        $road   = 0;
         $end_time = time();
 
         /// 获取shares所有id
@@ -883,9 +883,14 @@ class GupiaoService
      * 构建板块分类
      */
     public function constructPlate(){
+
+        /// 初始化参数
+        $plate_model        = new PlateModel;
+        $shares_model       = new SharesModel;
+        $shares_plate_model = new SharesPlateModel;
     
         /// 获取股票shares(stock)数据
-        $codes = TB::table('shares')->select('id, code, cate_1, cate_2, tmp6')->where(['is_deprecated', 0])->get();
+        $codes = $shares_model->select('id, code, cate_1, cate_2, tmp6')->where(['is_deprecated', 0])->get();
 
         $_plates1           = [];
         $_plates2           = [];
@@ -905,7 +910,7 @@ class GupiaoService
                 if( $_ta_v=='1' ){
                     
                     # 是否已存在
-                    $has_row = TB::table('plate')->select('id')->where([
+                    $has_row = $plate_model->select('id')->where([
                         ['name', $v['cate_1']],
                         ['come_from', 4],
                         ['type', 1],
@@ -980,7 +985,7 @@ class GupiaoService
             ];
         }
 
-        if( !TB::table('plate')->fields(array_keys($_i[0]))->insert($_i)->exec() ) exit('新增一级板块失败');
+        if( !$plate_model->fields(array_keys($_i[0]))->insert($_i)->exec() ) exit('新增一级板块失败');
 
         // print_r($_i);
 
@@ -991,7 +996,7 @@ class GupiaoService
             $percent = number_format(($dividend/$divisor)*100, 4) . '%';
 
             # 一级id
-            $_pid = TB::table('plate')->select('id')->where([
+            $_pid = $plate_model->select('id')->where([
                 ['name', $name1],
                 ['come_from', 4],
                 ['type', 1]
@@ -1003,7 +1008,7 @@ class GupiaoService
             $_i_shares_plate    = [];
             foreach( $_plates2[$k1] as $k2=>$v2){
             
-                $last_plate_id = TB::table('plate')->select('id')->where([
+                $last_plate_id = $plate_model->select('id')->where([
                     ['name', $v2],
                     ['come_from', 4],
                     ['type', 1],
@@ -1020,8 +1025,8 @@ class GupiaoService
                         'pid'           => $_pid['id']
                     ];
     
-                    $re = TB::table('plate')->insert($_i_plate)->exec();
-                    $last_insert_id = TB::last_insert_id();
+                    $re = $plate_model->insert($_i_plate)->exec();
+                    $last_insert_id = $plate_model->last_insert_id();
                 }else{
                     $last_insert_id = $last_plate_id['id'];
                 }
@@ -1037,7 +1042,7 @@ class GupiaoService
                         ];
                     }
 
-                    $re = TB::table('shares__plate')->fields(array_keys($_i_shares_plate[0]))->insert($_i_shares_plate)->exec();
+                    $re = $shares_plate_model->fields(array_keys($_i_shares_plate[0]))->insert($_i_shares_plate)->exec();
                 }
             }
 
@@ -1062,11 +1067,15 @@ class GupiaoService
         // var_dump(date('Y-m-d H:i:s', $b_time_1));
         // var_dump(date('Y-m-d H:i:s', strtotime(date('Y-m-d', $b_time_1+86400).' 0:0:0')));
         // exit;
-        
 
+        /// 初始化参数
+        $plate_model                = new PlateModel;
+        $shares_plate_model         = new SharesPlateModel('sp');
+        $daily_weight_ths1_model    = new DailyWeightThs1Model;
+        
         /// 统计二类板块个股权重
         # 获取二类板块数据
-        $plates = TB::table('plate')->select('id, name')->where([
+        $plates = $plate_model->select('id, name')->where([
             ['come_from', 4],# 4=同花顺1
             ['type', 1],# 1=行业板块
             ['pid', '<>', 0],
@@ -1079,7 +1088,7 @@ class GupiaoService
             
             $plate__id = $v['id'];
             # 获取当前板块下的所有股票
-            $rocks = TB::table('tl_shares__plate sp')->select('sp.shares__id')
+            $rocks = $shares_plate_model->select('sp.shares__id')
             ->leftjoin('tl_shares s', 's.id=sp.shares__id')
             ->where([
                 ['sp.plate__id', $plate__id],
@@ -1090,8 +1099,8 @@ class GupiaoService
             $rocks_ids = implode(',', array_column($rocks, 'shares__id'));
 
             # 获取板块所有股票中最早、最晚形成数据的时间
-            $b_time = TB::table('daily_weight_ths1')->select('active_date_timestamp')->where(['shares__id', 'in', '('.$rocks_ids.')'])->orderby('active_date_timestamp')->find();
-            $e_time = TB::table('daily_weight_ths1')->select('active_date_timestamp')->where(['shares__id', 'in', '('.$rocks_ids.')'])->orderby('active_date_timestamp desc')->find();
+            $b_time = $daily_weight_ths1_model->select('active_date_timestamp')->where(['shares__id', 'in', '('.$rocks_ids.')'])->orderby('active_date_timestamp')->find();
+            $e_time = $daily_weight_ths1_model->select('active_date_timestamp')->where(['shares__id', 'in', '('.$rocks_ids.')'])->orderby('active_date_timestamp desc')->find();
 
             if( empty($b_time) ) continue;
 
@@ -1109,7 +1118,7 @@ class GupiaoService
             while ($b_time_1<=$e_time_1) {
                 
                 ## 当天股票数据
-                $rocks_this_day_info = TB::table('daily_weight_ths1')->select('
+                $rocks_this_day_info = $daily_weight_ths1_model->select('
                     id,
                     shares__id,
                     total_shizhi

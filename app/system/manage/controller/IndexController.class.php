@@ -2,10 +2,12 @@
 
 namespace system\manage\controller;
 use \controller;
-use \Json;
+use \Route;
 use \Err;
 use \Fun;
+use model\DateRecordModel;
 use model\MenuPermissionModel;
+use model\SharesGroupsModel;
 use model\UserGroupPermissionModel;
 use system\manage\service\IndexService;
 
@@ -16,6 +18,8 @@ class IndexController extends Controller {
 
         /// 初始化参数
         $index_service                  = new IndexService;
+        $date_record_model              = new DateRecordModel;
+        $shares__groups_model           = new SharesGroupsModel;
         $menu_permission_model          = new MenuPermissionModel('mp');
         $user_group_permission_model    = new UserGroupPermissionModel;
 
@@ -35,6 +39,22 @@ class IndexController extends Controller {
         /// 偏移率相关统计数据
         $pianyilv = $index_service->getMaStatistics();
 
+        /// 获取持仓组数据
+        $chicang_group = $shares__groups_model->getSharesByGroupName('持仓组');
+
+        /// 最新的日期
+        $_arr                       = $date_record_model->select(['max(active_date_timestamp)'=>'active_date_timestamp'])->find();
+        $max_active_date_timestamp  = $_arr['active_date_timestamp'];
+
+        /// 均偏率
+        $index_service->junPianLv($chicang_group, $max_active_date_timestamp);
+
+        /// 均线角
+        $index_service->junXianJiao($chicang_group, $max_active_date_timestamp);
+
+        /// 复现率
+        $index_service->fuxianlv($chicang_group);
+
         /// 分配模板变量  &  渲染模板
         $this->assign('menu1', $menu1);
         $this->assign('menu2', $menu2);
@@ -42,6 +62,8 @@ class IndexController extends Controller {
         $this->assign('mp_ids', $mp_ids);
         $this->assign('nav_link', $nav_link);
         $this->assign('manager', self::$manager);
+        $this->assign('navtab', Route::$navtab);
+        $this->assign('chicang_group', $chicang_group);
         $this->assign('_10years_pianyilv', $pianyilv['_10years_pianyilv']);
         $this->assign('_5years_pianyilv', $pianyilv['_5years_pianyilv']);
         $this->assign('_3years_pianyilv', $pianyilv['_3years_pianyilv']);

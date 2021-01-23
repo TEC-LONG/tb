@@ -5,7 +5,7 @@ Route::team(['prefix'=>'system'], function (){
     Route::team(['prefix'=>'manage'], function (){
 
         // Route::get('/index', 'IndexController@index')->midware('auth:check');# 后台首页
-        Route::get('/index', 'IndexController@index');# 后台首页
+        Route::get('/index', 'IndexController@index')->navtab('system_manage_index');# 后台首页
     
         Route::team(['prefix'=>'login'], function (){
         
@@ -67,6 +67,13 @@ Route::team(['prefix'=>'system'], function (){
 
             Route::get('/info', 'DocController@info')->navtab('system_manage_docInfo');# 文档 页面
             Route::get('/info/content', 'DocController@docDetailContent')->navtab('system_manage_docInfoContent');# 文档内容navtab 页面
+            
+        });
+
+        Route::team(['prefix'=>'gupiao'], function (){
+            
+            Route::get('/search/by/code/or/name', 'GupiaoController@searchByCodeOrName')->navtab('system_manage_gupiaoSearchByCodeOrName');# 根据 股票代码 或 股票名称 模糊搜索股票
+            
             
         });
     });

@@ -22,7 +22,7 @@ class StatisticsRulesModel extends BaseModel{
     ];
 
     /**
-     * 统计数据入库
+     * 获取规则表id，已存在则返回数据id
      */
     public function getId($flag){
     
